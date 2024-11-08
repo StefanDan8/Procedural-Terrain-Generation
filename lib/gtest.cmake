@@ -23,7 +23,6 @@ ExternalProject_Add(
     INSTALL_DIR "vendor/gtm/gtest"
     CMAKE_ARGS
         -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/vendor/gtm/gtest
-        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
         -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
         -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
     DOWNLOAD_COMMAND ""
@@ -38,7 +37,6 @@ ExternalProject_Add(
     INSTALL_DIR "vendor/gtm/gmock"
     CMAKE_ARGS
         -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/vendor/gtm/gmock
-        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
         -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
         -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
     DOWNLOAD_COMMAND ""
