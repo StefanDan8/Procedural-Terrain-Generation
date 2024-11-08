@@ -1,0 +1,64 @@
+************************************************************
+* 				pre working phase						   *
+************************************************************
+
+- Create group project repo (follow instructions on Moodle) DONE
+- Create branches sprint1, sprint2, sprint3 -> all progress during one sprint has to be exclusively made in the respective branch. DONE
+	Updates can be done directly or via merge requests.
+- Add CMake structure to the project 
+	- include -> for *.hpp
+	- src 	  -> for *.cpp
+	- test    -> for unit testing ->> when you write complicated functions, add unit tests here (1-2 basic cases + edge cases). As we have to
+									  later refactor code, these tests will help us make sure that we keep same functionality.
+	- data 	  -> dev purposes
+	- output  -> dev purposes 
+	- examples
+	- .gitignore
+			build/
+			compile_commands.json
+			.idea
+			/cmake-build-*
+			etc. (probably output/, examples/ etc)
+	- CMakeLists.txt
+	- README.md -> should include section on how to build and run the project
+
+- Use clang-format for unified code formatting.
+
+- Documentation. Use docstrings for every function and class. Also for attributes unless functionality is obvious.
+
+- Namespace policy: 
+	- no "using namespace std;" -> always add std::
+	- every "using" has to be documented. -> maybe an additional documentation file with a section for this would be useful.
+
+
+************************************************************
+* 						sprint 1						   *
+************************************************************
+
+Perlin noise algorithm
+
+1. Define a lattice over the LxW(xH). 
+2. For each corner of the lattice, generate a random normalized 2D (3D) vector (gradient).
+3. For each point, compute the offset vector to each adjacent corner (4 for 2D, 8 for 3D).
+4. Compute the dot product between each offest vector and the corresponding gradient.
+5. Interpolation -> here we want to have the possiblity to use different interpolation functions.
+	- interpolate horizontally
+	- interpolate vertically the results.
+
+End result: a function that takes a 2D (3D) point and returns a double representing the noise value.
+Goal: we want this function to be as fast and memory efficient as possible. 
+The entire lattice, with a gradient in each corner is too much to keep in memory.
+Instead, we use a fixed size array of gradients. 
+Say that we have a 256x256x256 grid. We then have a table of gradients of size 256 and we reuse them.
+For a point (x,y,z), we get the corresponding corners in the grid. Each corner is hashed to a value between 0 and 255.
+In the original table this is where the permutation table plays a role. I guess any hash function will work, so that 
+we don't need this table. However, it might be useful for effiency/ reproductibility.
+
+6. Apply this function to each point in space -> we can do this in parallel to speed up the process.
+7. In case of 2D, we can generate a PNG from the resulting array
+
+Note: for terrain generation, the 2D noise is needed. the noise value acts as height.
+
+Note: we need to seed everything that can be random. Both for reproductibility, but also for allowing the user
+to generate different values.
+
