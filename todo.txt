@@ -2,10 +2,10 @@
 * 				pre working phase						   *
 ************************************************************
 
-- Create group project repo (follow instructions on Moodle) DONE
-- Create branches sprint1, sprint2, sprint3 -> all progress during one sprint has to be exclusively made in the respective branch. DONE
+DONE - Create group project repo (follow instructions on Moodle) 
+DONE - Create branches sprint1, sprint2, sprint3 -> all progress during one sprint has to be exclusively made in the respective branch. 
 	Updates can be done directly or via merge requests.
-- Add CMake structure to the project 
+DONE - Add CMake structure to the project 
 	- include -> for *.hpp
 	- src 	  -> for *.cpp
 	- test    -> for unit testing ->> when you write complicated functions, add unit tests here (1-2 basic cases + edge cases). As we have to
@@ -20,9 +20,9 @@
 			/cmake-build-*
 			etc. (probably output/, examples/ etc)
 	- CMakeLists.txt
-	- README.md -> should include section on how to build and run the project
+	- README.md -> should include section on how to build and run the project 
 
-- Use clang-format for unified code formatting.
+DONE - Use clang-format for unified code formatting.
 
 - Documentation. Use docstrings for every function and class. Also for attributes unless functionality is obvious.
 
