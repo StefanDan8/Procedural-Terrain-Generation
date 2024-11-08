@@ -1,5 +1,6 @@
 # Group 44
 
+Team Members Stefan Dan
 
 
 ## Getting started
