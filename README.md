@@ -19,6 +19,6 @@ cd build/debug
 cmake -DCMAKE_BUILD_TYPE=Debug ../..
 make
 ```
-This creates the binaries 'test_all' and 'main'.
+This creates the binaries `test_all` and `main`.
 
-TODO: End user does only need main. 'test_all' is only for development. Adjust later.
+TODO: End user does only need main. `test_all` is only for development. Adjust later.
