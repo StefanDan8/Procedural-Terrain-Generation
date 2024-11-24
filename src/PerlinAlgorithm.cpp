@@ -93,7 +93,7 @@ double lerp(const double a, const double b, const double t) {
 /// @brief Returnes a constant 2D vector based on the given value from the permutation table. 
 /// @param v
 /// @return 2D vector
-/// @note The choice of the constant vectors to be returned is arbitrary and could be changed later on
+/// @note The choice of the constant vectors to be returned is arbitrary and could be changed later on - or could instead compute a grid of constant vectors and use it instead
 std::vector<double> getConstVector2D(const unsigned v){
    // v is the value from the permutation table
    unsigned mod = v % 4;
@@ -116,7 +116,7 @@ std::vector<double> getConstVector2D(const unsigned v){
 /// @param x, y, permutationTable
 /// @return An integer from 0 to gridSize-1
 /// @note Can be computed in a different way, for example without the last permutation or by hashing
-int permutationValue(const int x, const int y, const std::vector<int>& permutationTable){
+int permutationValue2D(const int x, const int y, const std::vector<int>& permutationTable){
    const unsigned gridSize = permutationTable.size();
    return permutationTable[(permutationTable[x % gridSize] + y) % gridSize];
 }
@@ -146,10 +146,10 @@ double Noise2D(const double x, const double y, const std::vector<int>& permutati
    std::vector<double> TR = {dx - 1.0, dy - 1.0};
 
    // Select a value for each of the 4 corners of the square from the permutation table
-   int valBL = permutationValue(X, Y, permutationTable);
-   int valBR = permutationValue(X + 1, Y, permutationTable);
-   int valTL = permutationValue(X, Y + 1, permutationTable);
-   int valTR = permutationValue(X + 1, Y + 1, permutationTable);
+   int valBL = permutationValue2D(X, Y, permutationTable);
+   int valBR = permutationValue2D(X + 1, Y, permutationTable);
+   int valTL = permutationValue2D(X, Y + 1, permutationTable);
+   int valTR = permutationValue2D(X + 1, Y + 1, permutationTable);
 
    // Compute the dot products of the vectors pointing to the point from the 4 corners of the square with the constant vectors
    double dotBL = dot(getConstVector2D(valBL), BL);
@@ -166,4 +166,109 @@ double Noise2D(const double x, const double y, const std::vector<int>& permutati
 }
 
 //------- 3D Functions -------
+
+/// @author DB
+/// @brief Returnes a constant 3D vector based on the given value from the permutation table. 
+/// @param v
+/// @return 3D vector
+/// @note The choice of the constant vectors to be returned is arbitrary and could be changed later on - or could instead compute a grid of constant vectors and use it instead
+std::vector<double> getConstVector3D(const unsigned v){
+   // v is the value from the permutation table
+   unsigned mod = v % 8;
+   switch (mod) {
+      case 0:
+         return {1, 1, 1};
+      case 1:
+         return {-1, 1, 1};
+      case 2:
+         return {-1, -1, 1};
+      case 3:
+         return {1, -1, 1};
+      case 4:
+         return {1, 1, -1};
+      case 5:
+         return {-1, 1, -1};
+      case 6:
+         return {-1, -1, -1};
+      case 7:
+         return {1, -1, -1};
+      default:
+         return {0, 0, 0};
+   }
+}
+
+/// @author DB
+/// @brief For given coordinates (x,y,z) returns the value from the permutation table. 
+/// @param x, y, z, permutationTable
+/// @return An integer from 0 to gridSize-1
+/// @note Can be computed in a different way, for example without the last permutation or by hashing
+int permutationValue3D(const int x, const int y, const int z, const std::vector<int>& permutationTable){
+   const unsigned gridSize = permutationTable.size();
+   return permutationTable[(permutationTable[(permutationTable[x % gridSize] + y) % gridSize] + z) % gridSize];
+}
+
+/// @author DB
+/// @brief Returnes the Perlin noise value for the given 3D coordinates. 
+/// @param x, y, z, permutationTable
+/// @return Noise value (double in the range [-1,1])
+/// @note
+double Noise3D(const double x, const double y, const double z, const std::vector<int>& permutationTable) {
+
+   const unsigned gridSize = permutationTable.size();
+
+   // Find the unit cube that the point lies in (bottom left front corner)
+   int X = (int)floor(x) % gridSize;
+   int Y = (int)floor(y) % gridSize;
+   int Z = (int)floor(z) % gridSize;
+
+   // Find the fractional coordinates of the point within the cube
+   double dx = x - floor(x);
+   double dy = y - floor(y);
+   double dz = z - floor(z);
+
+   // Find the vectors pointing to the point from the 8 corners of the cube
+   // top-bottom / left-right / front-back
+   std::vector<double> BLF = {dx, dy, dz};
+   std::vector<double> BRF = {dx - 1.0, dy, dz};
+   std::vector<double> BLB = {dx, dy, dz - 1.0};
+   std::vector<double> BRB = {dx - 1.0, dy, dz - 1.0};
+   std::vector<double> TLF = {dx, dy - 1.0, dz};
+   std::vector<double> TRF = {dx - 1.0, dy - 1.0, dz};
+   std::vector<double> TLB = {dx, dy - 1.0, dz - 1.0};
+   std::vector<double> TRB = {dx - 1.0, dy - 1.0, dz - 1.0};
+
+   // Select a value for each of the 8 corners of the square from the permutation table
+   int valBLF = permutationValue3D(X, Y, Z, permutationTable);
+   int valBRF = permutationValue3D(X + 1, Y, Z, permutationTable);
+   int valBLB = permutationValue3D(X, Y, Z + 1, permutationTable);
+   int valBRB = permutationValue3D(X + 1, Y, Z + 1, permutationTable);
+   int valTLF = permutationValue3D(X, Y + 1, Z, permutationTable);
+   int valTRF = permutationValue3D(X + 1, Y + 1, Z, permutationTable);
+   int valTLB = permutationValue3D(X, Y + 1, Z + 1, permutationTable);
+   int valTRB = permutationValue3D(X + 1, Y + 1, Z + 1, permutationTable);
+
+   // Compute the dot products of the vectors pointing to the point from the 8 corners of the cube with the constant vectors
+   double dotBLF = dot(getConstVector3D(valBLF), BLF);
+   double dotBRF = dot(getConstVector3D(valBRF), BRF);
+   double dotBLB = dot(getConstVector3D(valBLB), BLB);
+   double dotBRB = dot(getConstVector3D(valBRB), BRB);
+   double dotTLF = dot(getConstVector3D(valTLF), TLF);
+   double dotTRF = dot(getConstVector3D(valTRF), TRF);
+   double dotTLB = dot(getConstVector3D(valTLB), TLB);
+   double dotTRB = dot(getConstVector3D(valTRB), TRB);
+
+   // Compute fade curves for x, y and z
+   double u = fade(dx);
+   double v = fade(dy);
+   double w = fade(dz);
+
+   // Interpolate the 8 results
+   double a = lerp(dotBLF, dotBRF, u);
+   double b = lerp(dotBLB, dotBRB, u);
+   double c = lerp(dotTLF, dotTRF, u);
+   double d = lerp(dotTLB, dotTRB, u);
+   double e = lerp(a, b, v);
+   double f = lerp(c, d, v);
+   return(lerp(e, f, w));
+}
 }
