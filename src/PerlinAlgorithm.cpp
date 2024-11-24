@@ -72,7 +72,7 @@ std::vector<int> generatePermutationTable(const unsigned seed, const unsigned gr
 /// @author DB
 /// @brief A smoothing interpolation function for the Perlin noise algorithm. 
 /// @param t
-/// @return
+/// @return smoothed value
 /// @note On [0,1] the function is growing and takes values from 0 to 1
 /// @note The derivatives on the edges are 0, so the function makes for a smooth transition
 double fade(const double t) {
@@ -93,7 +93,7 @@ double lerp(const double a, const double b, const double t) {
 /// @brief Returnes a constant 2D vector based on the given value from the permutation table. 
 /// @param v
 /// @return 2D vector
-/// @note The choice of the constant vectors to be returned is arbitrary and could be changed later on - or could instead compute a grid of constant vectors and use it instead
+/// @note The choice of the constant vectors to be returned is arbitrary and could be changed later on - or a grid of constant vectors could instead be computed and used
 std::vector<double> getConstVector2D(const unsigned v){
    // v is the value from the permutation table
    unsigned mod = v % 4;
@@ -171,7 +171,7 @@ double Noise2D(const double x, const double y, const std::vector<int>& permutati
 /// @brief Returnes a constant 3D vector based on the given value from the permutation table. 
 /// @param v
 /// @return 3D vector
-/// @note The choice of the constant vectors to be returned is arbitrary and could be changed later on - or could instead compute a grid of constant vectors and use it instead
+/// @note The choice of the constant vectors to be returned is arbitrary and could be changed later on - or a grid of constant vectors could instead be computed and used
 std::vector<double> getConstVector3D(const unsigned v){
    // v is the value from the permutation table
    unsigned mod = v % 8;
