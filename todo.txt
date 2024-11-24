@@ -39,14 +39,22 @@ Perlin noise algorithm
 
 1. Define a lattice over the LxW(xH). 
 2. For each corner of the lattice, generate a random normalized 2D (3D) vector (gradient).
-3. For each point, compute the offset vector to each adjacent corner (4 for 2D, 8 for 3D).
-4. Compute the dot product between each offest vector and the corresponding gradient.
+- For now implemented by functions 'getConstVector', though should be changed to a static array of randomly generated vectors
+3. DONE - For each point, compute the offset vector to each adjacent corner (4 for 2D, 8 for 3D).
+- Implemented in the 'Noise' functions
+4. DONE - Compute the dot product between each offest vector and the corresponding gradient.
+- Implemented in the 'Noise' functions
 5. Interpolation -> here we want to have the possiblity to use different interpolation functions.
 	- interpolate horizontally
 	- interpolate vertically the results.
+- using the 'fade' function for smoothing and 'lerp' function for interpolation, implemented in the 'Noise' functions
+Note: more interpolation options should be added for the user to choose from
 
 End result: a function that takes a 2D (3D) point and returns a double representing the noise value.
+- Implemented by the 'Noise' functions
+
 Goal: we want this function to be as fast and memory efficient as possible. 
+
 The entire lattice, with a gradient in each corner is too much to keep in memory.
 Instead, we use a fixed size array of gradients. 
 Say that we have a 256x256x256 grid. We then have a table of gradients of size 256 and we reuse them.
