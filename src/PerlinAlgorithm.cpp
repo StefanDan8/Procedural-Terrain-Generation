@@ -1,82 +1,143 @@
 #include "PerlinAlgorithm.hpp"
-#include <random>
 #include <algorithm>
 #include <cassert>
 #include <cmath>
+
 //-----------------------------------------------------------------------------
 namespace perlin {
-/// @author SD
-/// @brief Generates a normalized 3D vector with non-negative values.
-/// @param seed
-/// @return
-/// @note This is just a test function. Not to be used in production,
-std::array<double, 3> random3DVector(int seed) {
-   std::mt19937 generator(seed);
-   std::uniform_real_distribution<double> unif(0.0, 1.0);
-   auto x = unif(generator);
-   auto y = unif(generator);
-   auto z = unif(generator);
-   auto length = sqrt(x * x + y * y + z * z);
-   return std::array<double, 3>{x / length, y / length, z / length};
+UniformUnitGenerator unifGlbl = UniformUnitGenerator(631);
+std::vector<vec2d> gradients2D;
+
+vec2d random2DGrad(UniformUnitGenerator& unif) {
+   auto theta = unif.get() * 2 * M_PI;
+   return vec2d{cos(theta), sin(theta)};
+}
+
+vec3d random3DGrad(UniformUnitGenerator& unif) {
+   auto cosphi = unif.get() * 2 - 1;
+   auto theta = unif.get() * 2 * M_PI;
+   auto h = sqrt(1 - cosphi * cosphi);
+   return vec3d{h * cos(theta), h * sin(theta), cosphi};
+}
+
+double dot(vec2d& x, vec2d& y) {
+   return x[0] * y[0] + x[1] * y[1];
+}
+
+double dot(vec3d& x, vec3d& y) {
+   return x[0] * y[0] + x[1] * y[1] + x[2] * y[2];
+}
+
+void initialize2DGradients(const int chunkSize, UniformUnitGenerator& unif) {
+   gradients2D.reserve(chunkSize);
+   for (int i = 0; i < chunkSize; i++) {
+      gradients2D.emplace_back(random2DGrad(unif));
+   }
+}
+
+unsigned permutationValue2D(const unsigned chunkX, const unsigned chunkY, const std::vector<unsigned>& permutationTable) {
+   const unsigned gridSize = permutationTable.size();
+   auto index = permutationTable[(permutationTable[chunkX % gridSize] + chunkY) % gridSize];
+   return index;
+}
+
+double noise2D(const unsigned x, const unsigned y, const unsigned chunkX, const unsigned chunkY, const std::vector<unsigned>& permutationTable) {
+   const unsigned chunkSize = permutationTable.size(); // turn into global constant
+
+   double dx = (x % chunkSize + 1) / (double) chunkSize;
+   double dy = (y % chunkSize + 1) / (double) chunkSize;
+
+   vec2d BL = {dx, dy};
+   vec2d BR = {dx - 1.0, dy};
+   vec2d TL = {dx, dy - 1.0};
+   vec2d TR = {dx - 1.0, dy - 1.0};
+
+   int valBL = permutationValue2D(chunkX, chunkY, permutationTable);
+   int valBR = permutationValue2D(chunkX + 1, chunkY, permutationTable);
+   int valTL = permutationValue2D(chunkX, chunkY + 1, permutationTable);
+   int valTR = permutationValue2D(chunkX + 1, chunkY + 1, permutationTable);
+
+   double dotBL = dot(gradients2D.at(valBL), BL);
+   double dotBR = dot(gradients2D.at(valBR), BR);
+   double dotTL = dot(gradients2D.at(valTL), TL);
+   double dotTR = dot(gradients2D.at(valTR), TR);
+
+   // Compute fade curves for x and y
+   double u = fade(dx);
+   double v = fade(dy);
+
+   // Interpolate the 4 results
+   return (lerp(lerp(dotBL, dotBR, u), lerp(dotTL, dotTR, u), v));
+}
+
+void fill2DChunk(matrix& resultMatrix, const unsigned chunkX, const unsigned chunkY, const std::vector<unsigned>& permutationTable) {
+   const unsigned chunkSize = permutationTable.size();
+   const unsigned offsetX = chunkSize * chunkX;
+   const unsigned offsetY = chunkSize * chunkY;
+   for (unsigned i = offsetX; i < offsetX + chunkSize; i++) {
+      for (unsigned j = offsetY; j < offsetY + chunkSize; j++) {
+         resultMatrix[i][j] = noise2D(i, j, chunkX, chunkY, permutationTable);
+      }
+   }
 }
 
 //------- General Functions -------
 
 /// @author DB
-/// @brief Computes the dot product of two vectors. 
+/// @brief Computes the dot product of two vectors.
 /// @param u, v
 /// @return result
 /// @note Vectors should have the same length. The length doesn't have to be known beforehand.
 double dot(std::vector<double> u, std::vector<double> v) {
-   //Define the macro for assert
-   #define ASSERT(condition, message) \
-      do { \
-         assert(condition && #message); \
-      } while (0)
+//Define the macro for assert
+#define ASSERT(condition, message)  \
+   do {                             \
+      assert(condition&& #message); \
+   } while (0)
    ASSERT(u.size() == v.size(), "Vectors must have the same length");
 
-    double result = 0;
-    for (int i = 0; i < u.size(); i++) {
-        result += u[i] * v[i];
-    }
-    return result;
+   double result = 0;
+   for (int i = 0; i < u.size(); i++) {
+      result += u[i] * v[i];
+   }
+   return result;
 }
 
 /// @author DB
-/// @brief Permutes (shuffles) the input vector using the given seed. 
+/// @brief Permutes (shuffles) the input vector using the given seed.
 /// @param arr, seed
 /// @note Could also be implemented to instead return a copy and not modify the original vector
 /// @note Should be used to permute 0 to 255 values for the Perlin noise algorithm
-void shuffleArray(std::vector<int>& arr, const unsigned seed) {
-    // Create a random number generator with the given seed
-    std::default_random_engine rng(seed);
+void shuffleArray(std::vector<unsigned>& arr, const unsigned seed) {
+   // Create a random number generator with the given seed
+   std::default_random_engine rng(seed);
 
-    // Shuffle the array
-    std::shuffle(arr.begin(), arr.end(), rng);
+   // Shuffle the array
+   std::shuffle(arr.begin(), arr.end(), rng);
 }
 
 /// @author DB
-/// @brief Generates a permutation table for the Perlin noise algorithm for the given grid size (default 256). 
+/// @brief Generates a permutation table for the Perlin noise algorithm for the given grid size (default 256).
 /// @param seed, gridSize
 /// @return permutationTable
 /// @note The grid size could be adjusted, but 256 is a common choice
-std::vector<int> generatePermutationTable(const unsigned seed, const unsigned gridSize) {
-    std::vector<int> permutationTable(gridSize);
-    for (unsigned i = 0; i < gridSize; i++) {
-        permutationTable[i] = i;
-    }
-    shuffleArray(permutationTable, seed);
-    return permutationTable;
+std::vector<unsigned> generatePermutationTable(const unsigned seed, const unsigned gridSize) {
+   std::vector<unsigned> permutationTable(gridSize);
+   for (unsigned i = 0; i < gridSize; i++) {
+      permutationTable[i] = i;
+   }
+   shuffleArray(permutationTable, seed);
+   return permutationTable;
 }
 
 /// @author DB
-/// @brief A smoothing interpolation function for the Perlin noise algorithm. 
+/// @brief A smoothing interpolation function for the Perlin noise algorithm.
 /// @param t
 /// @return smoothed value
 /// @note On [0,1] the function is growing and takes values from 0 to 1
 /// @note The derivatives on the edges are 0, so the function makes for a smooth transition
 double fade(const double t) {
-    return t * t * t * (t * (t * 6 - 15) + 10);
+   return t * t * t * (t * (t * 6 - 15) + 10);
 }
 
 /// @author DB
@@ -84,17 +145,17 @@ double fade(const double t) {
 /// @param a, b, t
 /// @return the t fraction between the values a and b
 double lerp(const double a, const double b, const double t) {
-    return a + t * (b - a);
+   return a + t * (b - a);
 }
 
 //------- 2D Functions -------
 
 /// @author DB
-/// @brief Returnes a constant 2D vector based on the given value from the permutation table. 
+/// @brief Returnes a constant 2D vector based on the given value from the permutation table.
 /// @param v
 /// @return 2D vector
 /// @note The choice of the constant vectors to be returned is arbitrary and could be changed later on - or a grid of constant vectors could instead be computed and used
-std::vector<double> getConstVector2D(const unsigned v){
+std::vector<double> getConstVector2D(const unsigned v) {
    // v is the value from the permutation table
    unsigned mod = v % 4;
    switch (mod) {
@@ -112,27 +173,28 @@ std::vector<double> getConstVector2D(const unsigned v){
 }
 
 /// @author DB
-/// @brief For given coordinates (x,y) returns the value from the permutation table. 
+/// @brief For given coordinates (x,y) returns the value from the permutation table.
 /// @param x, y, permutationTable
 /// @return An integer from 0 to gridSize-1
 /// @note Can be computed in a different way, for example without the last permutation or by hashing
-int permutationValue2D(const int x, const int y, const std::vector<int>& permutationTable){
+int permutationValue2D(const int x, const int y, const std::vector<int>& permutationTable) {
    const unsigned gridSize = permutationTable.size();
-   return permutationTable[(permutationTable[x % gridSize] + y) % gridSize];
+   auto index = permutationTable[(permutationTable[x % gridSize] + y) % gridSize];
+   std::cout << "Index: " << index << " : " << x % gridSize << std::endl;
+   return index;
 }
 
 /// @author DB
-/// @brief Returnes the Perlin noise value for the given 2D coordinates. 
+/// @brief Returnes the Perlin noise value for the given 2D coordinates.
 /// @param x, y, permutationTable
 /// @return Noise value (double in the range [-1,1])
 /// @note
 double Noise2D(const double x, const double y, const std::vector<int>& permutationTable) {
-
    const unsigned gridSize = permutationTable.size();
 
    // Find the unit square that the point lies in (bottom left corner)
-   int X = (int)floor(x) % gridSize;
-   int Y = (int)floor(y) % gridSize;
+   int X = (int) floor(x) % gridSize;
+   int Y = (int) floor(y) % gridSize;
 
    // Find the fractional coordinates of the point within the square
    double dx = x - floor(x);
@@ -162,17 +224,17 @@ double Noise2D(const double x, const double y, const std::vector<int>& permutati
    double v = fade(dy);
 
    // Interpolate the 4 results
-   return(lerp(lerp(dotBL, dotBR, u), lerp(dotTL, dotTR, u), v));
+   return (lerp(lerp(dotBL, dotBR, u), lerp(dotTL, dotTR, u), v));
 }
 
 //------- 3D Functions -------
 
 /// @author DB
-/// @brief Returnes a constant 3D vector based on the given value from the permutation table. 
+/// @brief Returnes a constant 3D vector based on the given value from the permutation table.
 /// @param v
 /// @return 3D vector
 /// @note The choice of the constant vectors to be returned is arbitrary and could be changed later on - or a grid of constant vectors could instead be computed and used
-std::vector<double> getConstVector3D(const unsigned v){
+std::vector<double> getConstVector3D(const unsigned v) {
    // v is the value from the permutation table
    unsigned mod = v % 8;
    switch (mod) {
@@ -198,28 +260,27 @@ std::vector<double> getConstVector3D(const unsigned v){
 }
 
 /// @author DB
-/// @brief For given coordinates (x,y,z) returns the value from the permutation table. 
+/// @brief For given coordinates (x,y,z) returns the value from the permutation table.
 /// @param x, y, z, permutationTable
 /// @return An integer from 0 to gridSize-1
 /// @note Can be computed in a different way, for example without the last permutation or by hashing
-int permutationValue3D(const int x, const int y, const int z, const std::vector<int>& permutationTable){
+int permutationValue3D(const int x, const int y, const int z, const std::vector<int>& permutationTable) {
    const unsigned gridSize = permutationTable.size();
    return permutationTable[(permutationTable[(permutationTable[x % gridSize] + y) % gridSize] + z) % gridSize];
 }
 
 /// @author DB
-/// @brief Returnes the Perlin noise value for the given 3D coordinates. 
+/// @brief Returnes the Perlin noise value for the given 3D coordinates.
 /// @param x, y, z, permutationTable
 /// @return Noise value (double in the range [-1,1])
 /// @note
 double Noise3D(const double x, const double y, const double z, const std::vector<int>& permutationTable) {
-
    const unsigned gridSize = permutationTable.size();
 
    // Find the unit cube that the point lies in (bottom left front corner)
-   int X = (int)floor(x) % gridSize;
-   int Y = (int)floor(y) % gridSize;
-   int Z = (int)floor(z) % gridSize;
+   int X = (int) floor(x) % gridSize;
+   int Y = (int) floor(y) % gridSize;
+   int Z = (int) floor(z) % gridSize;
 
    // Find the fractional coordinates of the point within the cube
    double dx = x - floor(x);
@@ -269,6 +330,16 @@ double Noise3D(const double x, const double y, const double z, const std::vector
    double d = lerp(dotTLB, dotTRB, u);
    double e = lerp(a, b, v);
    double f = lerp(c, d, v);
-   return(lerp(e, f, w));
+   return (lerp(e, f, w));
 }
+
+void printMatrix(const matrix& matrix) {
+   for (const auto& row : matrix) {
+      for (const auto& value : row) {
+         std::cout << std::fixed << std::setprecision(2) << value << " ";
+      }
+      std::cout << std::endl;
+   }
+}
+
 }
