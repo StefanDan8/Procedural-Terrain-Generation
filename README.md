@@ -4,7 +4,7 @@ Team members:
 
 - Stefan Dan [stefan.dan@tum.de](mailto:stefan.dan@tum.de)
 - Dominik Bereżański [ge63nem@mytum.de](mailto:ge63nem@mytum.de)
-- 
+- Pawel Kedzia [pawel.kedzia@tum.de](mailto:pawel.kedzia@tum.de)
 
 ## Build
 

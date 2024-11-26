@@ -60,7 +60,7 @@ void shuffleArray(std::vector<int>& arr, const unsigned seed) {
 /// @param seed, gridSize
 /// @return permutationTable
 /// @note The grid size could be adjusted, but 256 is a common choice
-std::vector<int> generatePermutationTable(const unsigned seed, const unsigned gridSize = 256) {
+std::vector<int> generatePermutationTable(const unsigned seed, const unsigned gridSize) {
     std::vector<int> permutationTable(gridSize);
     for (unsigned i = 0; i < gridSize; i++) {
         permutationTable[i] = i;

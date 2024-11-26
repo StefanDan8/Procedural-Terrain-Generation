@@ -60,7 +60,7 @@ Instead, we use a fixed size array of gradients.
 Say that we have a 256x256x256 grid. We then have a table of gradients of size 256 and we reuse them.
 For a point (x,y,z), we get the corresponding corners in the grid. Each corner is hashed to a value between 0 and 255.
 In the original table this is where the permutation table plays a role. I guess any hash function will work, so that 
-we don't need this table. However, it might be useful for effiency/ reproductibility.
+we don't need this table. However, it mightbe useful for effiency/ reproductibility.
 
 6. Apply this function to each point in space -> we can do this in parallel to speed up the process.
 7. In case of 2D, we can generate a PNG from the resulting array
