@@ -10,7 +10,8 @@
 #include <vector>
 namespace render {
 
-void ppm(const std::vector<double>& noise, const unsigned width, const unsigned height, const std::string& filename = "output.ppm");
+void create_ppm(const std::vector<std::vector<int>>& noise, const std::string& filename = "output.ppm");
+void create_png(const std::vector<std::vector<int>>& noise, const std::string& filename = "output.png");
 
 /// @author SD
 /// @brief Normalize a matrix of doubles to integers in the range [0, 255]

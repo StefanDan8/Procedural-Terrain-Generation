@@ -3,6 +3,7 @@
 #include <cmath>
 #include <fstream>
 #include <stdexcept>
+#include "lodepng/lodepng.h"
 
 // -----------------------------------------------------------------------------
 /* The goal here is to render the results from the Perlin noise generator.
@@ -11,19 +12,23 @@
  */
 namespace render {
 
-void ppm(const std::vector<double>& noise, const unsigned width, const unsigned height, const std::string& filename) {
+void create_ppm(const std::vector<std::vector<int>>& noise, const std::string& filename) {
    // Check vector size is correct size
-   if (noise.size() != width * height) {
-      throw std::invalid_argument("Noise vector size does not match width and height");
+   int width = noise.size();
+   int height = noise[0].size();
+   if (width < 1 || height < 1) {
+      throw std::invalid_argument("Width and height must be greater than 0");
    }
+
    // Check filename provided ends in .ppm
    int len = filename.length();
    if (filename.substr(len - 4) != ".ppm") {
-      throw std::invalid_argument("Filename must end in .ppm");
+      throw std::invalid_argument("Filename provided must end in .ppm");
    }
+   std::string fullPath = "../output/" + filename;
 
    // Open stream to file
-   std::ofstream file(filename);
+   std::ofstream file(fullPath);
    if (!file.is_open()) {
       throw std::runtime_error("Could not open file");
    }
@@ -32,16 +37,44 @@ void ppm(const std::vector<double>& noise, const unsigned width, const unsigned 
    file << "P3 " << width << " " << height << " 255\n";
 
    // Write file content
-   for (unsigned i = 0; i < height; ++i) {
-      for (unsigned j = 0; j < width; ++j) {
-         auto index = i * width + j; // 2D to 1D index
-         int value = (int) std::round((noise[index] + 1.0) * 127.5); // Scale noise to [0, 255]
+   for (unsigned x = 0; x < width; x++) {
+      for (unsigned y = 0; y < height; y++) {
+         int value = noise[x][y]; // (int) std::round((noise[index] + 1.0) * 127.5); // Scale noise to [0, 255]
          file << value << " " << value << " " << value << " ";
       }
-      file << "\n";
    }
 
    file.close();
+}
+
+void create_png(const std::vector<std::vector<int>>& noise, const std::string& filename) {
+   // Check filename provided ends in .png
+   int len = filename.length();
+   if (filename.substr(len - 4) != ".png") {
+      throw std::invalid_argument("Filename provided must end in .png");
+   }
+   std::string fullPath = "../output/" + filename;
+
+   std::vector<unsigned char> image; // Create image vector to store "pixels"
+   int width = noise.size();
+   int height = noise[0].size();
+   image.resize(width * height * 4); // Resize image vector to store RGBA values
+
+   for (unsigned x = 0; x < width; x++) {
+      for (unsigned y = 0; y < height; y++) {
+         image[4 * width * y + 4 * x + 0] = noise[x][y] * !(x & y);
+         image[4 * width * y + 4 * x + 1] = x ^ y;
+         image[4 * width * y + 4 * x + 2] = x | y;
+         image[4 * width * y + 4 * x + 3] = 255;
+      }
+   }
+
+   // Write image to file
+   unsigned error = lodepng::encode(fullPath, image, width, height);
+   if (!error) lodepng::save_file(image, fullPath);
+
+   //if there's an error, display it
+   if(error) std::cout << "encoder error " << error << ": "<< lodepng_error_text(error) << std::endl;
 }
 
 std::vector<std::vector<int>> normalizeMatrix(const std::vector<std::vector<double>>& matrix) {
