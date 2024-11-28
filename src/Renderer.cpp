@@ -56,22 +56,23 @@ void create_png(const std::vector<std::vector<int>>& noise, const std::string& f
    std::string fullPath = "../output/" + filename;
 
    std::vector<unsigned char> image; // Create image vector to store "pixels"
-   int width = noise.size();
-   int height = noise[0].size();
+   unsigned width = noise.size(), height = noise[0].size();
    image.resize(width * height * 4); // Resize image vector to store RGBA values
 
    for (unsigned x = 0; x < width; x++) {
       for (unsigned y = 0; y < height; y++) {
-         image[4 * width * y + 4 * x + 0] = noise[x][y] * !(x & y);
-         image[4 * width * y + 4 * x + 1] = x ^ y;
-         image[4 * width * y + 4 * x + 2] = x | y;
+         image[4 * width * y + 4 * x + 0] = noise[x][y];
+         image[4 * width * y + 4 * x + 1] = noise[x][y];
+         image[4 * width * y + 4 * x + 2] = noise[x][y];
          image[4 * width * y + 4 * x + 3] = 255;
       }
    }
 
+   std::vector<unsigned char> png;
+
    // Write image to file
-   unsigned error = lodepng::encode(fullPath, image, width, height);
-   if (!error) lodepng::save_file(image, fullPath);
+   unsigned error = lodepng::encode(png, image, width, height);
+   if (!error) lodepng::save_file(png, fullPath);
 
    //if there's an error, display it
    if(error) std::cout << "encoder error " << error << ": "<< lodepng_error_text(error) << std::endl;
