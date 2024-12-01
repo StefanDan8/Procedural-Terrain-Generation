@@ -5,13 +5,7 @@
 #include <stdexcept>
 #include "lodepng/lodepng.h"
 
-// -----------------------------------------------------------------------------
-/* The goal here is to render the results from the Perlin noise generator.
-   To do so, we will first write to a NetPBM file, and then use something to convert it into a .png file.
-   For now, we will only render a 2D image.
- */
 namespace render {
-
 void create_ppm(const std::vector<std::vector<int>>& noise, const std::string& filename) {
    // Check vector size is correct size
    int width = noise.size();

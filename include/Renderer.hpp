@@ -1,16 +1,33 @@
 #include <string>
 #include <vector>
-
-#ifndef RENDER_H
-#define RENDER_H
 #include <algorithm>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <vector>
-namespace render {
 
+#ifndef RENDER_H
+#define RENDER_H
+
+// Collection of functions related to rendering (or exporting) noise
+namespace render {
+/**
+* @author PK
+* @brief Create a NetPBM file (.ppm) with the provided noise.
+* @param noise Normalized noise to generate image from.
+* @param filename Filename (and path) to save to, filename must end in .ppm. Defaults to "output.ppm"
+* @note Provided noise SHOULD be normalized first, else this procedure may fail.
+*/
 void create_ppm(const std::vector<std::vector<int>>& noise, const std::string& filename = "output.ppm");
+
+/**
+* @author PK
+* @brief Creates a Portable Network Graphic file (.png) with the provided noise.
+* @param noise Normalized noise to generate image from.
+* @param filename Filename (and path) to save to, filename must end in .png. Defaults to "output.png"
+* @note Provided noise SHOULD be normalized first, else this procedure may fail.
+* @pre lodepng.h must be included.
+*/
 void create_png(const std::vector<std::vector<int>>& noise, const std::string& filename = "output.png");
 
 /// @author SD
@@ -25,4 +42,5 @@ std::vector<std::vector<int>> normalizeMatrix(const std::vector<std::vector<doub
 /// @param filename name of the file
 void writeMatrixToFile(const std::vector<std::vector<int>>& matrix, const std::string& filename);
 }
+
 #endif
