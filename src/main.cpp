@@ -5,25 +5,26 @@
 #include <atomic>
 #include <iostream>
 
-int main(int argc, char* argv[]) {
+int main() {
    const bool useCustomValues = gui::use_custom();
    const gui::parameters params = useCustomValues ? gui::get_custom_parameters() : gui::get_default_parameters();
 
-   auto& [chunkSize, nChunksX, nChunksY] = params; // Structured binding, gets the values from the struct.
+   auto& [seed, chunkSize, nChunksX, nChunksY] = params; // Structured binding, gets the values from the struct.
 
    // I would rather have put this in the progress function, but I couldn't get it to work.
    // This small section is responsible for initializing the progress "bar".
    std::atomic<bool> done(false);
    std::thread progressThread = gui::progress(done);
 
+   perlin::UniformUnitGenerator randomG(seed);
    // Perlin noise generation
-   perlin::initialize2DGradients(chunkSize);
+   perlin::initialize2DGradients(chunkSize, randomG);
    perlin::matrix result(nChunksX * chunkSize, std::vector<double>(nChunksY * chunkSize, 0.0));
 
-   const std::vector<unsigned> permutationTable = perlin::generatePermutationTable(42, chunkSize);
+   const std::vector<unsigned> permutationTable = perlin::generatePermutationTable(seed, chunkSize);
    for (unsigned i = 0; i < nChunksX; i++) {
       for (unsigned j = 0; j < nChunksY; j++) {
-         perlin::fill2DChunk(result, i, j, permutationTable);
+         perlin::fill2DChunk(result, chunkSize, i, j, permutationTable);
       }
    }
 
@@ -44,6 +45,9 @@ int main(int argc, char* argv[]) {
          break;
       case gui::output_type::PNG:
          render::create_png(render::normalizeMatrix(result), outputFileName);
+         break;
+      case gui::output_type::OBJ:
+         render::createPolyMesh(result, 10, 10, outputFileName);
          break;
    }
 

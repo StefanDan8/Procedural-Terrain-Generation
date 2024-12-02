@@ -1,9 +1,11 @@
 #include "Renderer.hpp"
 
+#include "lodepng/lodepng.h"
 #include <cmath>
 #include <fstream>
 #include <stdexcept>
-#include "lodepng/lodepng.h"
+
+#include "PerlinAlgorithm.hpp"
 
 namespace render {
 void create_ppm(const std::vector<std::vector<int>>& noise, const std::string& filename) {
@@ -69,7 +71,7 @@ void create_png(const std::vector<std::vector<int>>& noise, const std::string& f
    if (!error) lodepng::save_file(png, fullPath);
 
    //if there's an error, display it
-   if(error) std::cout << "encoder error " << error << ": "<< lodepng_error_text(error) << std::endl;
+   if (error) std::cout << "encoder error " << error << ": " << lodepng_error_text(error) << std::endl;
 }
 
 std::vector<std::vector<int>> normalizeMatrix(const std::vector<std::vector<double>>& matrix) {
@@ -118,4 +120,60 @@ void writeMatrixToFile(const std::vector<std::vector<int>>& matrix, const std::s
    std::cout << "Matrix written to " << fullPath << std::endl;
 }
 
+void createPolyMesh(const perlin::matrix& matrix, unsigned width, unsigned height, const std::string& filename) {
+   unsigned numX = matrix.size() - 1;
+   unsigned numY = matrix[0].size() - 1;
+   unsigned numVertices = (numX + 1) * (numY + 1);
+   std::vector<perlin::vec3d> vertices(numVertices);
+   std::vector<perlin::vec2d> textureCoord(numVertices);
+   std::vector<perlin::vec3d> normals(numVertices);
+   double invNumX = 1.0 / numX;
+   double invNumY = 1.0 / numY;
+
+   for (unsigned j = 0; j <= numY; ++j) {
+      for (unsigned i = 0; i <= numX; ++i) {
+         vertices[j * (numX + 1) + i] = perlin::vec3d{width * (i * invNumX - 0.5), matrix[i][j], height * (j * invNumY - 0.5)};
+         textureCoord[j * (numX + 1) + i] = perlin::vec2d{i * invNumX, j * invNumY};
+      }
+   }
+
+   unsigned numFaces = numX * numY;
+   std::vector<unsigned> faces(numFaces, 4);
+   std::vector<unsigned> verticesVector(numFaces * 4);
+   for (unsigned j = 0, k = 0; j < numY; ++j) {
+      for (unsigned i = 0; i < numX; ++i) {
+         verticesVector[k] = j * (numX + 1) + i;
+         verticesVector[k + 1] = j * (numX + 1) + i + 1;
+         verticesVector[k + 2] = (j + 1) * (numX + 1) + i + 1;
+         verticesVector[k + 3] = (j + 1) * (numX + 1) + i;
+         k += 4;
+      }
+   }
+
+   // export to .obj
+   std::ofstream ofs;
+   ofs.open("../output/" + filename, std::ios_base::out);
+   if (!ofs.is_open()) {
+      std::cerr << "Failed to open file. Ensure ../output exists and is writable." << std::endl;
+   }
+   for (unsigned i = 0; i < numVertices; ++i) {
+      ofs << "v " << vertices[i][0] << " " << vertices[i][1] << " " << vertices[i][2] << std::endl;
+   }
+   for (unsigned i = 0; i < numVertices; ++i) {
+      ofs << "vt " << textureCoord[i][0] << " " << textureCoord[i][1] << std::endl;
+   }
+   for (unsigned i = 0; i < numVertices; ++i) {
+      ofs << "vn " << normals[i][0] << " " << normals[i][1] << " " << normals[i][2] << std::endl;
+   }
+   for (unsigned i = 0, k = 0; i < numFaces; ++i) {
+      ofs << "f ";
+      for (unsigned j = 0; j < faces[i]; ++j) {
+         unsigned objIndex = verticesVector[k + j] + 1;
+         ofs << objIndex << "/" << objIndex << "/" << objIndex << ((j == (faces[i] - 1)) ? "" : " ");
+      }
+      ofs << std::endl;
+      k += faces[i];
+   }
+   ofs.close();
+}
 }

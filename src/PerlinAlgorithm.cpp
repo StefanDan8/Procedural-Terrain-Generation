@@ -28,22 +28,21 @@ double dot(vec3d& x, vec3d& y) {
    return x[0] * y[0] + x[1] * y[1] + x[2] * y[2];
 }
 
-void initialize2DGradients(const int chunkSize, UniformUnitGenerator& unif) {
-   gradients2D.reserve(chunkSize);
-   for (int i = 0; i < chunkSize; i++) {
+void initialize2DGradients(const int numGradients, UniformUnitGenerator& unif) {
+   gradients2D.clear();
+   gradients2D.reserve(numGradients);
+   for (int i = 0; i < numGradients; i++) {
       gradients2D.emplace_back(random2DGrad(unif));
    }
 }
 
 unsigned permutationValue2D(const unsigned chunkX, const unsigned chunkY, const std::vector<unsigned>& permutationTable) {
-   const unsigned gridSize = permutationTable.size();
-   auto index = permutationTable[(permutationTable[chunkX % gridSize] + chunkY) % gridSize];
+   const unsigned numGradients = permutationTable.size();
+   auto index = permutationTable[(permutationTable[chunkX % numGradients] + chunkY) % numGradients];
    return index;
 }
 
-double noise2D(const unsigned x, const unsigned y, const unsigned chunkX, const unsigned chunkY, const std::vector<unsigned>& permutationTable) {
-   const unsigned chunkSize = permutationTable.size(); // turn into global constant
-
+double noise2D(const unsigned x, const unsigned y, const unsigned chunkSize, const unsigned chunkX, const unsigned chunkY, const std::vector<unsigned>& permutationTable) {
    double dx = (x % chunkSize + 1) / (double) chunkSize;
    double dy = (y % chunkSize + 1) / (double) chunkSize;
 
@@ -70,15 +69,41 @@ double noise2D(const unsigned x, const unsigned y, const unsigned chunkX, const 
    return (lerp(lerp(dotBL, dotBR, u), lerp(dotTL, dotTR, u), v));
 }
 
-void fill2DChunk(matrix& resultMatrix, const unsigned chunkX, const unsigned chunkY, const std::vector<unsigned>& permutationTable) {
-   const unsigned chunkSize = permutationTable.size();
+void fill2DChunk(matrix& resultMatrix, const unsigned chunkSize, const unsigned chunkX, const unsigned chunkY, const std::vector<unsigned>& permutationTable) {
    const unsigned offsetX = chunkSize * chunkX;
    const unsigned offsetY = chunkSize * chunkY;
    for (unsigned i = offsetX; i < offsetX + chunkSize; i++) {
       for (unsigned j = offsetY; j < offsetY + chunkSize; j++) {
-         resultMatrix[i][j] = noise2D(i, j, chunkX, chunkY, permutationTable);
+         resultMatrix[i][j] = noise2D(i, j, chunkSize, chunkX, chunkY, permutationTable);
       }
    }
+}
+
+// very inefficient with all these iterations
+/// work in progress
+matrix stackNoise(std::vector<matrix>& matrices, std::vector<double>& weights) {
+   assert(matrices.size() == weights.size());
+   unsigned height = matrices.at(0).size();
+   unsigned width = matrices.at(0).at(0).size();
+   for (const auto& m : matrices) {
+      assert(m.size() == height);
+      assert(m.at(0).size() == width);
+   }
+   // double sum = 0.0;
+   // for (const auto& weight : weights) {
+   //    sum += weight;
+   // }
+   // assert(abs(sum - 1.0) <= 1e-10);
+
+   matrix result(height, std::vector<double>(width, 0.0));
+   for (unsigned w = 0; w < weights.size(); ++w) {
+      for (unsigned i = 0; i < height; ++i) {
+         for (unsigned j = 0; j < width; ++j) {
+            result[i][j] += weights[w] * matrices[w][i][j];
+         }
+      }
+   }
+   return result;
 }
 
 //------- General Functions -------
@@ -97,7 +122,7 @@ double dot(std::vector<double> u, std::vector<double> v) {
    ASSERT(u.size() == v.size(), "Vectors must have the same length");
 
    double result = 0;
-   for (int i = 0; i < u.size(); i++) {
+   for (unsigned i = 0; i < u.size(); i++) {
       result += u[i] * v[i];
    }
    return result;

@@ -7,16 +7,20 @@ namespace gui {
 * @brief Structure to hold the parameters for the Perlin noise generation.
 */
 struct parameters {
-  unsigned chunkSize;
-  unsigned nChunksX;
-  unsigned nChunksY;
+   unsigned seed;
+   unsigned chunkSize;
+   unsigned nChunksX;
+   unsigned nChunksY;
 };
 
 /**
 * @author PK
-* @brief Enum for the output type. (FILE, PPM, PNG)
+* @brief Enum for the output type. (FILE, PPM, PNG, OBJ)
 */
-enum output_type { FILE, PPM, PNG };
+enum output_type { FILE,
+                   PPM,
+                   PNG,
+                   OBJ };
 
 /**
 * @author PK
@@ -28,14 +32,14 @@ bool use_custom();
 /**
 * @author PK
 * @brief Asks the user for the custom parameters.
-* @returns parameters struct, containing chunkSize, nChunksX and nChunksY.
+* @returns parameters struct, containing seed, chunkSize, nChunksX and nChunksY.
 */
 parameters get_custom_parameters();
 
 /**
 * @author PK
 * @brief Returns the default parameters
-* @returns parameters struct, containing chunkSize (16), nChunksX (16) and nChunksY (16).
+* @returns parameters struct, containing seed (42), chunkSize (16), nChunksX (16) and nChunksY (16).
 */
 parameters get_default_parameters();
 
@@ -45,12 +49,12 @@ parameters get_default_parameters();
 * @param done Atomic boolean to stop the thread once true.
 * @returns The thread, .join() it to stop it.
 */
-std::thread progress(std::atomic<bool> &done);
+std::thread progress(std::atomic<bool>& done);
 
 /**
 * @author PK
 * @brief Asks the user for the output method.
-* @returns The output type (FILE, PPM, PNG)
+* @returns The output type (FILE, PPM, PNG, OBJ)
 */
 output_type get_output_method();
 

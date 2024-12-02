@@ -1,9 +1,8 @@
-#include <string>
-#include <vector>
 #include <algorithm>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <string>
 #include <vector>
 
 #ifndef RENDER_H
@@ -41,6 +40,14 @@ std::vector<std::vector<int>> normalizeMatrix(const std::vector<std::vector<doub
 /// @param matrix matrix to be written to file
 /// @param filename name of the file
 void writeMatrixToFile(const std::vector<std::vector<int>>& matrix, const std::string& filename);
-}
 
+/// @author SD
+/// @brief Transforms a matrix to a polygonal mesh with square faces, where each matrix element is a node, whose Z-coordinate in the mesh is its value
+/// @param matrix matrix to be written to file
+/// @param width width of the resulting mesh (X-coord)
+/// @param height height of the resulting mesh (Y-coord)
+/// @param filename name of the file where the result is saved
+void createPolyMesh(const std::vector<std::vector<double>>& matrix, unsigned width, unsigned height, const std::string& filename);
+
+}
 #endif
