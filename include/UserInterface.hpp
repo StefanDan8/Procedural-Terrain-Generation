@@ -1,13 +1,24 @@
-#include <string>
+#include <atomic>
+#include <thread>
 
 namespace gui {
-
 /**
 * @author PK
-* @brief Gets a positive number from the user, using stdin and stdout, performing checks to ensure the input is valid.
-* @param prompt Message to display to the user.
-* @return Number entered by the user.
+* @brief Structure to hold the parameters for the Perlin noise generation.
 */
-int get_positive_number(std::string prompt);
+struct parameters {
+  unsigned chunkSize;
+  unsigned nChunksX;
+  unsigned nChunksY;
+};
+
+enum output_type { FILE, PPM, PNG };
+
+bool use_custom();
+parameters get_custom_parameters();
+parameters get_default_parameters();
+std::thread progress(std::atomic<bool> &done);
+output_type get_output_method();
+std::string get_file_path();
 
 }
