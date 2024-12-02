@@ -112,6 +112,7 @@ std::thread progress(std::atomic<bool> &done) {
    std::cout << "Generating." << std::flush;
 
    return std::thread([&done]() {
+      // Anonymous function to run in the thread.
       while (!done) {
          std::cout << "." << std::flush;
          std::this_thread::sleep_for(std::chrono::seconds(1));
