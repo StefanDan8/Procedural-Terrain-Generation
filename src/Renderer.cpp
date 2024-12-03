@@ -10,14 +10,14 @@
 namespace render {
 void create_ppm(const std::vector<std::vector<int>>& noise, const std::string& filename) {
    // Check vector size is correct size
-   int width = noise.size();
-   int height = noise[0].size();
+   const unsigned width = noise.size();
+   const unsigned height = noise[0].size();
    if (width < 1 || height < 1) {
       throw std::invalid_argument("Width and height must be greater than 0");
    }
 
    // Check filename provided ends in .ppm
-   int len = filename.length();
+   const unsigned len = filename.length();
    if (filename.substr(len - 4) != ".ppm") {
       throw std::invalid_argument("Filename provided must end in .ppm");
    }
@@ -45,7 +45,7 @@ void create_ppm(const std::vector<std::vector<int>>& noise, const std::string& f
 
 void create_png(const std::vector<std::vector<int>>& noise, const std::string& filename) {
    // Check filename provided ends in .png
-   int len = filename.length();
+   unsigned len = filename.length();
    if (filename.substr(len - 4) != ".png") {
       throw std::invalid_argument("Filename provided must end in .png");
    }
