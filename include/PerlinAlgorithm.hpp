@@ -92,7 +92,7 @@ void printMatrix(const matrix& matrix);
 /// @param permutationTable the permutation table used to pick gradients
 unsigned permutationValue2D(const unsigned chunkX, const unsigned chunkY, const std::vector<unsigned>& permutationTable);
 
-/// work in progress
+/// work in  progress
 matrix stackNoise(std::vector<matrix>& matrices, std::vector<double>& weights);
 
 //------- General Functions -------

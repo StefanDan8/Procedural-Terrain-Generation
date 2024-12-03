@@ -1,8 +1,8 @@
-cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 
 #set(CMAKE_C_COMPILER gcc)
 set(CMAKE_CXX_COMPILER g++)
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 #project(group44 C CXX)
@@ -44,6 +44,10 @@ target_link_libraries(test_all perlin gtest gtest_main pthread)
 ### Main
 add_executable(main src/main.cpp)
 target_link_libraries(main perlin render gui lodepng)
+
+# ### Playground
+# add_executable(playground src/playground.cpp)
+# target_link_libraries(playground perlin render lodepng)
 
 
 
