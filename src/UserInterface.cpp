@@ -94,16 +94,16 @@ bool use_custom() {
 parameters get_custom_parameters() {
    parameters params = {0, 0, 0, 0};
 
-   std::cout << "Seed: " << params.seed << "Chunk Size: " << params.chunkSize << ", chunksX: " << params.nChunksX << ", chunksY: " << params.nChunksY << std::endl;
+   std::cout << "Seed: " << params.seed << ", Chunk Size: " << params.chunkSize << ", chunksX: " << params.nChunksX << ", chunksY: " << params.nChunksY << std::endl;
    params.seed = get_positive_number("Enter the seed: ");
 
-   std::cout << "Seed: " << params.seed << "Chunk Size: " << params.chunkSize << ", chunksX: " << params.nChunksX << ", chunksY: " << params.nChunksY << std::endl;
+   std::cout << "Seed: " << params.seed << ", Chunk Size: " << params.chunkSize << ", chunksX: " << params.nChunksX << ", chunksY: " << params.nChunksY << std::endl;
    params.chunkSize = get_positive_number("Enter the chunk size: ");
 
-   std::cout << "Seed: " << params.seed << "Chunk Size: " << params.chunkSize << ", chunksX: " << params.nChunksX << ", chunksY: " << params.nChunksY << std::endl;
+   std::cout << "Seed: " << params.seed << ", Chunk Size: " << params.chunkSize << ", chunksX: " << params.nChunksX << ", chunksY: " << params.nChunksY << std::endl;
    params.nChunksX = get_positive_number("Enter the number of chunks in the X direction: ");
 
-   std::cout << "Seed: " << params.seed << "Chunk Size: " << params.chunkSize << ", chunksX: " << params.nChunksX << ", chunksY: " << params.nChunksY << std::endl;
+   std::cout << "Seed: " << params.seed << ", Chunk Size: " << params.chunkSize << ", chunksX: " << params.nChunksX << ", chunksY: " << params.nChunksY << std::endl;
    params.nChunksY = get_positive_number("Enter the number of chunks in the Y direction: ");
 
    return params;
