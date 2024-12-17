@@ -1,7 +1,7 @@
 
 #ifndef _PERLIN_HPP
 #define _PERLIN_HPP
-
+#include "AppConfig.hpp"
 #include <array>
 #include <iomanip> // For std::fixed and std::setprecision
 #include <iostream>
@@ -9,21 +9,6 @@
 #include <vector>
 
 namespace perlin {
-
-/// @author SD
-/// @brief Random number generator for Unif[0.0, 1.0]
-class UniformUnitGenerator {
-   public:
-   UniformUnitGenerator(unsigned seed) : generator(seed), distribution(0.0, 1.0) {}
-
-   double get() {
-      return distribution(generator);
-   }
-
-   private:
-   std::mt19937 generator;
-   std::uniform_real_distribution<double> distribution;
-};
 
 /// @brief 2D normalized real vector
 using vec2d = std::array<double, 2>;
@@ -39,15 +24,20 @@ extern UniformUnitGenerator unifGlbl;
 /// @brief Gradients for 2D generation. Assumed to have length = chunkSize
 extern std::vector<vec2d> gradients2D;
 
+int simpleHash(int i, int j, int N);
+
+vec2d random2DGrad();
+vec3d random3DGrad();
+
 /// @author SD
 /// @brief Generates a random 2D normalized vector
 /// @param generator A random number generator for Unif[0,1]
-vec2d random2DGrad(UniformUnitGenerator& generator = unifGlbl);
+vec2d random2DGrad(UniformUnitGenerator& generator);
 
 /// @author SD
 /// @brief Generates a random 3D normalized vector
 /// @param generator A random number generator for Unif[0,1]
-vec3d random3DGrad(UniformUnitGenerator& generator = unifGlbl);
+vec3d random3DGrad(UniformUnitGenerator& generator);
 
 double dot(vec2d& x, vec2d& y);
 

@@ -12,7 +12,7 @@ include(lib/gtest.cmake)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -fPIC -Wall -Wextra -fno-omit-frame-pointer -march=native -Wno-unknown-pragmas")
 
-add_library(perlin src/PerlinAlgorithm.cpp)
+add_library(perlin src/PerlinAlgorithm.cpp src/PerlinOOP.cpp src/AppConfig.cpp)
 target_include_directories(perlin PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
@@ -45,9 +45,9 @@ target_link_libraries(test_all perlin gtest gtest_main pthread)
 add_executable(main src/main.cpp)
 target_link_libraries(main perlin render gui lodepng)
 
-# ### Playground
-# add_executable(playground src/playground.cpp)
-# target_link_libraries(playground perlin render lodepng)
+### Playground
+add_executable(playground src/playground.cpp)
+target_link_libraries(playground perlin render lodepng)
 
 
 

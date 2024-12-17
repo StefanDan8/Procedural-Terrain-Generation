@@ -1,4 +1,5 @@
 #include "PerlinAlgorithm.hpp"
+#include "AppConfig.hpp"
 #include <algorithm>
 #include <cassert>
 #include <cmath>
@@ -7,6 +8,18 @@
 namespace perlin {
 UniformUnitGenerator unifGlbl = UniformUnitGenerator(631);
 std::vector<vec2d> gradients2D;
+
+int simpleHash(int i, int j, int N) {
+   return (42043 * i + 15299 * j) % N;
+}
+
+vec2d random2DGrad() {
+   return random2DGrad(AppConfig::getInstance().getUnif());
+}
+
+vec3d random3DGrad() {
+   return random3DGrad(AppConfig::getInstance().getUnif());
+}
 
 vec2d random2DGrad(UniformUnitGenerator& unif) {
    auto theta = unif.get() * 2 * M_PI;
@@ -205,7 +218,6 @@ std::vector<double> getConstVector2D(const unsigned v) {
 int permutationValue2D(const int x, const int y, const std::vector<int>& permutationTable) {
    const unsigned gridSize = permutationTable.size();
    auto index = permutationTable[(permutationTable[x % gridSize] + y) % gridSize];
-   std::cout << "Index: " << index << " : " << x % gridSize << std::endl;
    return index;
 }
 
