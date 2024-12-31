@@ -6,3 +6,4 @@
 /bin/
 /cmake-build-*/
 compile_commands.json
+/output
