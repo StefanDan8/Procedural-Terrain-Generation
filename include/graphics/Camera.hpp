@@ -26,7 +26,7 @@ class Camera {
 
    bool firstClick = true;
 
-   float speed = 0.001f;
+   float speed = 0.01f;
    float sensitivity = 0.1f;
 
    void Matrix(Shader& shader, const char* uniform);

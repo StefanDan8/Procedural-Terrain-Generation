@@ -100,6 +100,45 @@ std::vector<std::vector<int>> normalizeMatrix(const std::vector<std::vector<doub
    return normalized;
 }
 
+std::vector<std::vector<double>> normalizePlusMinusOne(const std::vector<std::vector<double>>& matrix) {
+   size_t rows = matrix.size();
+   size_t cols = matrix[0].size();
+
+   // Find the minimum and maximum values in the matrix
+   double minVal = matrix[0][0];
+   double maxVal = matrix[0][0];
+   for (const auto& row : matrix) {
+      for (double value : row) {
+         minVal = std::min(minVal, value);
+         maxVal = std::max(maxVal, value);
+      }
+   }
+
+   // Normalize the matrix to [-1,1]
+   std::vector<std::vector<double>> normalized(rows, std::vector<double>(cols));
+   for (size_t i = 0; i < rows; ++i) {
+      for (size_t j = 0; j < cols; ++j) {
+         normalized[i][j] =
+            2.0f * (matrix[i][j] - minVal) / (maxVal - minVal) - 1.0f;
+      }
+   }
+   return normalized;
+}
+
+std::vector<std::vector<double>> normalizeUnit(const std::vector<std::vector<double>>& matrix) {
+   size_t rows = matrix.size();
+   size_t cols = matrix[0].size();
+
+   // Normalize the matrix to [-1,1]
+   std::vector<std::vector<double>> normalized(rows, std::vector<double>(cols));
+   for (size_t i = 0; i < rows; ++i) {
+      for (size_t j = 0; j < cols; ++j) {
+         normalized[i][j] = 2 * matrix[i][j] / (rows + cols);
+      }
+   }
+   return normalized;
+}
+
 std::vector<std::vector<int>> normalizeMatrixReLU(const std::vector<std::vector<double>>& matrix, int threshold) {
    size_t rows = matrix.size();
    size_t cols = matrix[0].size();

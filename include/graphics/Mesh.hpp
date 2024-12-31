@@ -20,6 +20,7 @@ class Mesh {
    void Draw(Shader& shader, Camera& camera);
 };
 
+void ComputeNormals(Mesh& mesh);
 void PrintMesh(const Mesh& mesh);
 
 #endif

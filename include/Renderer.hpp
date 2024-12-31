@@ -35,6 +35,10 @@ void create_png(const std::vector<std::vector<int>>& noise, const std::string& f
 /// @return a matrix of integers in range [0, 255]
 std::vector<std::vector<int>> normalizeMatrix(const std::vector<std::vector<double>>& matrix);
 
+std::vector<std::vector<double>> normalizePlusMinusOne(const std::vector<std::vector<double>>& matrix);
+
+std::vector<std::vector<double>> normalizeUnit(const std::vector<std::vector<double>>& matrix);
+
 /// @author SD
 /// @brief Normalize a matrix of doubles to integers in the range [threshold, 255]
 /// @param matrix

@@ -57,6 +57,10 @@ class AppConfig {
       return generator;
    }
 
+   void setGenerator(int seed) {
+      generator = UniformUnitGenerator(seed);
+   }
+
    private:
    UniformUnitGenerator generator;
    AppConfig(unsigned seed) : generator(seed) {}

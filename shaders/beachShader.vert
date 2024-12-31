@@ -15,16 +15,25 @@ out vec2 texCoord;
 
 uniform mat4 camMatrix;
 
+// Uniforms for height bounds
+uniform float oceanUpperBound;
+uniform float sandLowerBound;
+uniform float sandUpperBound;
+uniform float grassLowerBound;
+uniform float grassUpperBound;
+
 
 void main(){
     Normal = aNormal;
     // Determine color based on the height (aPos.y)
-    if (aPos.y >= -1.0 && aPos.y < 0.01) {
+    if (aPos.y >= -1.0 && aPos.y < oceanUpperBound) {
         // Ocean blue
         color = vec3(0.0, 0.3, 0.7); // Example blue
-    } else if (aPos.y >= 0.01 && aPos.y < 0.04) {
+    } else if (aPos.y >= sandLowerBound && aPos.y < sandUpperBound) {
         // Sand color
         color = vec3(0.9, 0.8, 0.6); // Example sand
+    } else if (aPos.y >= grassLowerBound && aPos.y < grassUpperBound && aNormal.y > 0.55){
+        color = vec3(0.24, 0.70, 0.44); // Example grass
     } else {
         // Rocky gray
         color = vec3(0.5, 0.5, 0.5); // Example gray

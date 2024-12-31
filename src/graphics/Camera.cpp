@@ -1,4 +1,5 @@
 #include "Camera.hpp"
+#include "imgui/include/imgui.h"
 
 void Camera::Matrix(Shader& shader, const char* uniform) {
    glUniformMatrix4fv(glGetUniformLocation(shader.ID, uniform), 1, GL_FALSE, glm::value_ptr(cameraMatrix));
@@ -32,16 +33,11 @@ void Camera::Inputs(GLFWwindow* window) {
    if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
       Position += speed * -Up;
    }
-   //    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
-   //       speed = 0.4f;
-   //    } else if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE) {
-   //       speed = 0.1f;
-   //    }
 
    // Handles mouse inputs
    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
-      // Hides mouse cursor
-      glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+      // // Hides mouse cursor
+      // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 
       // Prevents camera from jumping on the first click
       if (firstClick) {
@@ -54,6 +50,10 @@ void Camera::Inputs(GLFWwindow* window) {
       double mouseY;
       // Fetches the coordinates of the cursor
       glfwGetCursorPos(window, &mouseX, &mouseY);
+
+      if (mouseX < width / 3) {
+         return;
+      }
 
       // Normalizes and shifts the coordinates of the cursor such that they begin in the middle of the screen
       // and then "transforms" them into degrees
