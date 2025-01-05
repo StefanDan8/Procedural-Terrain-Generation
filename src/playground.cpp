@@ -57,6 +57,10 @@ void RenderImGui() {
    ImGui::End();
 }
 
+void Render2DImGui() {
+
+}
+
 Mesh generateMeshFromSeed(int seed) {
    perlin::AppConfig::getInstance().setGenerator(seed);
 

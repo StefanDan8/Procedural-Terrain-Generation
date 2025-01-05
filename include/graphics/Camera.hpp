@@ -9,8 +9,10 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtx/vector_angle.hpp>
-#include <GLFW/glfw3.h>
+
 #include <glad/glad.h>
+
+#include "glfw-3.4/include/GLFW/glfw3.h"
 
 class Camera {
    public:
