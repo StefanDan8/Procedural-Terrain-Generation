@@ -14,6 +14,15 @@ void Camera::updateMatrix(float FOVdeg, float nearPlane, float farPlane) {
 }
 // Make 2D camera?
 void Camera::Inputs(GLFWwindow* window) {
+   // Stores the coordinates of the cursor
+   double mouseX;
+   double mouseY;
+   // Fetches the coordinates of the cursor
+   glfwGetCursorPos(window, &mouseX, &mouseY);
+
+   if (mouseX < width / 3) {
+      return;
+   }
    // Handles key inputs
    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
       Position += speed * Orientation;
@@ -43,16 +52,6 @@ void Camera::Inputs(GLFWwindow* window) {
       if (firstClick) {
          glfwSetCursorPos(window, (width / 2), (height / 2));
          firstClick = false;
-      }
-
-      // Stores the coordinates of the cursor
-      double mouseX;
-      double mouseY;
-      // Fetches the coordinates of the cursor
-      glfwGetCursorPos(window, &mouseX, &mouseY);
-
-      if (mouseX < width / 3) {
-         return;
       }
 
       // Normalizes and shifts the coordinates of the cursor such that they begin in the middle of the screen

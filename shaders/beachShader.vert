@@ -15,12 +15,12 @@ out vec2 texCoord;
 
 uniform mat4 camMatrix;
 
-// Uniforms for height bounds
-uniform float oceanUpperBound;
-uniform float sandLowerBound;
-uniform float sandUpperBound;
-uniform float grassLowerBound;
-uniform float grassUpperBound;
+//--Uniforms for user
+uniform float oceanUpperBound; // 0.01
+uniform float sandLowerBound; //  0.01
+uniform float sandUpperBound; //  0.04
+uniform float grassLowerBound; // 0.04
+uniform float grassUpperBound; // 0.1
 
 
 void main(){

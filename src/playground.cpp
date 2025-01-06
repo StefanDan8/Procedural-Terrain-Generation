@@ -20,16 +20,17 @@
 
 bool is3Dmode = true;
 bool switchedRecently = false;
-std::string previousVertexShader = "beachShader.vert";
-std::string previousFragmentShader = "default.frag";
-
-std::string currentVertexShader = previousVertexShader;
-std::string currentFragmentShader = previousFragmentShader;
 
 std::vector<std::vector<std::string>> shaders = {
    {"2DShader.vert"}, //2D shaders
    {"beachShader.vert", "default.vert"} // 3D shaders
 };
+
+std::string previousVertexShader = shaders[is3Dmode][0];
+std::string previousFragmentShader = "default.frag";
+
+std::string currentVertexShader = previousVertexShader;
+std::string currentFragmentShader = previousFragmentShader;
 
 int framebufferWidth, framebufferHeight;
 
@@ -97,19 +98,35 @@ void shaderDropdown() {
       ImGui::EndCombo();
    }
 }
+void saveToFile() {
+   ImGui::Text("\n\nSave current object\n\n");
+   static char _user_save_path[256] = "";
+   ImGui::InputText("Name of file", _user_save_path, sizeof(_user_save_path));
+   if (ImGui::Button("Save current")) {
+      std::cout << "Saved to " << _user_save_path << ".\n";
+   }
+}
 
-void Render3DImGui() {
+void Render3DImGui(ShaderManager& manager) {
    ImGui::Begin("Controls", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
    RenderCommonImGui();
    ImGui::Text("\n3D Mode\n\n");
-   ImGui::SliderFloat("Ocean Upper Bound", &oceanUpperBound, -1.0f, 0.5f);
-   ImGui::SliderFloat("Sand Lower Bound", &sandLowerBound, -0.1f, 0.5f);
-   ImGui::SliderFloat("Sand Upper Bound", &sandUpperBound, -0.1f, 0.5f);
-   ImGui::SliderFloat("Grass Lower Bound", &grassLowerBound, -0.1f, 0.5f);
-   ImGui::SliderFloat("Grass Upper Bound", &grassUpperBound, -0.1f, 0.5f);
+
+   ImGui::Text("User shader parameters\n\n");
+   unsigned num = manager.getShader().userFloatUniforms.size();
+   for (unsigned i = 0; i < num; ++i) {
+      ImGui::SliderFloat(manager.getShader().userFloatUniforms[i].c_str(), &(manager.getShader().userFloatValues[i]), -1.0f, 1.0f);
+   }
+
+   // ImGui::SliderFloat("Ocean Upper Bound", &oceanUpperBound, -1.0f, 0.5f);
+   // ImGui::SliderFloat("Sand Lower Bound", &sandLowerBound, -0.1f, 0.5f);
+   // ImGui::SliderFloat("Sand Upper Bound", &sandUpperBound, -0.1f, 0.5f);
+   // ImGui::SliderFloat("Grass Lower Bound", &grassLowerBound, -0.1f, 0.5f);
+   // ImGui::SliderFloat("Grass Upper Bound", &grassUpperBound, -0.1f, 0.5f);
    ImGui::Text("Mesh Settings");
    ImGui::InputInt("Seed", &seed);
    shaderDropdown();
+   saveToFile();
    ImGui::End();
 }
 
@@ -124,6 +141,7 @@ void Render2DImGui() {
    ImGui::SliderInt("Number of Chunks (X axis)", &nChunksX, 0, 32);
    ImGui::SliderInt("Number of Chunks (Y axis)", &nChunksY, 0, 32);
    shaderDropdown();
+   saveToFile();
    ImGui::End();
 }
 
@@ -212,7 +230,7 @@ int main() {
       ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
 
       if (is3Dmode) {
-         Render3DImGui();
+         Render3DImGui(shaderManager);
       } else {
          Render2DImGui();
       }
@@ -231,13 +249,14 @@ int main() {
          std::cout << "Changed shader\n";
          shaderManager.SwitchShader(currentVertexShader, currentFragmentShader);
       }
-      if (is3Dmode) {
-         shaderManager.getShader().setUniforms(std::make_tuple("oceanUpperBound", oceanUpperBound),
-                                               std::make_tuple("sandLowerBound", sandLowerBound),
-                                               std::make_tuple("sandUpperBound", sandUpperBound),
-                                               std::make_tuple("grassLowerBound", grassLowerBound),
-                                               std::make_tuple("grassUpperBound", grassUpperBound));
-      }
+      // if (is3Dmode) {
+      //    shaderManager.getShader().setUniforms(std::make_tuple("oceanUpperBound", oceanUpperBound),
+      //                                          std::make_tuple("sandLowerBound", sandLowerBound),
+      //                                          std::make_tuple("sandUpperBound", sandUpperBound),
+      //                                          std::make_tuple("grassLowerBound", grassLowerBound),
+      //                                          std::make_tuple("grassUpperBound", grassUpperBound));
+      // }
+      shaderManager.getShader().setUniforms();
 
       // glUniform1f(glGetUniformLocation(shaderProgram.ID, "oceanUpperBound"), oceanUpperBound);
       // glUniform1f(glGetUniformLocation(shaderProgram.ID, "sandLowerBound"), sandLowerBound);

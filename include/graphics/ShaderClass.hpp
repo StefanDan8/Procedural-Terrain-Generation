@@ -4,23 +4,32 @@
 #include <cerrno>
 #include <fstream>
 #include <iostream>
+#include <regex>
 #include <sstream>
 #include <string>
+#include <vector>
 #include <glad/glad.h>
 
+std::vector<std::string> parse_uniform_float_names(const std::string& contents);
+void parse_uniform_float_names_and_values(const std::string& contents,
+                                          std::vector<std::string>& uniformNames,
+                                          std::vector<float>& uniformValues);
 std::string get_file_contents(std::string filename);
 
 class Shader {
    public:
    GLuint ID;
+   std::vector<std::string> userFloatUniforms;
+   std::vector<float> userFloatValues;
    Shader(std::string vertexFile, std::string fragmentFile);
 
    void processUniform(const GLchar* name, float value);
 
-   template <typename... Args>
-   void setUniforms(const Args&... args) {
-      (processUniform(std::get<0>(args), std::get<1>(args)), ...);
-   }
+   // template <typename... Args>
+   // void setUniforms(const Args&... args) {
+   //    (processUniform(std::get<0>(args), std::get<1>(args)), ...);
+   // }
+   void setUniforms();
 
    void Activate();
    void Delete();
