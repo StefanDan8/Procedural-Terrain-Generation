@@ -35,12 +35,19 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
    framebufferHeight = height;
 }
 
+// 3D Specific
 float oceanUpperBound = 0.01f;
 float sandLowerBound = 0.01f;
 float sandUpperBound = 0.04f;
 float grassLowerBound = 0.04f;
 float grassUpperBound = 0.1f;
 
+// 2D Specific
+int chunkSize = 16;
+int nChunksX = 16;
+int nChunksY = 16;
+
+// General
 int previousSeed = 42;
 int seed = previousSeed;
 
@@ -58,7 +65,16 @@ void RenderImGui() {
 }
 
 void Render2DImGui() {
+   ImGui::Begin("Controls", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
 
+   ImGui::Text("Mesh Settings");
+   ImGui::InputInt("Seed", &seed);
+
+   ImGui::SliderInt("Chunk Size", &chunkSize, 0, 32);
+   ImGui::SliderInt("Number of Chunks (X axis)", &nChunksX, 0, 32);
+   ImGui::SliderInt("Number of Chunks (Y axis)", &nChunksY, 0, 32);
+
+   ImGui::End();
 }
 
 Mesh generateMeshFromSeed(int seed) {
@@ -122,7 +138,7 @@ int main() {
    ImGui_ImplOpenGL3_Init("#version 330");
    ImGui::StyleColorsDark();
 
-   Shader shaderProgram("beachShader.vert", "default.frag");
+   Shader shaderProgram("2DShader.vert", "default.frag");
 
    // Mesh myMesh(normalized);
    Mesh myMesh = generateMeshFromSeed(42);

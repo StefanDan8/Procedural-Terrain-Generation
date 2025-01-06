@@ -12,7 +12,7 @@ void Camera::updateMatrix(float FOVdeg, float nearPlane, float farPlane) {
    projection = glm::perspective(glm::radians(FOVdeg), (float) (width / height), nearPlane, farPlane);
    cameraMatrix = projection * view;
 }
-
+// Make 2D camera?
 void Camera::Inputs(GLFWwindow* window) {
    // Handles key inputs
    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
