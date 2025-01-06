@@ -15,6 +15,13 @@ class Shader {
    GLuint ID;
    Shader(std::string vertexFile, std::string fragmentFile);
 
+   void processUniform(const GLchar* name, float value);
+
+   template <typename... Args>
+   void setUniforms(const Args&... args) {
+      (processUniform(std::get<0>(args), std::get<1>(args)), ...);
+   }
+
    void Activate();
    void Delete();
 };

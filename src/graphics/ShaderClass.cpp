@@ -38,6 +38,11 @@ Shader::Shader(std::string vertexFile, std::string fragmentFile) {
    glDeleteShader(fragmentShader);
 }
 
+void Shader::processUniform(const GLchar* name, float value) {
+   Activate();
+   glUniform1f(glGetUniformLocation(ID, name), value);
+}
+
 void Shader::Activate() {
    glUseProgram(ID);
 }

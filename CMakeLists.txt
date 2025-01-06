@@ -56,7 +56,13 @@ $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 $<INSTALL_INTERFACE:include>
 PRIVATE include/lodepng)
 
-add_library(shaders src/graphics/ShaderClass.cpp src/graphics/EBO.cpp src/graphics/VAO.cpp src/graphics/VBO.cpp src/graphics/Camera.cpp src/graphics/Mesh.cpp)
+add_library(shaders src/graphics/ShaderClass.cpp
+                    src/graphics/EBO.cpp 
+                    src/graphics/VAO.cpp 
+                    src/graphics/VBO.cpp 
+                    src/graphics/Camera.cpp
+                    src/graphics/Mesh.cpp
+                    src/graphics/ShaderManager.cpp)
 target_include_directories(shaders PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/graphics)
 target_link_libraries(shaders glad)
 

@@ -16,6 +16,20 @@
 #include "UserInterface.hpp"
 
 #include "Mesh.hpp"
+#include "ShaderManager.hpp"
+
+bool is3Dmode = true;
+bool switchedRecently = false;
+std::string previousVertexShader = "beachShader.vert";
+std::string previousFragmentShader = "default.frag";
+
+std::string currentVertexShader = previousVertexShader;
+std::string currentFragmentShader = previousFragmentShader;
+
+std::vector<std::vector<std::string>> shaders = {
+   {"2DShader.vert"}, //2D shaders
+   {"beachShader.vert", "default.vert"} // 3D shaders
+};
 
 int framebufferWidth, framebufferHeight;
 
@@ -51,9 +65,43 @@ int nChunksY = 16;
 int previousSeed = 42;
 int seed = previousSeed;
 
-void RenderImGui() {
-   ImGui::Begin("Controls", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
+void RenderCommonImGui() {
+   ImGui::Text("Pick display mode:");
 
+   if (ImGui::Button("2D Mode")) {
+      is3Dmode = false;
+      switchedRecently = true;
+   }
+   ImGui::SameLine();
+   if (ImGui::Button("3D Mode")) {
+      is3Dmode = true;
+      switchedRecently = true;
+   }
+}
+void shaderDropdown() {
+   static unsigned currentItem = 0; // Index of the currently selected item
+   //std::vector<std::string> items = {"Option 1", "Option 2", "Option 3", "Option 4"};
+
+   if (ImGui::BeginCombo("Select a Shader", shaders[is3Dmode][currentItem].c_str())) {
+      for (unsigned i = 0; i < shaders[is3Dmode].size(); i++) {
+         bool isSelected = (currentItem == i);
+         if (ImGui::Selectable(shaders[is3Dmode][i].c_str(), isSelected)) {
+            currentItem = i; // Update selected item index
+            currentVertexShader = shaders[is3Dmode][i];
+         }
+         // Set the initial focus when opening the combo (scrolling to current item)
+         if (isSelected) {
+            ImGui::SetItemDefaultFocus();
+         }
+      }
+      ImGui::EndCombo();
+   }
+}
+
+void Render3DImGui() {
+   ImGui::Begin("Controls", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
+   RenderCommonImGui();
+   ImGui::Text("\n3D Mode\n\n");
    ImGui::SliderFloat("Ocean Upper Bound", &oceanUpperBound, -1.0f, 0.5f);
    ImGui::SliderFloat("Sand Lower Bound", &sandLowerBound, -0.1f, 0.5f);
    ImGui::SliderFloat("Sand Upper Bound", &sandUpperBound, -0.1f, 0.5f);
@@ -61,19 +109,21 @@ void RenderImGui() {
    ImGui::SliderFloat("Grass Upper Bound", &grassUpperBound, -0.1f, 0.5f);
    ImGui::Text("Mesh Settings");
    ImGui::InputInt("Seed", &seed);
+   shaderDropdown();
    ImGui::End();
 }
 
 void Render2DImGui() {
    ImGui::Begin("Controls", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
-
+   RenderCommonImGui();
+   ImGui::Text("\n2D Mode\n\n");
    ImGui::Text("Mesh Settings");
    ImGui::InputInt("Seed", &seed);
 
    ImGui::SliderInt("Chunk Size", &chunkSize, 0, 32);
    ImGui::SliderInt("Number of Chunks (X axis)", &nChunksX, 0, 32);
    ImGui::SliderInt("Number of Chunks (Y axis)", &nChunksY, 0, 32);
-
+   shaderDropdown();
    ImGui::End();
 }
 
@@ -138,7 +188,10 @@ int main() {
    ImGui_ImplOpenGL3_Init("#version 330");
    ImGui::StyleColorsDark();
 
-   Shader shaderProgram("2DShader.vert", "default.frag");
+   // //Shader shaderProgram("beachShader.vert", "default.frag");
+   // Shader shaderProgram("2DShader.vert", "default.frag");
+   // shaderProgram.Activate();
+   ShaderManager shaderManager(previousVertexShader, previousFragmentShader);
 
    // Mesh myMesh(normalized);
    Mesh myMesh = generateMeshFromSeed(42);
@@ -158,16 +211,39 @@ int main() {
       ImGui::SetNextWindowSize(ImVec2(IMGUI_WIDTH, framebufferHeight), ImGuiCond_Always);
       ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
 
-      RenderImGui();
+      if (is3Dmode) {
+         Render3DImGui();
+      } else {
+         Render2DImGui();
+      }
+
       glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-      shaderProgram.Activate();
 
-      glUniform1f(glGetUniformLocation(shaderProgram.ID, "oceanUpperBound"), oceanUpperBound);
-      glUniform1f(glGetUniformLocation(shaderProgram.ID, "sandLowerBound"), sandLowerBound);
-      glUniform1f(glGetUniformLocation(shaderProgram.ID, "sandUpperBound"), sandUpperBound);
-      glUniform1f(glGetUniformLocation(shaderProgram.ID, "grassLowerBound"), grassLowerBound);
-      glUniform1f(glGetUniformLocation(shaderProgram.ID, "grassUpperBound"), grassUpperBound);
+      if (switchedRecently) {
+         switchedRecently = false;
+         currentVertexShader = previousVertexShader = shaders[is3Dmode][0];
+         shaderManager.SwitchShader(currentVertexShader, currentFragmentShader);
+      }
+
+      if (currentVertexShader.compare(previousVertexShader)) {
+         previousVertexShader = currentVertexShader;
+         std::cout << "Changed shader\n";
+         shaderManager.SwitchShader(currentVertexShader, currentFragmentShader);
+      }
+      if (is3Dmode) {
+         shaderManager.getShader().setUniforms(std::make_tuple("oceanUpperBound", oceanUpperBound),
+                                               std::make_tuple("sandLowerBound", sandLowerBound),
+                                               std::make_tuple("sandUpperBound", sandUpperBound),
+                                               std::make_tuple("grassLowerBound", grassLowerBound),
+                                               std::make_tuple("grassUpperBound", grassUpperBound));
+      }
+
+      // glUniform1f(glGetUniformLocation(shaderProgram.ID, "oceanUpperBound"), oceanUpperBound);
+      // glUniform1f(glGetUniformLocation(shaderProgram.ID, "sandLowerBound"), sandLowerBound);
+      // glUniform1f(glGetUniformLocation(shaderProgram.ID, "sandUpperBound"), sandUpperBound);
+      // glUniform1f(glGetUniformLocation(shaderProgram.ID, "grassLowerBound"), grassLowerBound);
+      // glUniform1f(glGetUniformLocation(shaderProgram.ID, "grassUpperBound"), grassUpperBound);
 
       // // Render ImGUI
       ImGui::Render();
@@ -182,14 +258,14 @@ int main() {
       camera.height = (int) framebufferHeight;
       camera.updateMatrix(45.0f, 0.1f, 100.0f);
 
-      myMesh.Draw(shaderProgram, camera);
+      myMesh.Draw(shaderManager.getShader(), camera);
       ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
       glfwSwapBuffers(window);
       glfwPollEvents();
    }
 
-   shaderProgram.Delete();
+   shaderManager.Delete();
 
    glfwDestroyWindow(window);
    // Shutdown ImGUI
