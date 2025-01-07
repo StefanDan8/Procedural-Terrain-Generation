@@ -21,4 +21,13 @@ make
 ```
 This creates the binaries `test_all` and `main`.
 
+If you're using Windows as OS try instead:
+
+```
+mkdir build\debug
+cd build\debug
+cmake -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Debug ..\..
+mingw32-make
+```
+
 TODO: End user does only need main. `test_all` is only for development. Adjust later.
