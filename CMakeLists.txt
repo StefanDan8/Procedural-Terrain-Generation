@@ -1,18 +1,27 @@
 cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 
 #set(CMAKE_C_COMPILER gcc)
-set(CMAKE_CXX_COMPILER g++)
+#set(CMAKE_CXX_COMPILER g++)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 #project(group44 C CXX)
 project(group44 C CXX)
 
+if(WIN32)
+    if(MSVC)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4 /permissive- /Zc:__cplusplus")
+    else() # Assuming MinGW
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall -Wextra -fno-omit-frame-pointer -march=native -Wno-unknown-pragmas")
+    endif()
+else()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -fPIC -Wall -Wextra -fno-omit-frame-pointer -march=native -Wno-unknown-pragmas")
+endif()
 #include(lib/gtest.cmake)
 
 add_compile_definitions(SHADER_ROOT="${CMAKE_SOURCE_DIR}/shaders")
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -fPIC -Wall -Wextra -fno-omit-frame-pointer -march=native -Wno-unknown-pragmas")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -fPIC -Wall -Wextra -fno-omit-frame-pointer -march=native -Wno-unknown-pragmas")
 
 ### Graphics External
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/graphicsExternal)
