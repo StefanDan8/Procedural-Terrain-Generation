@@ -58,12 +58,13 @@ std::string get_file_contents(std::string filename) {
       in.close();
       return contents;
    }
-   throw(errno);
+   //throw(errno);
+   throw std::system_error(errno, std::generic_category(), "Error reading shader files " + filename);
 }
 
 Shader::Shader(std::string vertexFile, std::string fragmentFile) {
-   std::string vertexCode = get_file_contents("../shaders/" + vertexFile);
-   std::string fragmentCode = get_file_contents("../shaders/" + fragmentFile);
+   std::string vertexCode = get_file_contents(std::string(SHADER_ROOT) + "/" + vertexFile);
+   std::string fragmentCode = get_file_contents(std::string(SHADER_ROOT) + "/" + fragmentFile);
 
    // userFloatUniforms = parse_uniform_float_names(vertexCode);
    // userFloatValues.resize(userFloatUniforms.size());

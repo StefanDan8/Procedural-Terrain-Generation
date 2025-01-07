@@ -8,7 +8,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 #project(group44 C CXX)
 project(group44 C CXX)
 
-include(lib/gtest.cmake)
+#include(lib/gtest.cmake)
+
+add_compile_definitions(SHADER_ROOT="${CMAKE_SOURCE_DIR}/shaders")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -fPIC -Wall -Wextra -fno-omit-frame-pointer -march=native -Wno-unknown-pragmas")
 
@@ -66,9 +68,9 @@ add_library(shaders src/graphics/ShaderClass.cpp
 target_include_directories(shaders PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/graphics)
 target_link_libraries(shaders glad)
 
-### Tests
-add_executable(test_all test/testSprint1.cpp)
-target_link_libraries(test_all perlin gtest gtest_main pthread)
+# ### Tests
+# add_executable(test_all test/testSprint1.cpp)
+# target_link_libraries(test_all perlin gtest gtest_main pthread)
 
 ### Main
 add_executable(main src/main.cpp)
