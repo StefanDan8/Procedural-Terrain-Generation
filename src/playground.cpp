@@ -11,6 +11,7 @@
 #include <glad/glad.h>
 
 #include "AppConfig.hpp"
+#include "Camera2D.hpp"
 #include "PerlinOOP.hpp"
 #include "Renderer.hpp"
 #include "UserInterface.hpp"
@@ -18,7 +19,9 @@
 #include "Mesh.hpp"
 #include "ShaderManager.hpp"
 
-bool is3Dmode = true;
+#include <Camera3D.hpp>
+
+bool is3Dmode = false;
 bool switchedRecently = false;
 
 std::vector<std::vector<std::string>> shaders = {
@@ -218,7 +221,9 @@ int main() {
 
    glEnable(GL_DEPTH_TEST);
 
-   Camera camera((int) RENDER_WIDTH, framebufferHeight, glm::vec3(0.0f, 0.5f, 2.0f));
+   // Create both here else it'll recreate the camera every frame
+   Camera3D camera_3d((int) RENDER_WIDTH, framebufferHeight, glm::vec3(0.0f, 0.5f, 2.0f));
+   Camera2D camera_2d((int) RENDER_WIDTH, framebufferHeight, glm::vec3(0.0f, 0.5f, 2.0f), window);
 
    while (!glfwWindowShouldClose(window)) {
       // Start ImGUI frame
@@ -272,12 +277,15 @@ int main() {
          myMesh = generateMeshFromSeed(seed);
       }
 
-      camera.Inputs(window);
-      camera.width = (int) (0.75f * framebufferWidth);
-      camera.height = (int) framebufferHeight;
-      camera.updateMatrix(45.0f, 0.1f, 100.0f);
+      Camera* camera = is3Dmode ? static_cast<Camera*>(&camera_3d) : static_cast<Camera*>(&camera_2d);
 
-      myMesh.Draw(shaderManager.getShader(), camera);
+      camera->Inputs(window);
+      camera->width = (int) (0.75f * framebufferWidth);
+      camera->height = (int) framebufferHeight;
+      camera->updateMatrix(45.0f, 0.1f, 100.0f);
+
+      myMesh.Draw(shaderManager.getShader(), *camera);
+
       ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
       glfwSwapBuffers(window);

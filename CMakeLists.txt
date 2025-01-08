@@ -73,7 +73,9 @@ add_library(shaders src/graphics/ShaderClass.cpp
                     src/graphics/VBO.cpp 
                     src/graphics/Camera.cpp
                     src/graphics/Mesh.cpp
-                    src/graphics/ShaderManager.cpp)
+                    src/graphics/ShaderManager.cpp
+                    src/graphics/Camera2D.cpp
+                    src/graphics/Camera3D.cpp)
 target_include_directories(shaders PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/graphics)
 target_link_libraries(shaders glad)
 
