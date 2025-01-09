@@ -98,13 +98,10 @@ class PerlinNoise2D {
    void fill(matrix& result);
 
    /// @brief Set the layers of the noise with the already computed layers
-   void setLayers(std::vector<PerlinLayer2D>& newLayers) {
-      layers = newLayers;
-   }
+   void setLayers(std::vector<PerlinLayer2D>& newLayers);
 
    /// @brief Set the layers of the noise with the parameters of the layers
-   void setLayers(std::vector<std::pair<unsigned, double>>& newLayerParams) {
-   }
+   void setLayers(std::vector<std::pair<unsigned, double>>& newLayerParams);
 
    /// @brief Add a new layer to the noise
    void addLayer(std::pair<unsigned, double>& newLayer);
