@@ -38,7 +38,7 @@ class PerlinLayer2D {
 
    /// @brief Fill the entire matrix with Perlin noise values
    /// @param result The matrix to fill
-   void fill(matrix& result);
+   void fillMatrix(matrix& result);
 
    void setWeight(double w) {
       weight = w;
@@ -66,13 +66,14 @@ class PerlinNoise2D {
    double weightSum = 0.0; // The sum of the weights of the layers
    std::vector<PerlinLayer2D> layers; // The layers of the noise
    std::vector<vec2d> gradients; // The constant gradients used for computation
+   perlin::matrix resultMatrix; // The matrix to fill
 
    public:
    /// @brief Noise constructor, initializes the gradients and the layers
    /// @param sizeX The size of the terrain in the x direction
    /// @param sizeY The size of the terrain in the y direction
    /// @param layerParams A vector of pairs, each pair containing the chunk size and the weight of the layer
-   PerlinNoise2D(const unsigned sizeX, const unsigned sizeY, std::vector<std::pair<unsigned, double>>& layerParams) : sizeX(sizeX), sizeY(sizeY) {
+   PerlinNoise2D(const unsigned sizeX, const unsigned sizeY, std::vector<std::pair<unsigned, double>>& layerParams) : sizeX(sizeX), sizeY(sizeY), resultMatrix(perlin::matrix(sizeX, std::vector<double>(sizeY, 0.0))) {
       gradients.resize(128);
       // initialize the gradients as random normalized 2D vectors 
       for (auto& grad : gradients) {
@@ -95,7 +96,12 @@ class PerlinNoise2D {
       }
    }
 
-   void fill(matrix& result);
+   perlin::matrix getResult() {
+      return resultMatrix;
+   }
+
+   /// @brief Fill the whole matrix with Perlin noise values
+   void fill();
 
    /// @brief Set the layers of the noise with the already computed layers
    void setLayers(std::vector<PerlinLayer2D>& newLayers);

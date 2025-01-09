@@ -45,19 +45,19 @@ void PerlinLayer2D::fillChunk(matrix& result, const unsigned chunkX, const unsig
    }
 }
 
-void PerlinLayer2D::fill(matrix& result) {
-   for (unsigned i = 0; i < numChunksX; i++) {
-      for (unsigned j = 0; j < numChunksY; j++) {
-         fillChunk(result, i, j);
+void PerlinLayer2D::fillMatrix(matrix& result) {
+   for (unsigned chunkX = 0; chunkX < numChunksX; chunkX++) {
+      for (unsigned chunkY = 0; chunkY < numChunksY; chunkY++) {
+         fillChunk(result, chunkX, chunkY);
       }
    }
 }
 
 // --- Noise functions ---
 
-void PerlinNoise2D::fill(matrix& result) {
+void PerlinNoise2D::fill() {
    for (auto& layer : layers) {
-      layer.fill(result);
+      layer.fillMatrix(resultMatrix);
    }
 }
 

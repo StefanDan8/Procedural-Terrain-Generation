@@ -160,12 +160,14 @@ Mesh generateMeshFromSeed(int seed) {
 
    perlin::PerlinNoise2D noise = perlin::PerlinNoise2D(sizeX, sizeY, params4);
    perlin::matrix result(sizeX, std::vector<double>(sizeY, 0.0));
-   noise.fill(result);
+   noise.fill();
+   result = noise.getResult();
    
    perlin::matrix filter(sizeX, std::vector<double>(sizeY, 0.0));
    std::vector<std::pair<unsigned, double>> filterParams{std::make_pair(180, 5), std::make_pair(120, 5), std::make_pair(60, 10), std::make_pair(30, 1)};
    perlin::PerlinNoise2D noiseFilter(sizeX, sizeY, filterParams);
-   noiseFilter.fill(filter);
+   noiseFilter.fill();
+   filter = noiseFilter.getResult();
 
    render::Max(result, filter);
 
