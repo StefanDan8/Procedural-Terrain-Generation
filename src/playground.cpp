@@ -197,6 +197,7 @@ int main() {
    glfwGetFramebufferSize(window, &framebufferWidth, &framebufferHeight);
    float IMGUI_WIDTH = 0.25f * framebufferWidth;
    float RENDER_WIDTH = framebufferWidth - IMGUI_WIDTH;
+   float RENDER_HEIGHT = framebufferHeight;
 
    glViewport((int) IMGUI_WIDTH, 0, (int) RENDER_WIDTH, framebufferHeight);
 
@@ -225,10 +226,19 @@ int main() {
    glEnable(GL_DEPTH_TEST);
 
    // Create both here else it'll recreate the camera every frame
-   Camera3D camera_3d((int) RENDER_WIDTH, framebufferHeight, glm::vec3(0.0f, 0.5f, 2.0f));
-   Camera2D camera_2d((int) RENDER_WIDTH, framebufferHeight, glm::vec3(0.0f, 0.5f, 2.0f), window);
+   Camera3D camera_3d( &RENDER_WIDTH, &RENDER_HEIGHT, glm::vec3(0.0f, 0.5f, 2.0f));
+   Camera2D camera_2d( &RENDER_WIDTH, &RENDER_HEIGHT, glm::vec3(0.0f, 0.5f, 2.0f), window);
 
    while (!glfwWindowShouldClose(window)) {
+      // Recalculate the framebuffer size and set the viewport accordingly
+      glfwGetFramebufferSize(window, &framebufferWidth, &framebufferHeight);
+      IMGUI_WIDTH = 0.25f * framebufferWidth;
+      RENDER_WIDTH = framebufferWidth - IMGUI_WIDTH;
+      RENDER_HEIGHT = framebufferHeight;
+
+      glViewport((int) IMGUI_WIDTH, 0, (int) RENDER_WIDTH, framebufferHeight);
+      glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+
       // Start ImGUI frame
       ImGui_ImplOpenGL3_NewFrame();
       ImGui_ImplGlfw_NewFrame();
@@ -283,8 +293,6 @@ int main() {
       Camera* camera = is3Dmode ? static_cast<Camera*>(&camera_3d) : static_cast<Camera*>(&camera_2d);
 
       camera->Inputs(window);
-      camera->width = (int) (0.75f * framebufferWidth);
-      camera->height = (int) framebufferHeight;
       camera->updateMatrix(45.0f, 0.1f, 100.0f);
 
       myMesh.Draw(shaderManager.getShader(), *camera);

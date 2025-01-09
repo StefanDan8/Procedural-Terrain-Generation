@@ -10,7 +10,7 @@ class Camera2D final : public Camera {
    double lastMouseX = 0.0f;
    double lastMouseY = 0.0f;
 
-   Camera2D(int width, int height, glm::vec3 position, GLFWwindow* window): Camera(width, height, position) {
+   Camera2D(float *width, float *height, glm::vec3 position, GLFWwindow* window): Camera(width, height, position) {
       glfwSetWindowUserPointer(window, this);
    };
 

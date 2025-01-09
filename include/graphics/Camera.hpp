@@ -16,8 +16,8 @@
 
 class Camera {
 public:
-   int width;
-   int height;
+   float *width;
+   float *height;
 
    glm::vec3 Position;
    glm::vec3 Orientation = glm::vec3(0.0f, 0.0f, -1.0f);
@@ -29,7 +29,7 @@ public:
 
    bool firstClick = true;
 
-   Camera(int width, int height, glm::vec3 position) : width(width), height(height), Position(position) {}
+   Camera(float *width, float *height, glm::vec3 position) : width(width), height(height), Position(position) {}
 
    void Matrix(Shader& shader, const char* uniform);
    void updateMatrix(float FOVdeg, float nearPlane, float farPlane);

@@ -5,7 +5,7 @@
 
 class Camera3D final : public Camera {
    public:
-   Camera3D(int width, int height, glm::vec3 position): Camera(width, height, position) {};
+   Camera3D(float *width, float *height, glm::vec3 position): Camera(width, height, position) {};
 
    void Inputs(GLFWwindow* window) override;
 };
