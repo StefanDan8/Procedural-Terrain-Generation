@@ -7,13 +7,37 @@
 namespace perlin {
 
 class PerlinLayer2D {
+   private:
+   // --- Class Parameters ---
+   const unsigned chunkSize; // The size of the chunk
+   const unsigned numChunksX; // The number of chunks in the x direction
+   const unsigned numChunksY; // The number of chunks in the y direction
+   double weight = 1.0; // The weight of the layer
+   std::vector<vec2d>& gradients; // The gradients used for computation
+
    public:
+   // constructors
    PerlinLayer2D(const unsigned chunkSize, const unsigned numChunksX, const unsigned numChunksY, std::vector<vec2d>& gradients) : chunkSize(chunkSize), numChunksX(numChunksX), numChunksY(numChunksY), gradients(gradients) {}
+
    PerlinLayer2D(const unsigned chunkSize, const unsigned numChunksX, const unsigned numChunksY, std::vector<vec2d>& gradients, double weight) : chunkSize(chunkSize), numChunksX(numChunksX), numChunksY(numChunksY), gradients(gradients), weight(weight) {}
 
+   // --- Methods ---
+
+   /// @brief Compute the Perlin noise value of a pixel
+   /// @param x x-coordinate within the chunk
+   /// @param y y-coordinate within the chunk
+   /// @param chunkX x-coordinate of the chunk within the entire grid
+   /// @param chunkY y-coordinate of the chunk within the entire grid
    double compute(const unsigned x, const unsigned y, const unsigned chunkX, const unsigned chunkY);
 
+   /// @brief Fill a chunk of the matrix with Perlin noise values
+   /// @param result The matrix to fill
+   /// @param chunkX x-coordinate of the chunk within the entire grid
+   /// @param chunkY y-coordinate of the chunk within the entire grid
    void fillChunk(matrix& result, const unsigned chunkX, const unsigned chunkY);
+
+   /// @brief Fill the entire matrix with Perlin noise values
+   /// @param result The matrix to fill
    void fill(matrix& result);
 
    void setWeight(double w) {
@@ -24,40 +48,98 @@ class PerlinLayer2D {
       return weight;
    }
 
-   private:
-   const unsigned chunkSize;
-   const unsigned numChunksX;
-   const unsigned numChunksY;
-   double weight = 1;
-   std::vector<vec2d>& gradients;
+   unsigned getChunkSize() {
+      return chunkSize;
+   }
+
+   PerlinLayer2D operator=(const PerlinLayer2D& other) {
+      return PerlinLayer2D(other.chunkSize, other.numChunksX, other.numChunksY, other.gradients, other.weight);
+   }
+   
 };
 
 class PerlinNoise2D {
+   private:
+   // --- Class Parameters ---
+   unsigned sizeX; // The size of the terrain in the x direction
+   unsigned sizeY; // The size of the terrain in the y direction
+   double weightSum = 0.0; // The sum of the weights of the layers
+   std::vector<PerlinLayer2D> layers; // The layers of the noise
+   std::vector<vec2d> gradients; // The constant gradients used for computation
+
    public:
+   /// @brief Noise constructor, initializes the gradients and the layers
+   /// @param sizeX The size of the terrain in the x direction
+   /// @param sizeY The size of the terrain in the y direction
+   /// @param layerParams A vector of pairs, each pair containing the chunk size and the weight of the layer
    PerlinNoise2D(const unsigned sizeX, const unsigned sizeY, std::vector<std::pair<unsigned, double>>& layerParams) : sizeX(sizeX), sizeY(sizeY) {
       gradients.resize(128);
+      // initialize the gradients as random normalized 2D vectors 
       for (auto& grad : gradients) {
          grad = random2DGrad();
       }
+
+      // check if the size of the terrain is divisible by the chunk size
       for (const auto& chunkSizeWeight : layerParams) {
          if (sizeX % chunkSizeWeight.first != 0 || sizeY % chunkSizeWeight.first != 0) {
             throw std::invalid_argument("The size of the terrain must be divisible by the chunk size.");
          }
       }
+
+      // create the layers
       for (const auto& chunkSizeWeight : layerParams) {
          auto chunkSize = chunkSizeWeight.first;
          auto weight = chunkSizeWeight.second;
          layers.push_back(PerlinLayer2D(chunkSize, sizeX / chunkSize, sizeY / chunkSize, gradients, weight));
+         weightSum += weight;
       }
    }
 
    void fill(matrix& result);
 
-   private:
-   unsigned sizeX;
-   unsigned sizeY;
-   std::vector<PerlinLayer2D> layers;
-   std::vector<vec2d> gradients;
+   /// @brief Set the layers of the noise with the already computed layers
+   void setLayers(std::vector<PerlinLayer2D>& newLayers) {
+      layers = newLayers;
+   }
+
+   /// @brief Set the layers of the noise with the parameters of the layers
+   void setLayers(std::vector<std::pair<unsigned, double>>& newLayerParams) {
+   }
+
+   /// @brief Add a new layer to the noise
+   void addLayer(std::pair<unsigned, double>& newLayer);
+
+   /// @brief Remove the last added layer
+   void removeLayer();
+
+   /// @brief Remove a layer at a specific index
+   void removeLayer(unsigned index);
+
+   /// @brief Recompute a layer at a specific index with new parameters
+   void recomputeLayer(unsigned index, std::pair<unsigned, double>& layerParams);
+
+   /// @brief Recompute a layer at a specific index with new parameters
+   void recomputeLayer(unsigned index, unsigned chunkSize, double weight);
+
+   /// @brief Recompute a layer at a specific index with new chunkSize
+   void recomputeLayerChunkSize(unsigned index, unsigned chunkSize);
+
+   /// @brief Recompute a layer at a specific index with new weight
+   void recomputeLayerWeight(unsigned index, double weight);
+
+   /// @brief Recompute the weight sum of the layers
+   /// @note Should not be used in the future, but rather update the weight sum when adding or removing layers
+   void updateWeightSum();
+
+   /// @note The check is added for test purposes, if the code works properly (the weight sum is updated correctly by each function involved) the check should be REMOVED - for performance reasons
+   double getWeightSum() {
+      double tmp = weightSum;
+      updateWeightSum();
+      if (tmp != weightSum) {
+         throw std::logic_error("Weight sum was not measured correctly!");
+      }
+      return weightSum;
+   }
 };
 
 }
