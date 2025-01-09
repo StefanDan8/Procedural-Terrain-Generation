@@ -15,9 +15,7 @@
 #include "glfw-3.4/include/GLFW/glfw3.h"
 
 class Camera {
-   public:
-   Camera(int width, int height, glm::vec3 position) : width(width), height(height), Position(position) {}
-
+public:
    int width;
    int height;
 
@@ -26,15 +24,16 @@ class Camera {
    glm::vec3 Up = glm::vec3(0.0f, 1.0f, 0.0f);
    glm::mat4 cameraMatrix = glm::mat4(1.0f);
 
-   bool firstClick = true;
-
    float speed = 0.01f;
    float sensitivity = 0.1f;
 
+   bool firstClick = true;
+
+   Camera(int width, int height, glm::vec3 position) : width(width), height(height), Position(position) {}
+
    void Matrix(Shader& shader, const char* uniform);
    void updateMatrix(float FOVdeg, float nearPlane, float farPlane);
-
-   void Inputs(GLFWwindow* window);
+   virtual void Inputs(GLFWwindow* window) = 0;
 };
 
 #endif
