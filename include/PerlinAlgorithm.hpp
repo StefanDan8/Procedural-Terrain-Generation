@@ -1,4 +1,3 @@
-
 #ifndef _PERLIN_HPP
 #define _PERLIN_HPP
 #include "AppConfig.hpp"
@@ -12,12 +11,16 @@ namespace perlin {
 
 /// @brief 2D normalized real vector
 using vec2d = std::array<double, 2>;
+
 /// @brief 3D normalized real vector
 using vec3d = std::array<double, 3>;
+
 /// @brief Matrix with real values.
 using matrix = std::vector<std::vector<double>>;
+
 /// @brief 3D tensor with real values.
 using tensor = std::vector<std::vector<std::vector<double>>>;
+
 
 /// @brief Serves as global random number generator for Unif[0,1]
 extern UniformUnitGenerator unifGlbl;

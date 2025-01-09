@@ -17,13 +17,13 @@ vec2d random2DGrad() {
    return random2DGrad(AppConfig::getInstance().getUnif());
 }
 
-vec3d random3DGrad() {
-   return random3DGrad(AppConfig::getInstance().getUnif());
-}
-
 vec2d random2DGrad(UniformUnitGenerator& unif) {
    auto theta = unif.get() * 2 * M_PI;
    return vec2d{cos(theta), sin(theta)};
+}
+
+vec3d random3DGrad() {
+   return random3DGrad(AppConfig::getInstance().getUnif());
 }
 
 vec3d random3DGrad(UniformUnitGenerator& unif) {
@@ -127,12 +127,7 @@ matrix stackNoise(std::vector<matrix>& matrices, std::vector<double>& weights) {
 /// @return result
 /// @note Vectors should have the same length. The length doesn't have to be known beforehand.
 double dot(std::vector<double> u, std::vector<double> v) {
-//Define the macro for assert
-#define ASSERT(condition, message)  \
-   do {                             \
-      assert(condition&& #message); \
-   } while (0)
-   ASSERT(u.size() == v.size(), "Vectors must have the same length");
+   assert(u.size() == v.size());
 
    double result = 0;
    for (unsigned i = 0; i < u.size(); i++) {

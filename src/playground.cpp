@@ -1,6 +1,6 @@
-
 #define GLFW_INCLUDE_NONE
 
+// Include standard headers
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
 #include "imgui.h"
@@ -10,11 +10,13 @@
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
 
+// Include source files
 #include "AppConfig.hpp"
 #include "PerlinOOP.hpp"
 #include "Renderer.hpp"
 #include "UserInterface.hpp"
 
+// Include additional graphics files
 #include "Mesh.hpp"
 #include "ShaderManager.hpp"
 
@@ -156,6 +158,7 @@ Mesh generateMeshFromSeed(int seed) {
    perlin::PerlinNoise2D noise = perlin::PerlinNoise2D(sizeX, sizeY, params4);
    perlin::matrix result(sizeX, std::vector<double>(sizeY, 0.0));
    noise.fill(result);
+   
    perlin::matrix filter(sizeX, std::vector<double>(sizeY, 0.0));
    std::vector<std::pair<unsigned, double>> filterParams{std::make_pair(180, 5), std::make_pair(120, 5), std::make_pair(60, 10), std::make_pair(30, 1)};
    perlin::PerlinNoise2D noiseFilter(sizeX, sizeY, filterParams);
