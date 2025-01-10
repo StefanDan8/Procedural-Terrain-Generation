@@ -182,8 +182,8 @@ void Render2DImGui() {
 Mesh generateMeshFromSeed(int seed) {
    perlin::AppConfig::getInstance().setGenerator(seed);
 
-   const unsigned sizeX = 720;
-   const unsigned sizeY = 720;
+   const unsigned sizeX = 1440;
+   const unsigned sizeY = 1440;
    std::vector<std::pair<unsigned, double>> params4{std::make_pair(720, 60), std::make_pair(360, 500), std::make_pair(180, 100),
                                                     std::make_pair(90, 100), std::make_pair(45, 20), std::make_pair(12, 10), std::make_pair(8, 5), std::make_pair(3, 2)};
 
@@ -242,12 +242,8 @@ int main() {
    ImGui_ImplOpenGL3_Init("#version 330");
    ImGui::StyleColorsDark();
 
-   // //Shader shaderProgram("beachShader.vert", "default.frag");
-   // Shader shaderProgram("2DShader.vert", "default.frag");
-   // shaderProgram.Activate();
    ShaderManager shaderManager(previousVertexShader, previousFragmentShader);
 
-   // Mesh myMesh(normalized);
    Mesh myMesh = generateMeshFromSeed(42);
 
    glEnable(GL_DEPTH_TEST);
@@ -255,7 +251,6 @@ int main() {
    // Create both here else it'll recreate the camera every frame
    Camera3D camera_3d(&RENDER_WIDTH, &RENDER_HEIGHT, glm::vec3(0.0f, 0.0f, 2.0f));
    Camera2D camera_2d(&RENDER_WIDTH, &RENDER_HEIGHT, glm::vec3(-0.1f, 0.0f, 2.5f), window); // handpicked to fit nicely
-
    while (!glfwWindowShouldClose(window)) {
       // Recalculate the framebuffer size and set the viewport accordingly
       glfwGetFramebufferSize(window, &framebufferWidth, &framebufferHeight);
