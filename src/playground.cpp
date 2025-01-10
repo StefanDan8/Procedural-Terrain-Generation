@@ -183,7 +183,7 @@ void Render3DImGui(ShaderManager& manager, Mesh& mesh) {
    ImGui::InputInt("Seed", &seed);
 
    ImGui::SetNextItemWidth(80.f);
-   ImGui::InputDouble("", &flattenFactor, 0.0, 0.0, "%.2f");
+   ImGui::InputDouble("##xx", &flattenFactor, 0.0, 0.0, "%.2f");
    ImGui::SameLine();
    if (ImGui::Button("-")) {
       flattenFactor -= 0.2;
