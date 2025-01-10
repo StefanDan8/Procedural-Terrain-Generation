@@ -22,8 +22,9 @@
 #include "ShaderManager.hpp"
 
 #include <Camera3D.hpp>
+#include <Map.hpp>
 
-bool is3Dmode = false;
+bool is3DMode = false;
 bool switchedRecently = false;
 
 std::vector<std::vector<std::string>> shaders = {
@@ -31,7 +32,7 @@ std::vector<std::vector<std::string>> shaders = {
    {"beachShader.vert", "default.vert"} // 3D shaders
 };
 
-std::string previousVertexShader = shaders[is3Dmode][0];
+std::string previousVertexShader = shaders[is3DMode][0];
 std::string previousFragmentShader = "default.frag";
 
 std::string currentVertexShader = previousVertexShader;
@@ -56,6 +57,11 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 }
 
 // Both
+int previousSeed = 42;
+int seed = previousSeed;
+double flattenFactor = 2.0;
+double lastFlattenFactor = flattenFactor;
+
 float oceanUpperBound = 0.01f;
 float sandLowerBound = 0.01f;
 
@@ -74,12 +80,6 @@ int chunkSize = 16;
 int nChunksX = 16;
 int nChunksY = 16;
 
-// General
-int previousSeed = 42;
-int seed = previousSeed;
-double flattenFactor = 2.0;
-double lastFlattenFactor = flattenFactor;
-
 int frameSinceChange = 0;
 const int fuse = 30; // 30 frames until change takes placec
 
@@ -87,12 +87,12 @@ void RenderCommonImGui() {
    ImGui::Text("Pick display mode:");
 
    if (ImGui::Button("2D Mode")) {
-      is3Dmode = false;
+      is3DMode = false;
       switchedRecently = true;
    }
    ImGui::SameLine();
    if (ImGui::Button("3D Mode")) {
-      is3Dmode = true;
+      is3DMode = true;
       switchedRecently = true;
    }
 }
@@ -102,12 +102,12 @@ void shaderDropdown() {
    //std::vector<std::string> items = {"Option 1", "Option 2", "Option 3", "Option 4"};
 
    ImGui::Text("\nSelect a Shader");
-   if (ImGui::BeginCombo("##xa", shaders[is3Dmode][currentItem].c_str())) {
-      for (unsigned i = 0; i < shaders[is3Dmode].size(); i++) {
+   if (ImGui::BeginCombo("##xa", shaders[is3DMode][currentItem].c_str())) {
+      for (unsigned i = 0; i < shaders[is3DMode].size(); i++) {
          bool isSelected = (currentItem == i);
-         if (ImGui::Selectable(shaders[is3Dmode][i].c_str(), isSelected)) {
+         if (ImGui::Selectable(shaders[is3DMode][i].c_str(), isSelected)) {
             currentItem = i; // Update selected item index
-            currentVertexShader = shaders[is3Dmode][i];
+            currentVertexShader = shaders[is3DMode][i];
          }
          // Set the initial focus when opening the combo (scrolling to current item)
          if (isSelected) {
@@ -168,16 +168,18 @@ void saveToFile3D(Mesh& mesh) {
       ExportToObj(mesh, std::string(OUTPUT_FOLDER_PATH) + "/" + _user_save_path + ".obj");
    }
 }
-void saveToFile2D() {
+void saveToFile2D(Map& map) {
    ImGui::Text("\nSave Current Image");
    static char _user_save_path[256] = "";
    ImGui::InputText("Filename", _user_save_path, sizeof(_user_save_path));
    if (ImGui::Button("Save to .png")) {
-      //ExportToObj(mesh, _user_save_path);
+      auto filename = std::string(OUTPUT_FOLDER_PATH) + "/" + _user_save_path + ".png";
+      map.exportToPNG(filename);
    }
    ImGui::SameLine();
    if (ImGui::Button("Save to .ppm")) {
-      //ExportToObj(mesh, _user_save_path);
+      auto filename = std::string(OUTPUT_FOLDER_PATH) + "/" + _user_save_path + ".ppm";
+      map.exportToPPM(filename);
    }
 }
 
@@ -239,7 +241,7 @@ void Render3DImGui(ShaderManager& manager, Mesh& mesh) {
    ImGui::End();
 }
 
-void Render2DImGui(ShaderManager& manager) {
+void Render2DImGui(ShaderManager& manager, Map& map) {
    ImGui::Begin("Controls", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
    RenderCommonImGui();
    ImGui::Text("\n2D Mode\n\n");
@@ -253,19 +255,19 @@ void Render2DImGui(ShaderManager& manager) {
 
    shaderDropdown();
 
-   saveToFile2D();
+   saveToFile2D(map);
    _2DInputControls();
 
    ImGui::End();
 }
 
-Mesh generateMeshFromSeed(const int seed, const double flatteningFactor = 1.0) {
+std::vector<std::vector<double>> commonGeneration(const int seed, const double flatteningFactor) {
    perlin::AppConfig::getInstance().setGenerator(seed);
 
    const unsigned sizeX = 1440;
    const unsigned sizeY = 1440;
    std::vector<std::pair<unsigned, double>> params4{std::make_pair(720, 30), std::make_pair(360, 250), std::make_pair(180, 50),
-                                                    std::make_pair(90, 50), std::make_pair(45, 20), std::make_pair(12, 5), std::make_pair(8, 2), std::make_pair(3, 1)};
+      std::make_pair(90, 50), std::make_pair(45, 20), std::make_pair(12, 5), std::make_pair(8, 2), std::make_pair(3, 1)};
 
    perlin::PerlinNoise2D noise = perlin::PerlinNoise2D(sizeX, sizeY, params4);
    double sumWeight = noise.getWeightSum();
@@ -279,7 +281,17 @@ Mesh generateMeshFromSeed(const int seed, const double flatteningFactor = 1.0) {
 
    render::Max(result, filter);
 
-   auto normalized = render::normalizeUnit(result, sumWeight * flatteningFactor);
+   return render::normalizeUnit(result, sumWeight * flatteningFactor);
+}
+
+Map generateMapFromSeed(const int seed, const double flatteningFactor = 1.0f) {
+   std::vector<std::vector<double>> normalized = commonGeneration(seed, flatteningFactor);
+   Map myMap(normalized);
+   return myMap;
+}
+
+Mesh generateMeshFromSeed(const int seed, const double flatteningFactor = 1.0) {
+   std::vector<std::vector<double>> normalized = commonGeneration(seed, flatteningFactor);
    Mesh myMesh(normalized);
    return myMesh;
 }
@@ -326,6 +338,7 @@ int main() {
    ShaderManager shaderManager(previousVertexShader, previousFragmentShader);
 
    Mesh myMesh = generateMeshFromSeed(42);
+   Map myMap = generateMapFromSeed(42);
 
    glEnable(GL_DEPTH_TEST);
 
@@ -350,10 +363,10 @@ int main() {
       ImGui::SetNextWindowSize(ImVec2(IMGUI_WIDTH, framebufferHeight), ImGuiCond_Always);
       ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
 
-      if (is3Dmode) {
+      if (is3DMode) {
          Render3DImGui(shaderManager, myMesh);
       } else {
-         Render2DImGui(shaderManager);
+         Render2DImGui(shaderManager, myMap);
       }
 
       glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
@@ -361,7 +374,7 @@ int main() {
 
       if (switchedRecently) {
          switchedRecently = false;
-         currentVertexShader = previousVertexShader = shaders[is3Dmode][0];
+         currentVertexShader = previousVertexShader = shaders[is3DMode][0];
          shaderManager.SwitchShader(currentVertexShader, currentFragmentShader);
       }
 
@@ -392,7 +405,7 @@ int main() {
          myMesh = generateMeshFromSeed(seed, flattenFactor);
       }
 
-      Camera* camera = is3Dmode ? static_cast<Camera*>(&camera_3d) : static_cast<Camera*>(&camera_2d);
+      Camera* camera = is3DMode ? static_cast<Camera*>(&camera_3d) : static_cast<Camera*>(&camera_2d);
 
       camera->Inputs(window);
       camera->updateMatrix(45.0f, 0.1f, 100.0f);

@@ -79,6 +79,7 @@ add_library(shaders src/graphics/ShaderClass.cpp
                     src/graphics/VBO.cpp 
                     src/graphics/Camera.cpp
                     src/graphics/Mesh.cpp
+                    src/graphics/Map.cpp
                     src/graphics/ShaderManager.cpp
                     src/graphics/Camera2D.cpp
                     src/graphics/Camera3D.cpp)
