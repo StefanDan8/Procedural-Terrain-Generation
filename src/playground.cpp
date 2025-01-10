@@ -27,7 +27,7 @@ bool is3Dmode = false;
 bool switchedRecently = false;
 
 std::vector<std::vector<std::string>> shaders = {
-   {"2DShader.vert"}, //2D shaders
+   {"Beach2DShader.vert", "Mono2DShader.vert"}, //2D shaders
    {"beachShader.vert", "default.vert"} // 3D shaders
 };
 
@@ -55,14 +55,21 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
    framebufferHeight = height;
 }
 
-// 3D Specific
+// Both
 float oceanUpperBound = 0.01f;
 float sandLowerBound = 0.01f;
+
+// 3D Specific
 float sandUpperBound = 0.04f;
 float grassLowerBound = 0.04f;
 float grassUpperBound = 0.1f;
 
 // 2D Specific
+float lowerGrassUpperBound;
+float upperGrassUpperBound;
+float lowerPeaksBound;
+float upperPeaksBound;
+
 int chunkSize = 16;
 int nChunksX = 16;
 int nChunksY = 16;
@@ -183,7 +190,7 @@ void Render3DImGui(ShaderManager& manager, Mesh& mesh) {
    ImGui::InputInt("Seed", &seed);
 
    ImGui::SetNextItemWidth(80.f);
-   ImGui::InputDouble("", &flattenFactor, 0.0, 0.0, "%.2f");
+   ImGui::InputDouble("##xx", &flattenFactor, 0.0, 0.0, "%.2f");
    ImGui::SameLine();
    if (ImGui::Button("-")) {
       flattenFactor -= 0.2;
@@ -201,12 +208,49 @@ void Render3DImGui(ShaderManager& manager, Mesh& mesh) {
    ImGui::End();
 }
 
-void Render2DImGui() {
+void Render2DImGui(ShaderManager& manager) {
    ImGui::Begin("Controls", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
    RenderCommonImGui();
    ImGui::Text("\n2D Mode\n\n");
+
+   ImGui::Text("User shader parameters\n\n");
+   unsigned num = manager.getShader().userFloatUniforms.size();
+   for (unsigned i = 0; i < num; ++i) {
+      ImGui::PushID(i * 999);
+      ImGui::SetNextItemWidth(180.f);
+      ImGui::SliderFloat("", &(manager.getShader().userFloatValues[i]), -1.0f, 1.0f);
+      ImGui::PopID();
+      ImGui::SameLine();
+      ImGui::PushID(i * 998);
+      if (ImGui::Button("-")) {
+         manager.getShader().userFloatValues[i] -= 0.002f;
+      }
+      ImGui::SameLine();
+      ImGui::PopID();
+      ImGui::PushID(i * 777);
+      if (ImGui::Button("+")) {
+         manager.getShader().userFloatValues[i] += 0.002f;
+      }
+      ImGui::PopID();
+      ImGui::SameLine();
+      ImGui::Text(manager.getShader().userFloatUniforms[i].c_str());
+   }
+
    ImGui::Text("Mesh Settings");
    ImGui::InputInt("Seed", &seed);
+
+   ImGui::SetNextItemWidth(80.f);
+   ImGui::InputDouble("##xx", &flattenFactor, 0.0, 0.0, "%.2f");
+   ImGui::SameLine();
+   if (ImGui::Button("-")) {
+      flattenFactor -= 0.2;
+   }
+   ImGui::SameLine();
+   if (ImGui::Button("+")) {
+      flattenFactor += 0.2;
+   }
+   ImGui::SameLine();
+   ImGui::Text("Flatten Factor");
 
    ImGui::SliderInt("Chunk Size", &chunkSize, 0, 32);
    ImGui::SliderInt("Number of Chunks (X axis)", &nChunksX, 0, 32);
@@ -310,7 +354,7 @@ int main() {
       if (is3Dmode) {
          Render3DImGui(shaderManager, myMesh);
       } else {
-         Render2DImGui();
+         Render2DImGui(shaderManager);
       }
 
       glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
