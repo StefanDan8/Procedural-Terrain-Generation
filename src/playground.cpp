@@ -97,6 +97,7 @@ void RenderCommonImGui() {
    }
 }
 void shaderDropdown() {
+   ImGui::PushItemWidth(140.f);
    static unsigned currentItem = 0; // Index of the currently selected item
    //std::vector<std::string> items = {"Option 1", "Option 2", "Option 3", "Option 4"};
 
@@ -141,6 +142,24 @@ NOTE: cursor must be in the rendering area
 )");
 }
 
+void _2DInputControls() {
+   ImGui::Text(R"(
+--- Keyboard Controls ---
+NOTE: Cursor must be in the rendering area
+
+   W = Move Camera Up
+   S = Move Camera Down
+   A = Move Camera Left
+   D = Move Camera Right
+
+--- Mouse Controls ---
+
+   Click and Drag to move camera
+   Scroll Wheel = Zoom In/Out
+
+)");
+}
+
 void saveToFile3D(Mesh& mesh) {
    ImGui::Text("\n\nSave Current Object to .obj\n");
    static char _user_save_path[256] = "";
@@ -162,62 +181,7 @@ void saveToFile2D() {
    }
 }
 
-void Render3DImGui(ShaderManager& manager, Mesh& mesh) {
-   ImGui::Begin("Controls", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
-   RenderCommonImGui();
-   ImGui::Text("\n3D Mode\n\n");
-
-   ImGui::Text("User shader parameters\n\n");
-   unsigned num = manager.getShader().userFloatUniforms.size();
-   for (unsigned i = 0; i < num; ++i) {
-      ImGui::PushID(i * 999);
-      ImGui::SetNextItemWidth(180.f);
-      ImGui::SliderFloat("", &(manager.getShader().userFloatValues[i]), -1.0f, 1.0f);
-      ImGui::PopID();
-      ImGui::SameLine();
-      ImGui::PushID(i * 998);
-      if (ImGui::Button("-")) {
-         manager.getShader().userFloatValues[i] -= 0.002f;
-      }
-      ImGui::SameLine();
-      ImGui::PopID();
-      ImGui::PushID(i * 777);
-      if (ImGui::Button("+")) {
-         manager.getShader().userFloatValues[i] += 0.002f;
-      }
-      ImGui::PopID();
-      ImGui::SameLine();
-      ImGui::Text(manager.getShader().userFloatUniforms[i].c_str());
-   }
-
-   ImGui::Text("Mesh Settings");
-   ImGui::SetNextItemWidth(80.f);
-   ImGui::InputInt("Seed", &seed);
-
-   ImGui::SetNextItemWidth(80.f);
-   ImGui::InputDouble("##xx", &flattenFactor, 0.0, 0.0, "%.2f");
-   ImGui::SameLine();
-   if (ImGui::Button("-")) {
-      flattenFactor -= 0.2;
-   }
-   ImGui::SameLine();
-   if (ImGui::Button("+")) {
-      flattenFactor += 0.2;
-   }
-   ImGui::SameLine();
-   ImGui::Text("Flatten Factor");
-
-   shaderDropdown();
-   saveToFile3D(mesh);
-   _3DInputControls();
-   ImGui::End();
-}
-
-void Render2DImGui(ShaderManager& manager) {
-   ImGui::Begin("Controls", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
-   RenderCommonImGui();
-   ImGui::Text("\n2D Mode\n\n");
-
+void userShaderParameters(ShaderManager& manager) {
    ImGui::Text("User Shader Parameters\n");
    unsigned num = manager.getShader().userFloatUniforms.size();
    for (unsigned i = 0; i < num; ++i) {
@@ -240,8 +204,11 @@ void Render2DImGui(ShaderManager& manager) {
       ImGui::SameLine();
       ImGui::Text(manager.getShader().userFloatUniforms[i].c_str());
    }
+}
 
-   ImGui::Text("\nMesh Settings");
+void meshSettings() {
+   ImGui::Text("Mesh Settings");
+   ImGui::SetNextItemWidth(80.f);
    ImGui::InputInt("Seed", &seed);
 
    ImGui::PushItemWidth(70.f);
@@ -256,16 +223,39 @@ void Render2DImGui(ShaderManager& manager) {
    }
    ImGui::SameLine();
    ImGui::Text("Flatten Factor");
+}
 
+void Render3DImGui(ShaderManager& manager, Mesh& mesh) {
+   ImGui::Begin("Controls", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
+   RenderCommonImGui();
+   ImGui::Text("\n3D Mode\n\n");
+
+   userShaderParameters(manager);
+   meshSettings();
+   shaderDropdown();
+
+   saveToFile3D(mesh);
+   _3DInputControls();
+   ImGui::End();
+}
+
+void Render2DImGui(ShaderManager& manager) {
+   ImGui::Begin("Controls", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
+   RenderCommonImGui();
+   ImGui::Text("\n2D Mode\n\n");
+
+   userShaderParameters(manager);
+   meshSettings();
 
    ImGui::SliderInt("Chunk Size", &chunkSize, 0, 32);
    ImGui::SliderInt("Chunks Number (X axis)", &nChunksX, 0, 32);
    ImGui::SliderInt("Chunks Number (Y axis)", &nChunksY, 0, 32);
 
-   ImGui::PushItemWidth(140.f);
-
    shaderDropdown();
+
    saveToFile2D();
+   _2DInputControls();
+
    ImGui::End();
 }
 
