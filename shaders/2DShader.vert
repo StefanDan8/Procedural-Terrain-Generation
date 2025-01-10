@@ -16,7 +16,7 @@ uniform mat4 camMatrix;
 
 void main() {
     Normal = aNormal;
-    color = vec3(aPos.y); // Using the height as the color
+    color = vec3(aPos.x, aPos.y, aPos.z); // Using the height as the color
     texCoord = aTexture;
     gl_Position = camMatrix * vec4(aPos.x, aPos.z, 1.0, 1.0); // 2D projection
 }
