@@ -100,60 +100,36 @@ void Mesh::Draw(Shader& shader, Camera& camera) {
    glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 }
 
-void ComputeNormals(Mesh& mesh) {
-   // Initialize normals to zero
-   for (auto& vertex : mesh.vertices) {
-      vertex.normal = glm::vec3(0.0f);
+void ExportToObj(const Mesh& mesh, const std::string& filename) {
+   std::ofstream file(filename);
+
+   if (!file.is_open()) {
+      std::cerr << "Failed to open file: " << filename << std::endl;
+      return;
    }
 
-   // Compute normals per face
-   for (size_t i = 0; i < mesh.indices.size(); i += 3) {
-      GLuint i0 = mesh.indices[i];
-      GLuint i1 = mesh.indices[i + 1];
-      GLuint i2 = mesh.indices[i + 2];
-
-      glm::vec3 v0 = mesh.vertices[i0].position;
-      glm::vec3 v1 = mesh.vertices[i1].position;
-      glm::vec3 v2 = mesh.vertices[i2].position;
-
-      // Compute the face normal
-      glm::vec3 normal = glm::normalize(glm::cross(v1 - v0, v2 - v0));
-
-      // Add the face normal to each vertex normal
-      mesh.vertices[i0].normal += normal;
-      mesh.vertices[i1].normal += normal;
-      mesh.vertices[i2].normal += normal;
-   }
-
-   // Normalize the vertex normals
-   for (auto& vertex : mesh.vertices) {
-      vertex.normal = glm::normalize(-vertex.normal);
-   }
-}
-
-void PrintMesh(const Mesh& mesh) {
-   std::cout << "{\n";
+   // Write vertex positions
    for (const auto& vertex : mesh.vertices) {
-      std::cout << "   Vertex{glm::vec3("
-                << std::fixed << std::setprecision(3) // Set decimal precision to 1
-                << vertex.position.x << "f, "
-                << vertex.position.y << "f, "
-                << vertex.position.z << "f), glm::vec3("
-                << vertex.normal.x << "f, "
-                << vertex.normal.y << "f, "
-                << vertex.normal.z << "f)},\n";
+      file << "v " << vertex.position.x << " " << vertex.position.y << " " << vertex.position.z << "\n";
    }
-   std::cout << "};\n\n";
+   // Write normals
+   for (const auto& vertex : mesh.vertices) {
+      file << "vn " << vertex.normal.x << " " << vertex.normal.y << " " << vertex.normal.z << "\n";
+   }
 
-   // std::cout << "   {\n      ";
-   // for (size_t i = 0; i < mesh.indices.size(); ++i) {
-   //    std::cout << mesh.indices[i];
-   //    if (i < mesh.indices.size() - 1) {
-   //       std::cout << ", ";
-   //    }
-   //    if ((i + 1) % 3 == 0 && i < mesh.indices.size() - 1) {
-   //       std::cout << "\n      ";
-   //    }
-   // }
-   // std::cout << "\n   };\n";
+   // Write texture coordinates
+   for (const auto& vertex : mesh.vertices) {
+      file << "vt " << vertex.texUV.x << " " << vertex.texUV.y << "\n";
+   }
+
+   // Write faces
+   for (size_t i = 0; i < mesh.indices.size(); i += 3) {
+      file << "f "
+           << (mesh.indices[i] + 1) << "/" << (mesh.indices[i] + 1) << "/" << (mesh.indices[i] + 1) << " "
+           << (mesh.indices[i + 1] + 1) << "/" << (mesh.indices[i + 1] + 1) << "/" << (mesh.indices[i + 1] + 1) << " "
+           << (mesh.indices[i + 2] + 1) << "/" << (mesh.indices[i + 2] + 1) << "/" << (mesh.indices[i + 2] + 1) << "\n";
+   }
+
+   file.close();
+   std::cout << "Mesh exported to " << filename << " successfully." << std::endl;
 }

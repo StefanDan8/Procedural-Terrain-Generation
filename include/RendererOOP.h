@@ -10,7 +10,7 @@
  *
  */
 class Renderer {
-public:
+   public:
    /**
    * Create a NetPBM (.ppm) file
    * @author PK

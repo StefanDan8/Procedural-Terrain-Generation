@@ -20,6 +20,7 @@ endif()
 #include(lib/gtest.cmake)
 
 add_compile_definitions(SHADER_ROOT="${CMAKE_SOURCE_DIR}/shaders")
+add_compile_definitions(OUTPUT_FOLDER_PATH="${CMAKE_SOURCE_DIR}/output")
 
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -fPIC -Wall -Wextra -fno-omit-frame-pointer -march=native -Wno-unknown-pragmas")
 

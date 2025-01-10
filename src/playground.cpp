@@ -128,16 +128,24 @@ NOTE: cursor must be in the rendering area
 )");
 }
 
-void saveToFile() {
+void saveToFile3D(Mesh& mesh) {
+   ImGui::Text("\n\nSave current object to .obj\n");
+   static char _user_save_path[256] = "";
+   ImGui::InputText("Name of file", _user_save_path, sizeof(_user_save_path));
+   if (ImGui::Button("Save current")) {
+      ExportToObj(mesh, std::string(OUTPUT_FOLDER_PATH) + "/" + _user_save_path + ".obj");
+   }
+}
+void saveToFile2D() {
    ImGui::Text("\n\nSave current object\n\n");
    static char _user_save_path[256] = "";
    ImGui::InputText("Name of file", _user_save_path, sizeof(_user_save_path));
    if (ImGui::Button("Save current")) {
-      std::cout << "Saved to " << _user_save_path << ".\n";
+      //ExportToObj(mesh, _user_save_path);
    }
 }
 
-void Render3DImGui(ShaderManager& manager) {
+void Render3DImGui(ShaderManager& manager, Mesh& mesh) {
    ImGui::Begin("Controls", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
    RenderCommonImGui();
    ImGui::Text("\n3D Mode\n\n");
@@ -151,7 +159,7 @@ void Render3DImGui(ShaderManager& manager) {
    ImGui::Text("Mesh Settings");
    ImGui::InputInt("Seed", &seed);
    shaderDropdown();
-   saveToFile();
+   saveToFile3D(mesh);
    _3DInputControls();
    ImGui::End();
 }
@@ -167,7 +175,7 @@ void Render2DImGui() {
    ImGui::SliderInt("Number of Chunks (X axis)", &nChunksX, 0, 32);
    ImGui::SliderInt("Number of Chunks (Y axis)", &nChunksY, 0, 32);
    shaderDropdown();
-   saveToFile();
+   saveToFile2D();
    ImGui::End();
 }
 
@@ -241,8 +249,6 @@ int main() {
 
    // Mesh myMesh(normalized);
    Mesh myMesh = generateMeshFromSeed(42);
-   //ComputeNormals(myMesh);
-   //PrintMesh(myMesh);
 
    glEnable(GL_DEPTH_TEST);
 
@@ -269,7 +275,7 @@ int main() {
       ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
 
       if (is3Dmode) {
-         Render3DImGui(shaderManager);
+         Render3DImGui(shaderManager, myMesh);
       } else {
          Render2DImGui();
       }
@@ -288,20 +294,8 @@ int main() {
          std::cout << "Changed shader\n";
          shaderManager.SwitchShader(currentVertexShader, currentFragmentShader);
       }
-      // if (is3Dmode) {
-      //    shaderManager.getShader().setUniforms(std::make_tuple("oceanUpperBound", oceanUpperBound),
-      //                                          std::make_tuple("sandLowerBound", sandLowerBound),
-      //                                          std::make_tuple("sandUpperBound", sandUpperBound),
-      //                                          std::make_tuple("grassLowerBound", grassLowerBound),
-      //                                          std::make_tuple("grassUpperBound", grassUpperBound));
-      // }
-      shaderManager.getShader().setUniforms();
 
-      // glUniform1f(glGetUniformLocation(shaderProgram.ID, "oceanUpperBound"), oceanUpperBound);
-      // glUniform1f(glGetUniformLocation(shaderProgram.ID, "sandLowerBound"), sandLowerBound);
-      // glUniform1f(glGetUniformLocation(shaderProgram.ID, "sandUpperBound"), sandUpperBound);
-      // glUniform1f(glGetUniformLocation(shaderProgram.ID, "grassLowerBound"), grassLowerBound);
-      // glUniform1f(glGetUniformLocation(shaderProgram.ID, "grassUpperBound"), grassUpperBound);
+      shaderManager.getShader().setUniforms();
 
       // // Render ImGUI
       ImGui::Render();
