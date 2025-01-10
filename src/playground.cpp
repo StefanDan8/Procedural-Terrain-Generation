@@ -70,6 +70,11 @@ int nChunksY = 16;
 // General
 int previousSeed = 42;
 int seed = previousSeed;
+double flattenFactor = 2.0;
+double lastFlattenFactor = flattenFactor;
+
+int frameSinceChange = 0;
+const int fuse = 30; // 30 frames until change takes placec
 
 void RenderCommonImGui() {
    ImGui::Text("Pick display mode:");
@@ -157,7 +162,22 @@ void Render3DImGui(ShaderManager& manager, Mesh& mesh) {
    }
 
    ImGui::Text("Mesh Settings");
+   ImGui::SetNextItemWidth(80.f);
    ImGui::InputInt("Seed", &seed);
+
+   ImGui::SetNextItemWidth(80.f);
+   ImGui::InputDouble("", &flattenFactor, 0.0, 0.0, "%.2f");
+   ImGui::SameLine();
+   if (ImGui::Button("-")) {
+      flattenFactor -= 0.2;
+   }
+   ImGui::SameLine();
+   if (ImGui::Button("+")) {
+      flattenFactor += 0.2;
+   }
+   ImGui::SameLine();
+   ImGui::Text("Flatten Factor");
+
    shaderDropdown();
    saveToFile3D(mesh);
    _3DInputControls();
@@ -179,15 +199,16 @@ void Render2DImGui() {
    ImGui::End();
 }
 
-Mesh generateMeshFromSeed(int seed) {
+Mesh generateMeshFromSeed(const int seed, const double flatteningFactor = 1.0) {
    perlin::AppConfig::getInstance().setGenerator(seed);
 
    const unsigned sizeX = 1440;
    const unsigned sizeY = 1440;
-   std::vector<std::pair<unsigned, double>> params4{std::make_pair(720, 60), std::make_pair(360, 500), std::make_pair(180, 100),
-                                                    std::make_pair(90, 100), std::make_pair(45, 20), std::make_pair(12, 10), std::make_pair(8, 5), std::make_pair(3, 2)};
+   std::vector<std::pair<unsigned, double>> params4{std::make_pair(720, 30), std::make_pair(360, 250), std::make_pair(180, 50),
+                                                    std::make_pair(90, 50), std::make_pair(45, 20), std::make_pair(12, 5), std::make_pair(8, 2.5), std::make_pair(3, 1)};
 
    perlin::PerlinNoise2D noise = perlin::PerlinNoise2D(sizeX, sizeY, params4);
+   double sumWeight = noise.getWeightSum();
    perlin::matrix result(sizeX, std::vector<double>(sizeY, 0.0));
    noise.fill(result);
 
@@ -198,7 +219,7 @@ Mesh generateMeshFromSeed(int seed) {
 
    render::Max(result, filter);
 
-   auto normalized = render::normalizeUnit(result);
+   auto normalized = render::normalizeUnit(result, sumWeight * flatteningFactor);
    Mesh myMesh(normalized);
    return myMesh;
 }
@@ -295,9 +316,20 @@ int main() {
       // // Render ImGUI
       ImGui::Render();
 
-      if (previousSeed != seed) {
+      if (previousSeed != seed || abs(flattenFactor - lastFlattenFactor) > 0.1) { // only do meaningful changes
+         frameSinceChange = 0;
          previousSeed = seed;
-         myMesh = generateMeshFromSeed(seed);
+         lastFlattenFactor = flattenFactor;
+      } else {
+         if (frameSinceChange > -1) {
+            frameSinceChange++;
+         }
+      }
+
+      if (frameSinceChange > fuse) {
+         frameSinceChange = -1;
+         std::cout << "recompute\n";
+         myMesh = generateMeshFromSeed(seed, flattenFactor);
       }
 
       Camera* camera = is3Dmode ? static_cast<Camera*>(&camera_3d) : static_cast<Camera*>(&camera_2d);

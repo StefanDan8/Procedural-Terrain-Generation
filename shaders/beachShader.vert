@@ -27,7 +27,7 @@ void main(){
     Normal = aNormal;
     vec3 oceanColor = vec3(0.0, 0.3, 0.7);
     vec3 sandColor = vec3(0.9, 0.8, 0.6); 
-    vec3 lightGreenGrass = vec3(0.24, 0.70, 0.44);
+    vec3 lightGreenGrass = vec3(0.0, 0.72, 0.0);
     vec3 darkGreen1 = vec3(0.165, 0.471, 0.165);
     vec3 darkGreen2 = vec3(0.047, 0.31, 0.047);
     vec3 rockColor = vec3(0.7, 0.7, 0.7); 
@@ -42,7 +42,7 @@ void main(){
         color = clamp(color, 0.0, 1.0); 
         
       
-    } else if (aPos.y >= oceanUpperBound && aPos.y < sandUpperBound) {
+    } else if (aPos.y >= oceanUpperBound && aPos.y < sandUpperBound && slopeFactor<0.3) {
         float variation = fract(sin(dot(aPos.xz, vec2(12.9898, 78.233))) * 43758.5453); // Simple pseudo-random noise
         variation = mix(-0.02, 0.02, variation); 
         float blendFactor = smoothstep(oceanUpperBound - 0.01, oceanUpperBound + 0.01, aPos.y);
