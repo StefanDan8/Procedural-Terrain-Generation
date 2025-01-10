@@ -100,7 +100,8 @@ void shaderDropdown() {
    static unsigned currentItem = 0; // Index of the currently selected item
    //std::vector<std::string> items = {"Option 1", "Option 2", "Option 3", "Option 4"};
 
-   if (ImGui::BeginCombo("Select a Shader", shaders[is3Dmode][currentItem].c_str())) {
+   ImGui::Text("\nSelect a Shader");
+   if (ImGui::BeginCombo("##xa", shaders[is3Dmode][currentItem].c_str())) {
       for (unsigned i = 0; i < shaders[is3Dmode].size(); i++) {
          bool isSelected = (currentItem == i);
          if (ImGui::Selectable(shaders[is3Dmode][i].c_str(), isSelected)) {
@@ -141,18 +142,22 @@ NOTE: cursor must be in the rendering area
 }
 
 void saveToFile3D(Mesh& mesh) {
-   ImGui::Text("\n\nSave current object to .obj\n");
+   ImGui::Text("\n\nSave Current Object to .obj\n");
    static char _user_save_path[256] = "";
-   ImGui::InputText("Name of file", _user_save_path, sizeof(_user_save_path));
-   if (ImGui::Button("Save current")) {
+   ImGui::InputText("Filename", _user_save_path, sizeof(_user_save_path));
+   if (ImGui::Button("Save")) {
       ExportToObj(mesh, std::string(OUTPUT_FOLDER_PATH) + "/" + _user_save_path + ".obj");
    }
 }
 void saveToFile2D() {
-   ImGui::Text("\n\nSave current object\n\n");
+   ImGui::Text("\nSave Current Image");
    static char _user_save_path[256] = "";
-   ImGui::InputText("Name of file", _user_save_path, sizeof(_user_save_path));
-   if (ImGui::Button("Save current")) {
+   ImGui::InputText("Filename", _user_save_path, sizeof(_user_save_path));
+   if (ImGui::Button("Save to .png")) {
+      //ExportToObj(mesh, _user_save_path);
+   }
+   ImGui::SameLine();
+   if (ImGui::Button("Save to .ppm")) {
       //ExportToObj(mesh, _user_save_path);
    }
 }
@@ -213,11 +218,11 @@ void Render2DImGui(ShaderManager& manager) {
    RenderCommonImGui();
    ImGui::Text("\n2D Mode\n\n");
 
-   ImGui::Text("User shader parameters\n\n");
+   ImGui::Text("User Shader Parameters\n");
    unsigned num = manager.getShader().userFloatUniforms.size();
    for (unsigned i = 0; i < num; ++i) {
       ImGui::PushID(i * 999);
-      ImGui::SetNextItemWidth(180.f);
+      ImGui::SetNextItemWidth(90.f);
       ImGui::SliderFloat("", &(manager.getShader().userFloatValues[i]), -1.0f, 1.0f);
       ImGui::PopID();
       ImGui::SameLine();
@@ -236,10 +241,10 @@ void Render2DImGui(ShaderManager& manager) {
       ImGui::Text(manager.getShader().userFloatUniforms[i].c_str());
    }
 
-   ImGui::Text("Mesh Settings");
+   ImGui::Text("\nMesh Settings");
    ImGui::InputInt("Seed", &seed);
 
-   ImGui::SetNextItemWidth(80.f);
+   ImGui::PushItemWidth(70.f);
    ImGui::InputDouble("##xx", &flattenFactor, 0.0, 0.0, "%.2f");
    ImGui::SameLine();
    if (ImGui::Button("-")) {
@@ -252,9 +257,13 @@ void Render2DImGui(ShaderManager& manager) {
    ImGui::SameLine();
    ImGui::Text("Flatten Factor");
 
+
    ImGui::SliderInt("Chunk Size", &chunkSize, 0, 32);
-   ImGui::SliderInt("Number of Chunks (X axis)", &nChunksX, 0, 32);
-   ImGui::SliderInt("Number of Chunks (Y axis)", &nChunksY, 0, 32);
+   ImGui::SliderInt("Chunks Number (X axis)", &nChunksX, 0, 32);
+   ImGui::SliderInt("Chunks Number (Y axis)", &nChunksY, 0, 32);
+
+   ImGui::PushItemWidth(140.f);
+
    shaderDropdown();
    saveToFile2D();
    ImGui::End();

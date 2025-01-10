@@ -15,30 +15,30 @@ out vec2 texCoord;
 uniform mat4 camMatrix;
 
 //--Uniforms for user
-uniform float oceanUpperBound; // 0.01
-uniform float lightOceanUpperBound; // 0.02
-uniform float sandUpperBound; //  0.03
-uniform float lowerGrassUpperBound; // 0.06
-uniform float upperGrassUpperBound; // 0.1
-uniform float lowerPeaksBound; // 0.12
-uniform float upperPeaksBound; // 0.15
+uniform float oceanLimit; // 0.01
+uniform float lightOceanLimit; // 0.02
+uniform float sandLimit; //  0.03
+uniform float lowerGrassLimit; // 0.06
+uniform float upperGrassLimit; // 0.1
+uniform float lowerPeaksLimit; // 0.12
+uniform float upperPeaksLimit; // 0.15
 
 void main(){
     Normal = aNormal;
 
-    if (aPos.y < oceanUpperBound) {
+    if (aPos.y < oceanLimit) {
         color = vec3(0.2, 0.2, 1.0);
-    } else if (aPos.y < lightOceanUpperBound) {
+    } else if (aPos.y < lightOceanLimit) {
         color = vec3(0.2, 0.4, 1.0);
-    } else if (aPos.y < sandUpperBound) {
+    } else if (aPos.y < sandLimit) {
         color = vec3(1.0, 1.0, 0.8);
-    } else if (aPos.y < lowerGrassUpperBound) {
+    } else if (aPos.y < lowerGrassLimit) {
         color = vec3(0.2, 0.6, 0.4);
-    } else if (aPos.y < upperGrassUpperBound) {
+    } else if (aPos.y < upperGrassLimit) {
         color = vec3(0.0, 0.7, 0.5);
-    } else if (aPos.y < lowerPeaksBound) {
+    } else if (aPos.y < lowerPeaksLimit) {
         color = vec3(0.3, 0.3, 0.3);
-    } else if (aPos.y < upperPeaksBound) {
+    } else if (aPos.y < upperPeaksLimit) {
         color = vec3(0.7, 0.7, 0.7);
     } else {
         color = vec3(.95, .95, .95);
