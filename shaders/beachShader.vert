@@ -16,8 +16,8 @@ out vec2 texCoord;
 uniform mat4 camMatrix;
 
 //--Uniforms for user
-uniform float oceanUpperBound; // 0.01
-uniform float sandUpperBound; //  0.04
+uniform float oceanUpperBound; // 0.02
+uniform float sandUpperBound; //  0.03
 uniform float grassUpperBound; // 0.6
 uniform float normalForestUpper; // 0.6
 uniform float normalGrassLower; // 0.35
@@ -42,7 +42,7 @@ void main(){
         color = clamp(color, 0.0, 1.0); 
         
       
-    } else if (aPos.y >= oceanUpperBound && aPos.y < sandUpperBound && slopeFactor<0.3) {
+    } else if (aPos.y >= oceanUpperBound && aPos.y < sandUpperBound && slopeFactor<0.4) {
         float variation = fract(sin(dot(aPos.xz, vec2(12.9898, 78.233))) * 43758.5453); // Simple pseudo-random noise
         variation = mix(-0.02, 0.02, variation); 
         float blendFactor = smoothstep(oceanUpperBound - 0.01, oceanUpperBound + 0.01, aPos.y);

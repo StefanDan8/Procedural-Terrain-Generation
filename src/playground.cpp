@@ -158,7 +158,24 @@ void Render3DImGui(ShaderManager& manager, Mesh& mesh) {
    ImGui::Text("User shader parameters\n\n");
    unsigned num = manager.getShader().userFloatUniforms.size();
    for (unsigned i = 0; i < num; ++i) {
-      ImGui::SliderFloat(manager.getShader().userFloatUniforms[i].c_str(), &(manager.getShader().userFloatValues[i]), -1.0f, 1.0f);
+      ImGui::PushID(i * 999);
+      ImGui::SetNextItemWidth(180.f);
+      ImGui::SliderFloat("", &(manager.getShader().userFloatValues[i]), -1.0f, 1.0f);
+      ImGui::PopID();
+      ImGui::SameLine();
+      ImGui::PushID(i * 998);
+      if (ImGui::Button("-")) {
+         manager.getShader().userFloatValues[i] -= 0.002f;
+      }
+      ImGui::SameLine();
+      ImGui::PopID();
+      ImGui::PushID(i * 777);
+      if (ImGui::Button("+")) {
+         manager.getShader().userFloatValues[i] += 0.002f;
+      }
+      ImGui::PopID();
+      ImGui::SameLine();
+      ImGui::Text(manager.getShader().userFloatUniforms[i].c_str());
    }
 
    ImGui::Text("Mesh Settings");
@@ -205,7 +222,7 @@ Mesh generateMeshFromSeed(const int seed, const double flatteningFactor = 1.0) {
    const unsigned sizeX = 1440;
    const unsigned sizeY = 1440;
    std::vector<std::pair<unsigned, double>> params4{std::make_pair(720, 30), std::make_pair(360, 250), std::make_pair(180, 50),
-                                                    std::make_pair(90, 50), std::make_pair(45, 20), std::make_pair(12, 5), std::make_pair(8, 2.5), std::make_pair(3, 1)};
+                                                    std::make_pair(90, 50), std::make_pair(45, 20), std::make_pair(12, 5), std::make_pair(8, 2), std::make_pair(3, 1)};
 
    perlin::PerlinNoise2D noise = perlin::PerlinNoise2D(sizeX, sizeY, params4);
    double sumWeight = noise.getWeightSum();
@@ -213,7 +230,7 @@ Mesh generateMeshFromSeed(const int seed, const double flatteningFactor = 1.0) {
    noise.fill(result);
 
    perlin::matrix filter(sizeX, std::vector<double>(sizeY, 0.0));
-   std::vector<std::pair<unsigned, double>> filterParams{std::make_pair(180, 5), std::make_pair(120, 5), std::make_pair(60, 10), std::make_pair(30, 1)};
+   std::vector<std::pair<unsigned, double>> filterParams{std::make_pair(180, 2), std::make_pair(120, 2), std::make_pair(60, 2), std::make_pair(30, 1)};
    perlin::PerlinNoise2D noiseFilter(sizeX, sizeY, filterParams);
    noiseFilter.fill(filter);
 
@@ -270,7 +287,7 @@ int main() {
    glEnable(GL_DEPTH_TEST);
 
    // Create both here else it'll recreate the camera every frame
-   Camera3D camera_3d(&RENDER_WIDTH, &RENDER_HEIGHT, glm::vec3(0.0f, 0.0f, 2.0f));
+   Camera3D camera_3d(&RENDER_WIDTH, &RENDER_HEIGHT, glm::vec3(-0.1f, 0.0f, 2.0f));
    Camera2D camera_2d(&RENDER_WIDTH, &RENDER_HEIGHT, glm::vec3(-0.1f, 0.0f, 2.5f), window); // handpicked to fit nicely
    while (!glfwWindowShouldClose(window)) {
       // Recalculate the framebuffer size and set the viewport accordingly
