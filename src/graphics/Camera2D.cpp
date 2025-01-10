@@ -4,6 +4,13 @@ void Camera2D::Inputs(GLFWwindow* window) {
    // Stores the coordinates of the cursor
    double mouseX;
    double mouseY;
+   // Get the cursor position variables
+   glfwGetCursorPos(window, &mouseX, &mouseY);
+   // If mouse is in the area of user interface, then the Camera should not respond
+   // in order to allow, for example, using W,A,S,D in text fields
+   if (mouseX < *width / 3) {
+      return;
+   }
 
    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
       Position += speed * -glm::normalize(glm::cross(Orientation, Right));

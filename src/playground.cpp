@@ -103,6 +103,31 @@ void shaderDropdown() {
       ImGui::EndCombo();
    }
 }
+
+void _3DInputControls() {
+   ImGui::Text(R"(
+--- Keyboard Controls ---
+NOTE: cursor must be in the rendering area
+
+  W  = Zoom In
+  S  = Zoom Out
+  A  = Move Camera Left
+  D  = Move Camera Right
+
+  Rotate Object:
+
+  Left Ctrl + W  = Increase Pitch
+  Left Ctrl + A  = Decrease Yaw
+  Left Ctrl + S  = Decrease Pitch
+  Left Ctrl + D  = Increase Yaw
+
+--- Mouse Controls ---
+
+  Click and Drag to move camera
+
+)");
+}
+
 void saveToFile() {
    ImGui::Text("\n\nSave current object\n\n");
    static char _user_save_path[256] = "";
@@ -123,15 +148,11 @@ void Render3DImGui(ShaderManager& manager) {
       ImGui::SliderFloat(manager.getShader().userFloatUniforms[i].c_str(), &(manager.getShader().userFloatValues[i]), -1.0f, 1.0f);
    }
 
-   // ImGui::SliderFloat("Ocean Upper Bound", &oceanUpperBound, -1.0f, 0.5f);
-   // ImGui::SliderFloat("Sand Lower Bound", &sandLowerBound, -0.1f, 0.5f);
-   // ImGui::SliderFloat("Sand Upper Bound", &sandUpperBound, -0.1f, 0.5f);
-   // ImGui::SliderFloat("Grass Lower Bound", &grassLowerBound, -0.1f, 0.5f);
-   // ImGui::SliderFloat("Grass Upper Bound", &grassUpperBound, -0.1f, 0.5f);
    ImGui::Text("Mesh Settings");
    ImGui::InputInt("Seed", &seed);
    shaderDropdown();
    saveToFile();
+   _3DInputControls();
    ImGui::End();
 }
 
@@ -161,7 +182,7 @@ Mesh generateMeshFromSeed(int seed) {
    perlin::PerlinNoise2D noise = perlin::PerlinNoise2D(sizeX, sizeY, params4);
    perlin::matrix result(sizeX, std::vector<double>(sizeY, 0.0));
    noise.fill(result);
-   
+
    perlin::matrix filter(sizeX, std::vector<double>(sizeY, 0.0));
    std::vector<std::pair<unsigned, double>> filterParams{std::make_pair(180, 5), std::make_pair(120, 5), std::make_pair(60, 10), std::make_pair(30, 1)};
    perlin::PerlinNoise2D noiseFilter(sizeX, sizeY, filterParams);
@@ -226,8 +247,8 @@ int main() {
    glEnable(GL_DEPTH_TEST);
 
    // Create both here else it'll recreate the camera every frame
-   Camera3D camera_3d( &RENDER_WIDTH, &RENDER_HEIGHT, glm::vec3(0.0f, 0.5f, 2.0f));
-   Camera2D camera_2d( &RENDER_WIDTH, &RENDER_HEIGHT, glm::vec3(0.0f, 0.5f, 2.0f), window);
+   Camera3D camera_3d(&RENDER_WIDTH, &RENDER_HEIGHT, glm::vec3(0.0f, 0.0f, 2.0f));
+   Camera2D camera_2d(&RENDER_WIDTH, &RENDER_HEIGHT, glm::vec3(-0.1f, 0.0f, 2.5f), window); // handpicked to fit nicely
 
    while (!glfwWindowShouldClose(window)) {
       // Recalculate the framebuffer size and set the viewport accordingly
