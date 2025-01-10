@@ -16,20 +16,26 @@ terminal or with the IDE of your choice.
 Building from Terminal: Start in the project directory.
 
 ```
-mkdir -p build/debug
-cd build/debug
-cmake -DCMAKE_BUILD_TYPE=Debug ../..
+mkdir -p build/release
+cd build/release
+cmake -DCMAKE_BUILD_TYPE=Release ../..
 make
 ```
-This creates the binaries `test_all` and `main`.
+This creates the binaries `main` and `playground`.
+`playground` corresponds to second sprint.
+Run with 
+```
+./playground
+```
+from inside the release directory.
 
-If you're using Windows as OS try instead:
+If you're using Windows as OS try instead (assuming you use MinGW for C++):
 
 ```
-mkdir build\debug
-cd build\debug
-cmake -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Debug ..\..
+mkdir build\release
+cd build\release
+cmake -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release ..\..
 mingw32-make
 ```
-
-TODO: End user does only need main. `test_all` is only for development. Adjust later.
+We are sorry, but we do not support MacOS.
+The C++ code is indeed platform independent, but the `CMakeLists.txt` may need to be adjusted, as well as the build steps.
