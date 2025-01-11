@@ -13,16 +13,15 @@
 // Include source files
 #include "AppConfig.hpp"
 #include "Camera2D.hpp"
+#include "Camera3D.hpp"
 #include "PerlinOOP.hpp"
 #include "Renderer.hpp"
 #include "UserInterface.hpp"
 
 // Include additional graphics files
+#include "Map.hpp"
 #include "Mesh.hpp"
 #include "ShaderManager.hpp"
-
-#include <Camera3D.hpp>
-#include <Map.hpp>
 
 bool is3DMode = false;
 bool switchedRecently = false;
@@ -83,6 +82,10 @@ int nChunksY = 16;
 int frameSinceChange = 0;
 const int fuse = 30; // 30 frames until change takes placec
 
+/**
+ * Renders the common ImGui elements for both 2D and 3D modes.
+ * @author SD
+ */
 void RenderCommonImGui() {
    ImGui::Text("Pick display mode:");
 
@@ -96,12 +99,18 @@ void RenderCommonImGui() {
       switchedRecently = true;
    }
 }
+
+/**
+ * Renders the shader dropdown menu in the ImGui window.
+ * @author SD, PK (minor modifications)
+ */
 void shaderDropdown() {
    ImGui::PushItemWidth(140.f);
    static unsigned currentItem = 0; // Index of the currently selected item
    //std::vector<std::string> items = {"Option 1", "Option 2", "Option 3", "Option 4"};
 
    ImGui::Text("\nSelect a Shader");
+   // is3DMode is a boolean, which really just means 0 for 2D, 1 for 3D
    if (ImGui::BeginCombo("##xa", shaders[is3DMode][currentItem].c_str())) {
       for (unsigned i = 0; i < shaders[is3DMode].size(); i++) {
          bool isSelected = (currentItem == i);
@@ -160,6 +169,11 @@ NOTE: Cursor must be in the rendering area
 )");
 }
 
+/**
+ * Renders the save to file options for 3D mode in the ImGui window. (obj)
+ * @param mesh Mesh to be saved to a file
+ * @author SD
+ */
 void saveToFile3D(Mesh& mesh) {
    ImGui::Text("\n\nSave Current Object to .obj\n");
    static char _user_save_path[256] = "";
@@ -168,6 +182,12 @@ void saveToFile3D(Mesh& mesh) {
       ExportToObj(mesh, std::string(OUTPUT_FOLDER_PATH) + "/" + _user_save_path + ".obj");
    }
 }
+
+/**
+ * Renders the save to file options for 2D mode in the ImGui window. (png and ppm)
+ * @param map Map to be saved to a file
+ * @author PK
+ */
 void saveToFile2D(Map& map) {
    ImGui::Text("\nSave Current Image");
    static char _user_save_path[256] = "";
@@ -183,6 +203,11 @@ void saveToFile2D(Map& map) {
    }
 }
 
+/**
+ * Renders the user shader parameters in the ImGui window.
+ * @param manager ShaderManger object
+ * @author SD, PK (extracted method)
+ */
 void userShaderParameters(ShaderManager& manager) {
    ImGui::Text("User Shader Parameters\n");
    unsigned num = manager.getShader().userFloatUniforms.size();
@@ -208,6 +233,10 @@ void userShaderParameters(ShaderManager& manager) {
    }
 }
 
+/**
+ * Renders the common mesh settings in the ImGui window.
+ * @author SD, PK (extracted method)
+ */
 void meshSettings() {
    ImGui::Text("Mesh Settings");
    ImGui::SetNextItemWidth(80.f);
@@ -227,6 +256,12 @@ void meshSettings() {
    ImGui::Text("Flatten Factor");
 }
 
+/**
+ * Renders the full ImGui window for the 3D mode.
+ * @param manager ShaderManager object, passed for userShaderParameters()
+ * @param mesh Mesh object to be rendered, passed for saveToFile3D()
+ * @author SD, PK (extracted method)
+ */
 void Render3DImGui(ShaderManager& manager, Mesh& mesh) {
    ImGui::Begin("Controls", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
    RenderCommonImGui();
@@ -241,6 +276,12 @@ void Render3DImGui(ShaderManager& manager, Mesh& mesh) {
    ImGui::End();
 }
 
+/**
+ * Renders the full ImGui window for the 2D mode.
+ * @param manager ShaderManager object, passed for userShaderParameters()
+ * @param map Map object to be rendered, passed for saveToFile2D()
+ * @author PK, SD
+ */
 void Render2DImGui(ShaderManager& manager, Map& map) {
    ImGui::Begin("Controls", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
    RenderCommonImGui();
@@ -261,6 +302,14 @@ void Render2DImGui(ShaderManager& manager, Map& map) {
    ImGui::End();
 }
 
+/**
+ * Generates noise for both 2D and 3D modes.
+ * @param seed Seed for the noise generation
+ * @param flatteningFactor Flattening factor for the noise generation
+ * @return 2D vector of doubles representing the generated noise
+ * @note Shouldn't be called directly, rather through generateMapFromSeed() and generateMeshFromSeed()
+ * @author SD, PK (extracted method)
+ */
 std::vector<std::vector<double>> commonGeneration(const int seed, const double flatteningFactor) {
    perlin::AppConfig::getInstance().setGenerator(seed);
 
@@ -309,12 +358,26 @@ std::vector<std::vector<double>> commonGeneration(const int seed, const double f
 
 }
 
+/**
+ * Creates a Map object with noise (2D mode).
+ * @param seed For the noise generation (random seed)
+ * @param flatteningFactor For the noise generation (squishes the noise)
+ * @return Map object with the generated noise
+ * @author PK
+ */
 Map generateMapFromSeed(const int seed, const double flatteningFactor = 1.0f) {
    std::vector<std::vector<double>> normalized = commonGeneration(seed, flatteningFactor);
    Map myMap(normalized);
    return myMap;
 }
 
+/**
+ * Creates a Mesh object with noise (3D mode).
+ * @param seed For the noise generation (random seed)
+ * @param flatteningFactor For the noise generation (squishes the noise)
+ * @return Mesh object with the generated noise
+ * @author SD
+ */
 Mesh generateMeshFromSeed(const int seed, const double flatteningFactor = 1.0) {
    std::vector<std::vector<double>> normalized = commonGeneration(seed, flatteningFactor);
    Mesh myMesh(normalized);

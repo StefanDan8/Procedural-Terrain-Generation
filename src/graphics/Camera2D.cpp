@@ -7,19 +7,22 @@ void Camera2D::Inputs(GLFWwindow* window) {
    // Get the cursor position variables
    glfwGetCursorPos(window, &mouseX, &mouseY);
 
+   // Calculate the speed, considering the z component of the camera position. Meaning, when zoomed in, the camera moves slower
+   const float contextualSpeed = speed * (Position.z - .5f);
+
    // Keyboard related operations, only apply when the cursor is not in the rendering area
    if (mouseX > *width / 3) {
       if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-         Position += speed * -glm::normalize(glm::cross(Orientation, Right));
+         Position += contextualSpeed * -glm::normalize(glm::cross(Orientation, Right));
       }
       if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-         Position += speed * -glm::normalize(glm::cross(Orientation, Up));
+         Position += contextualSpeed * -glm::normalize(glm::cross(Orientation, Up));
       }
       if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-         Position += speed * glm::normalize(glm::cross(Orientation, Right));
+         Position += contextualSpeed * glm::normalize(glm::cross(Orientation, Right));
       }
       if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-         Position += speed * glm::normalize(glm::cross(Orientation, Up));
+         Position += contextualSpeed * glm::normalize(glm::cross(Orientation, Up));
       }
    }
 
@@ -50,8 +53,8 @@ void Camera2D::Inputs(GLFWwindow* window) {
       // Update last position
       lastMouseX = mouseX;
       lastMouseY = mouseY;
-      // Change position
-      Position += speed * glm::vec3(-deltaX, deltaY, 0.0f);
+      // Change position. The speed is multiplied by the z component of the camera position, meaning when zoomed in, the camera moves slower
+      Position += contextualSpeed * glm::vec3(-deltaX, deltaY, 0.0f);
    } else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE) {
       glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
       firstClick = true;
@@ -62,6 +65,8 @@ void Camera2D::ScrollCallback(GLFWwindow* window, double xOffset, double yOffset
    auto camera = static_cast<Camera2D*>(glfwGetWindowUserPointer(window));
    if (camera == nullptr) return;
 
-   // Consider clamping function here
-   camera->Position += camera->speed * glm::vec3(0.0f, 0.0f, -yOffset);
+   auto newPos = camera->Position + camera->speed * camera->mouseScrollMultiplier * glm::vec3(0.0f, 0.0f, -yOffset);
+   newPos.z = std::clamp(newPos.z, 1.1f, 2.5f); // Prevents zooming too far in or out
+
+   camera->Position = newPos;
 }
