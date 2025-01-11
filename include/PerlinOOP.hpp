@@ -1,10 +1,62 @@
 #ifndef _PERLIN_OOP
 #define _PERLIN_OOP
-#include "PerlinAlgorithm.hpp"
 #include <stdexcept>
 #include <vector>
+#include <array>
+#include <iomanip> // For std::fixed and std::setprecision
+#include <iostream>
+#include <random>
+#include "AppConfig.hpp"
+#include <algorithm>
+#include <cassert>
+#include <cmath>
 
 namespace perlin {
+
+// ----- General Functions -----
+
+/// @brief 2D normalized real vector
+using vec2d = std::array<double, 2>;
+
+/// @brief 3D normalized real vector
+using vec3d = std::array<double, 3>;
+
+/// @brief Matrix with real values.
+using matrix = std::vector<std::vector<double>>;
+
+/// @brief 3D tensor with real values.
+using tensor = std::vector<std::vector<std::vector<double>>>;
+
+
+/// @brief Serves as global random number generator for Unif[0,1]
+extern UniformUnitGenerator unifGlbl;
+/// @brief Gradients for 2D generation. Assumed to have length = chunkSize
+extern std::vector<vec2d> gradients2D;
+
+int simpleHash(int i, int j, int N);
+
+vec2d random2DGrad();
+vec3d random3DGrad();
+
+/// @author SD
+/// @brief Generates a random 2D normalized vector
+/// @param generator A random number generator for Unif[0,1]
+vec2d random2DGrad(UniformUnitGenerator& generator);
+
+/// @author SD
+/// @brief Generates a random 3D normalized vector
+/// @param generator A random number generator for Unif[0,1]
+vec3d random3DGrad(UniformUnitGenerator& generator);
+
+double dot(vec2d& x, vec2d& y);
+
+double dot(vec3d& x, vec3d& y);
+
+double fade(const double t);
+
+double lerp(const double a, const double b, const double t);
+
+// ----- Layer Functions -----
 
 class PerlinLayer2D {
    public:
@@ -65,6 +117,8 @@ class PerlinLayer2D {
    std::vector<vec2d>& gradients; // The gradients used for computation
    double weight = 1.0; // The weight of the layer
 };
+
+// ----- Noise Functions -----
 
 class PerlinNoise2D {
    private:

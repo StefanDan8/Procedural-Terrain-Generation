@@ -1,6 +1,51 @@
 #include "PerlinOOP.hpp"
 namespace perlin {
 
+UniformUnitGenerator unifGlbl = UniformUnitGenerator(631); // Global random number generator for Unif[0,1]
+// ----- General functions -----
+
+int simpleHash(int i, int j, int N) {
+   return (42043 * i + 15299 * j) % N;
+}
+
+vec2d random2DGrad() {
+   return random2DGrad(unifGlbl);
+}
+
+vec2d random2DGrad(UniformUnitGenerator& unif) {
+   auto theta = unif.get() * 2 * M_PI;
+   return vec2d{cos(theta), sin(theta)};
+}
+
+vec3d random3DGrad() {
+   return random3DGrad(unifGlbl);
+}
+
+vec3d random3DGrad(UniformUnitGenerator& unif) {
+   auto cosphi = unif.get() * 2 - 1;
+   auto theta = unif.get() * 2 * M_PI;
+   auto h = sqrt(1 - cosphi * cosphi);
+   return vec3d{h * cos(theta), h * sin(theta), cosphi};
+}
+
+double dot(vec2d& x, vec2d& y) {
+   return x[0] * y[0] + x[1] * y[1];
+}
+
+double dot(vec3d& x, vec3d& y) {
+   return x[0] * y[0] + x[1] * y[1] + x[2] * y[2];
+}
+
+double fade(const double t) {
+   return t * t * t * (t * (t * 6 - 15) + 10);
+}
+
+double lerp(const double a, const double b, const double t) {
+   return a + t * (b - a);
+}
+
+
+
 // ----- Layer functions -----
 
 double PerlinLayer2D::computeWithIndices(const unsigned x, const unsigned y, const int valBL, const int valBR, const int valTL, const int valTR) {

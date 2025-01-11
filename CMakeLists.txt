@@ -48,7 +48,7 @@ target_include_directories(imgui PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/graphicsExte
 
 target_link_libraries(imgui glad glfw)
 
-add_library(perlin src/PerlinAlgorithm.cpp src/PerlinOOP.cpp src/AppConfig.cpp)
+add_library(perlin src/PerlinOOP.cpp src/AppConfig.cpp)
 target_include_directories(perlin PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>

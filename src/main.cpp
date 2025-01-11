@@ -1,4 +1,4 @@
-#include "PerlinAlgorithm.hpp"
+#include "PerlinOOP.hpp"
 #include "Renderer.hpp"
 #include "UserInterface.hpp"
 
@@ -18,15 +18,16 @@ int main() {
 
    perlin::UniformUnitGenerator randomG(seed);
    // Perlin noise generation
-   perlin::initialize2DGradients(chunkSize, randomG);
    perlin::matrix result(nChunksX * chunkSize, std::vector<double>(nChunksY * chunkSize, 0.0));
 
-   const std::vector<unsigned> permutationTable = perlin::generatePermutationTable(seed, chunkSize);
-   for (unsigned i = 0; i < nChunksX; i++) {
-      for (unsigned j = 0; j < nChunksY; j++) {
-         perlin::fill2DChunk(result, chunkSize, i, j, permutationTable);
-      }
-   }
+   // perlin::initialize2DGradients(chunkSize, randomG);
+
+   // const std::vector<unsigned> permutationTable = perlin::generatePermutationTable(seed, chunkSize);
+   // for (unsigned i = 0; i < nChunksX; i++) {
+   //    for (unsigned j = 0; j < nChunksY; j++) {
+   //       perlin::fill2DChunk(result, chunkSize, i, j, permutationTable);
+   //    }
+   // }
 
    // Stop progress bar
    done = true;
