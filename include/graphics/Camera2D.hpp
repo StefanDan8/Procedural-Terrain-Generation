@@ -11,6 +11,8 @@ class Camera2D final : public Camera {
    public:
    // To calculate deltas
    double lastMouseX = 0.0f, lastMouseY = 0.0f;
+   // Increase speed on mouse drag + scroll
+   float mouseScrollMultiplier = 3.0f;
 
    Camera2D(float* width, float* height, glm::vec3 position, GLFWwindow* window) : Camera(width, height, position) {
       glfwSetWindowUserPointer(window, this);
