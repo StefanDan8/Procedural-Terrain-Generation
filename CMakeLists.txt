@@ -54,8 +54,7 @@ target_include_directories(perlin PUBLIC
         $<INSTALL_INTERFACE:include>
         PRIVATE src)
 
-add_library(render src/Renderer.cpp
-        src/RendererOOP.cpp)
+add_library(render src/Renderer.cpp)
 target_include_directories(render PUBLIC
 $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 $<INSTALL_INTERFACE:include>
