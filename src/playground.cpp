@@ -266,24 +266,47 @@ std::vector<std::vector<double>> commonGeneration(const int seed, const double f
 
    const unsigned sizeX = 1440;
    const unsigned sizeY = 1440;
+
+   // Parameters for the first noise layer
    std::vector<std::pair<unsigned, double>> params4{std::make_pair(720, 30), std::make_pair(360, 250), std::make_pair(180, 50),
       std::make_pair(90, 50), std::make_pair(45, 20), std::make_pair(12, 5), std::make_pair(8, 2), std::make_pair(3, 1)};
 
+   // Generate and fill the first noise layer
    perlin::PerlinNoise2D noise = perlin::PerlinNoise2D(sizeX, sizeY, params4);
-   double sumWeight = noise.getWeightSum();
-   perlin::matrix result(sizeX, std::vector<double>(sizeY, 0.0));
    noise.fill();
-   result = noise.getResult();
    
-   perlin::matrix filter(sizeX, std::vector<double>(sizeY, 0.0));
+   // Parameters for the second noise layer
    std::vector<std::pair<unsigned, double>> filterParams{std::make_pair(180, 2), std::make_pair(120, 2), std::make_pair(60, 2), std::make_pair(30, 1)};
+
+   // Generate and fill the second noise layer
    perlin::PerlinNoise2D noiseFilter(sizeX, sizeY, filterParams);
    noiseFilter.fill();
-   filter = noiseFilter.getResult();
 
-   render::Max(result, filter);
+   // Filter and normalize the noise
+   noise.filterMatrix(noiseFilter);
+   // noise.normalizeMatrixSUM(flatteningFactor);
+
+   double sumWeight = noise.getWeightSum();
+   perlin::matrix result(sizeX, std::vector<double>(sizeY, 0.0));
+   result = noise.getResult();
 
    return render::normalizeUnit(result, sumWeight * flatteningFactor);
+
+   // perlin::PerlinNoise2D noise = perlin::PerlinNoise2D(sizeX, sizeY, params4);
+
+   // double sumWeight = noise.getWeightSum();
+   // perlin::matrix result(sizeX, std::vector<double>(sizeY, 0.0));
+   // noise.fill();
+   // result = noise.getResult();
+   
+   // perlin::matrix filter(sizeX, std::vector<double>(sizeY, 0.0));
+   // std::vector<std::pair<unsigned, double>> filterParams{std::make_pair(180, 2), std::make_pair(120, 2), std::make_pair(60, 2), std::make_pair(30, 1)};
+   // perlin::PerlinNoise2D noiseFilter(sizeX, sizeY, filterParams);
+   // noiseFilter.fill();
+   // filter = noiseFilter.getResult();
+
+   // render::Max(result, filter);
+
 }
 
 Map generateMapFromSeed(const int seed, const double flatteningFactor = 1.0f) {

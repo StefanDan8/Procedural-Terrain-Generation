@@ -104,6 +104,8 @@ class PerlinNoise2D {
       }
    }
 
+   // --- Matrix functions ---
+
    perlin::matrix getResult() {
       return resultMatrix;
    }
@@ -116,6 +118,32 @@ class PerlinNoise2D {
 
    /// @brief Fill the whole matrix with Perlin noise values
    void fill();
+
+   /// @brief Return the minimum and maximum values in the matrix
+   std::pair<double, double> getMinMaxVal();
+
+   /// @brief Normalize the matrix to the range [0, 255]
+   void normalizeMatrix0255();
+
+   /// @brief Normalize the matrix to the range [-1, 1]
+   void normalizeMatrixPM1();
+
+   /// @brief Normalize the matrix by dividing by the sum of the weights
+   void normalizeMatrixSUM(const double flatteningFactor = 1.0f);
+
+   /// @brief Normalize the matrix to the range [0, 255] and apply the ReLU function with minimal threshold to the matrix
+   /// @param threshold the threshold for the ReLU function
+   void normalizeMatrixReLU(const double threshold = 0.0f);
+
+   /// @brief Apply the ReLU function with minimal threshold to the matrix
+   /// @param threshold the threshold for the ReLU function
+   void matrixReLU(const double threshold = 0.0f);
+
+   /// @brief Update the own matrix with the maximum values of the own and another PerlinNoise2D object's matrix
+   /// @param other another PerlinNoise2D object
+   void filterMatrix(perlin::PerlinNoise2D& other);
+
+   // --- Layer functions ---
 
    /// @brief Set the layers of the noise with the already computed layers
    void setLayers(std::vector<PerlinLayer2D>& newLayers);
@@ -157,8 +185,9 @@ class PerlinNoise2D {
       }
       return weightSum;
    }
+
 };
 
 }
 
-#endif
+#endif // _PERLIN_OOP

@@ -1,7 +1,8 @@
 #include "PerlinOOP.hpp"
 namespace perlin {
 
-// --- Layer functions ---
+// ----- Layer functions -----
+
 double PerlinLayer2D::computeWithIndices(const unsigned x, const unsigned y, const int valBL, const int valBR, const int valTL, const int valTR) {
    // Compute the position of the point within the square
    double dx = (x % chunkSize + 1) / (double) chunkSize;
@@ -85,10 +86,12 @@ void PerlinLayer2D::fillMatrix(matrix& result) {
    }
 }
 
-// --- Noise functions ---
+// ----- Noise functions -----
+
+// -- Matrix functions --
 
 void PerlinNoise2D::resetMatrix() {
-      resultMatrix = perlin::matrix(sizeX, std::vector<double>(sizeY, 0.0));
+   resultMatrix = perlin::matrix(sizeX, std::vector<double>(sizeY, 0.0));
 }
 
 void PerlinNoise2D::resizeMatrix(unsigned newSizeX, unsigned newSizeY) {
@@ -107,14 +110,85 @@ void PerlinNoise2D::fill() {
    for (auto& layer : layers) {
       layer.fillMatrix(resultMatrix);
    }
-
-   // Normalize the result
-   // for (auto& row : resultMatrix) {
-   //    for (auto& val : row) {
-   //       val /= weightSum;
-   //    }
-   // }
 }
+
+std::pair<double, double> PerlinNoise2D::getMinMaxVal(){
+   // Find the minimum and maximum values in the matrix
+   double minVal = resultMatrix[0][0];
+   double maxVal = resultMatrix[0][0];
+   for (const auto& row : resultMatrix) {
+      for (double value : row) {
+         minVal = std::min(minVal, value);
+         maxVal = std::max(maxVal, value);
+      }
+   }
+
+   return std::make_pair(minVal, maxVal);
+}
+
+void PerlinNoise2D::normalizeMatrix0255(){
+   // Find the minimum and maximum values in the matrix
+   auto minmax = getMinMaxVal();
+   double minVal = minmax.first;
+   double maxVal = minmax.second;
+
+   // Normalize the matrix to [0, 255]
+   for (size_t i = 0; i < sizeX; ++i) {
+      for (size_t j = 0; j < sizeY; ++j) {
+         resultMatrix[i][j] = static_cast<int>(255 * (resultMatrix[i][j] - minVal) / (maxVal - minVal));
+      }
+   }
+}
+
+void PerlinNoise2D::normalizeMatrixPM1(){
+   // Find the minimum and maximum values in the matrix
+   auto minmax = getMinMaxVal();
+   double minVal = minmax.first;
+   double maxVal = minmax.second;
+
+   // Normalize the matrix to [-1, 1]
+   for (size_t i = 0; i < sizeX; ++i) {
+      for (size_t j = 0; j < sizeY; ++j) {
+         resultMatrix[i][j] = 2.0f * (resultMatrix[i][j] - minVal) / (maxVal - minVal) - 1.0f;
+      }
+   }
+}
+
+void PerlinNoise2D::normalizeMatrixSUM(const double flatteningFactor){
+   // Normalize the matrix by dividing by the sum of the weights
+   for (size_t i = 0; i < sizeX; ++i) {
+      for (size_t j = 0; j < sizeY; ++j) {
+         resultMatrix[i][j] /= weightSum * flatteningFactor;
+      }
+   }
+}
+
+void PerlinNoise2D::normalizeMatrixReLU(const double threshold){
+   // Normalize the matrix to [0, 255] and apply the ReLU function with minimal threshold to the matrix
+   normalizeMatrix0255();
+   matrixReLU(threshold);
+}
+
+void PerlinNoise2D::matrixReLU(const double threshold){
+   // Apply the ReLU function with minimal threshold to the matrix
+   for (auto& row : resultMatrix) {
+      for (auto& el : row) {
+         el = std::max(el, threshold);
+      }
+   }
+}
+
+void PerlinNoise2D::filterMatrix(perlin::PerlinNoise2D& other){
+   // Update the own matrix with the maximum values of the own and another PerlinNoise2D object's matrix
+   auto otherMatrix = other.getResult();
+   for (unsigned i = 0; i < sizeX; i++) {
+      for (unsigned j = 0; j < sizeY; j++) {
+         resultMatrix[i][j] = std::max(resultMatrix[i][j], otherMatrix[i][j]);
+      }
+   }
+}
+
+// --- Layer functions ---
 
 void PerlinNoise2D::setLayers(std::vector<PerlinLayer2D>& newLayers) {
    layers = newLayers;
