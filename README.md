@@ -37,5 +37,12 @@ cd build\release
 cmake -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release ..\..
 mingw32-make
 ```
+
+To run the program execute
+```
+start playground.exe
+```
+
 We are sorry, but we do not support MacOS.
+
 The C++ code is indeed platform independent, but the `CMakeLists.txt` may need to be adjusted, as well as the build steps.
