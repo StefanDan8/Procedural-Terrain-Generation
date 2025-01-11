@@ -14,9 +14,13 @@
 
 #include "glfw-3.4/include/GLFW/glfw3.h"
 
-/// @brief Class for managing the camera (point of view) of the rendering
+/**
+ * Class for managing the camera (point of view) of the rendering
+ * @authors SD
+ */
 class Camera {
    public:
+   // Pointers of the width and height of the window, updates with the window size
    float* width;
    float* height;
 

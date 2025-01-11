@@ -35,36 +35,59 @@ class UniformUnitGenerator {
 //    UniformUnitGenerator generator;
 // };
 
+/**
+ * Class which contains the configuration of the application.
+ * @note Singleton class, use AppConfig::getInstance() to access the instance.
+ * @author SD
+ */
 class AppConfig {
-   public:
+   UniformUnitGenerator generator;
+   static std::unique_ptr<AppConfig> instance;
+   AppConfig(unsigned seed) : generator(seed) {}
+
+public:
+   /**
+    * Returns the instance of the AppConfig, if already initialized.
+    * @throws std::logic_error if the instance isn't initialized.
+    * @see Use AppConfig::initialize() to initialize first.
+    * @author SD
+    */
    static AppConfig& getInstance() {
       if (!instance) {
          throw std::logic_error("AppConfig has not been initialized");
       }
       return *instance;
    }
+
+   /**
+    * Creates AppConfig instance with the given seed.
+    * @param seed Used for the random number generator
+    * @see After calling this, use AppConfig::getInstance() to access the instance.
+    * @author SD
+    */
    static void initialize(unsigned seed) {
       if (!instance) {
          instance.reset(new AppConfig(seed));
       }
    }
 
+   // Delete copy constructor and assignment operator
    AppConfig(const AppConfig&) = delete;
    AppConfig& operator=(const AppConfig&) = delete;
-   AppConfig() = delete;
+   AppConfig() = delete; // Prevent default constructor
 
-   UniformUnitGenerator& getUnif() {
-      return generator;
-   }
+   /**
+    * Returns the UniformUnitGenerator reference for generating random numbers.
+    * @author SD
+    */
+   UniformUnitGenerator& getUnif() { return generator; }
 
-   void setGenerator(int seed) {
-      generator = UniformUnitGenerator(seed);
-   }
-
-   private:
-   UniformUnitGenerator generator;
-   AppConfig(unsigned seed) : generator(seed) {}
-   static std::unique_ptr<AppConfig> instance;
+   /**
+    * Creates a new generator with the given seed.
+    * @param seed Seed for the new generator
+    * @author SD
+    */
+   void setGenerator(int seed) { generator = UniformUnitGenerator(seed); }
 };
 }
 #endif

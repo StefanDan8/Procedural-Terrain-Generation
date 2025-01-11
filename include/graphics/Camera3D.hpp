@@ -3,6 +3,10 @@
 
 #include <Camera.hpp>
 
+/**
+ * Class for managing a 3D camera
+ * @author SD, PK
+ */
 class Camera3D final : public Camera {
    public:
    float yaw = 0.0f;
