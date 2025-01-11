@@ -27,8 +27,6 @@ using matrix = std::vector<std::vector<double>>;
 /// @brief 3D tensor with real values.
 using tensor = std::vector<std::vector<std::vector<double>>>;
 
-/// @brief Serves as global random number generator for Unif[0,1]
-extern UniformUnitGenerator unifGlbl;
 
 /// @brief Gradients for 2D generation. Assumed to have length = chunkSize
 extern std::vector<vec2d> gradients2D;

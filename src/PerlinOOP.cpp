@@ -1,7 +1,6 @@
 #include "PerlinOOP.hpp"
 namespace perlin {
 
-UniformUnitGenerator unifGlbl = UniformUnitGenerator(631); // Global random number generator for Unif[0,1]
 // ----- General functions -----
 
 int simpleHash(int i, int j, int N) {
@@ -9,7 +8,7 @@ int simpleHash(int i, int j, int N) {
 }
 
 vec2d random2DGrad() {
-   return random2DGrad(unifGlbl);
+   return random2DGrad(AppConfig::getInstance().getUnif());
 }
 
 vec2d random2DGrad(UniformUnitGenerator& unif) {
@@ -18,7 +17,7 @@ vec2d random2DGrad(UniformUnitGenerator& unif) {
 }
 
 vec3d random3DGrad() {
-   return random3DGrad(unifGlbl);
+   return random3DGrad(AppConfig::getInstance().getUnif());
 }
 
 vec3d random3DGrad(UniformUnitGenerator& unif) {
