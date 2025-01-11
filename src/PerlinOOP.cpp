@@ -77,20 +77,43 @@ void PerlinLayer2D::fillChunk(matrix& result, const unsigned chunkX, const unsig
    }
 }
 
-void PerlinLayer2D::fill(matrix& result) {
-   for (unsigned i = 0; i < numChunksX; i++) {
-      for (unsigned j = 0; j < numChunksY; j++) {
-         fillChunk(result, i, j);
+void PerlinLayer2D::fillMatrix(matrix& result) {
+   for (unsigned chunkX = 0; chunkX < numChunksX; chunkX++) {
+      for (unsigned chunkY = 0; chunkY < numChunksY; chunkY++) {
+         fillChunk(result, chunkX, chunkY);
       }
    }
 }
 
 // --- Noise functions ---
 
-void PerlinNoise2D::fill(matrix& result) {
-   for (auto& layer : layers) {
-      layer.fill(result);
+void PerlinNoise2D::resetMatrix() {
+      resultMatrix = perlin::matrix(sizeX, std::vector<double>(sizeY, 0.0));
+}
+
+void PerlinNoise2D::resizeMatrix(unsigned newSizeX, unsigned newSizeY) {
+      sizeX = newSizeX;
+      sizeY = newSizeY;
+      // Resize outer vector to sizeX
+      resultMatrix.resize(sizeX);
+
+      // Resize each inner vector to sizeY
+      for (auto& row : resultMatrix) {
+         row.resize(sizeY, 0.0); // Initialize new elements with 0.0
+      }
    }
+
+void PerlinNoise2D::fill() {
+   for (auto& layer : layers) {
+      layer.fillMatrix(resultMatrix);
+   }
+
+   // Normalize the result
+   // for (auto& row : resultMatrix) {
+   //    for (auto& val : row) {
+   //       val /= weightSum;
+   //    }
+   // }
 }
 
 void PerlinNoise2D::setLayers(std::vector<PerlinLayer2D>& newLayers) {

@@ -322,12 +322,14 @@ std::vector<std::vector<double>> commonGeneration(const int seed, const double f
    perlin::PerlinNoise2D noise = perlin::PerlinNoise2D(sizeX, sizeY, params4);
    double sumWeight = noise.getWeightSum();
    perlin::matrix result(sizeX, std::vector<double>(sizeY, 0.0));
-   noise.fill(result);
-
+   noise.fill();
+   result = noise.getResult();
+   
    perlin::matrix filter(sizeX, std::vector<double>(sizeY, 0.0));
    std::vector<std::pair<unsigned, double>> filterParams{std::make_pair(180, 2), std::make_pair(120, 2), std::make_pair(60, 2), std::make_pair(30, 1)};
    perlin::PerlinNoise2D noiseFilter(sizeX, sizeY, filterParams);
-   noiseFilter.fill(filter);
+   noiseFilter.fill();
+   filter = noiseFilter.getResult();
 
    render::Max(result, filter);
 
