@@ -13,16 +13,15 @@
 // Include source files
 #include "AppConfig.hpp"
 #include "Camera2D.hpp"
+#include "Camera3D.hpp"
 #include "PerlinOOP.hpp"
 #include "Renderer.hpp"
 #include "UserInterface.hpp"
 
 // Include additional graphics files
+#include "Map.hpp"
 #include "Mesh.hpp"
 #include "ShaderManager.hpp"
-
-#include <Camera3D.hpp>
-#include <Map.hpp>
 
 bool is3DMode = false;
 bool switchedRecently = false;
