@@ -5,12 +5,10 @@
 
 class Camera2D final : public Camera {
    public:
-   glm::vec3 Right = glm::vec3(1.0f, 0.0f, 0.0f);
-
    double lastMouseX = 0.0f;
    double lastMouseY = 0.0f;
 
-   Camera2D(float *width, float *height, glm::vec3 position, GLFWwindow* window): Camera(width, height, position) {
+   Camera2D(float* width, float* height, glm::vec3 position, GLFWwindow* window) : Camera(width, height, position) {
       glfwSetWindowUserPointer(window, this);
    };
 

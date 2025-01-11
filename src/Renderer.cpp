@@ -125,7 +125,7 @@ std::vector<std::vector<double>> normalizePlusMinusOne(const std::vector<std::ve
    return normalized;
 }
 
-std::vector<std::vector<double>> normalizeUnit(const std::vector<std::vector<double>>& matrix) {
+std::vector<std::vector<double>> normalizeUnit(const std::vector<std::vector<double>>& matrix, const double sumWeight) {
    size_t rows = matrix.size();
    size_t cols = matrix[0].size();
 
@@ -133,7 +133,8 @@ std::vector<std::vector<double>> normalizeUnit(const std::vector<std::vector<dou
    std::vector<std::vector<double>> normalized(rows, std::vector<double>(cols));
    for (size_t i = 0; i < rows; ++i) {
       for (size_t j = 0; j < cols; ++j) {
-         normalized[i][j] = 2 * matrix[i][j] / (rows + cols);
+         //normalized[i][j] = 2 * matrix[i][j] / (rows + cols);
+         normalized[i][j] = matrix[i][j] / sumWeight;
       }
    }
    return normalized;

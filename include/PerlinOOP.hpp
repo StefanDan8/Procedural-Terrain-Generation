@@ -7,14 +7,6 @@
 namespace perlin {
 
 class PerlinLayer2D {
-   private:
-   // --- Class Parameters ---
-   const unsigned chunkSize; // The size of the chunk
-   const unsigned numChunksX; // The number of chunks in the x direction
-   const unsigned numChunksY; // The number of chunks in the y direction
-   double weight = 1.0; // The weight of the layer
-   std::vector<vec2d>& gradients; // The gradients used for computation
-
    public:
    // constructors
    PerlinLayer2D(const unsigned chunkSize, const unsigned numChunksX, const unsigned numChunksY, std::vector<vec2d>& gradients) : chunkSize(chunkSize), numChunksX(numChunksX), numChunksY(numChunksY), gradients(gradients) {}
@@ -29,6 +21,15 @@ class PerlinLayer2D {
    /// @param chunkX x-coordinate of the chunk within the entire grid
    /// @param chunkY y-coordinate of the chunk within the entire grid
    double compute(const unsigned x, const unsigned y, const unsigned chunkX, const unsigned chunkY);
+
+   /// @brief Compute the Perlin noise value of a pixel
+   /// @param x x-coordinate within the chunk
+   /// @param y y-coordinate within the chunk
+   /// @param valBL index of bottom left gradient
+   /// @param valBR index of bottom right gradient
+   /// @param valTL index of top left gradient
+   /// @param valTR index of top right gradient
+   double computeWithIndices(const unsigned x, const unsigned y, const int valBL, const int valBR, const int valTL, const int valTR);
 
    /// @brief Fill a chunk of the matrix with Perlin noise values
    /// @param result The matrix to fill
@@ -55,7 +56,14 @@ class PerlinLayer2D {
    PerlinLayer2D operator=(const PerlinLayer2D& other) {
       return PerlinLayer2D(other.chunkSize, other.numChunksX, other.numChunksY, other.gradients, other.weight);
    }
-   
+
+   private:
+   // --- Class Parameters ---
+   const unsigned chunkSize; // The size of the chunk
+   const unsigned numChunksX; // The number of chunks in the x direction
+   const unsigned numChunksY; // The number of chunks in the y direction
+   std::vector<vec2d>& gradients; // The gradients used for computation
+   double weight = 1.0; // The weight of the layer
 };
 
 class PerlinNoise2D {
@@ -75,7 +83,7 @@ class PerlinNoise2D {
    /// @param layerParams A vector of pairs, each pair containing the chunk size and the weight of the layer
    PerlinNoise2D(const unsigned sizeX, const unsigned sizeY, std::vector<std::pair<unsigned, double>>& layerParams) : sizeX(sizeX), sizeY(sizeY), resultMatrix(perlin::matrix(sizeX, std::vector<double>(sizeY, 0.0))) {
       gradients.resize(128);
-      // initialize the gradients as random normalized 2D vectors 
+      // initialize the gradients as random normalized 2D vectors
       for (auto& grad : gradients) {
          grad = random2DGrad();
       }

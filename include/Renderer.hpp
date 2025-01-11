@@ -37,7 +37,7 @@ std::vector<std::vector<int>> normalizeMatrix(const std::vector<std::vector<doub
 
 std::vector<std::vector<double>> normalizePlusMinusOne(const std::vector<std::vector<double>>& matrix);
 
-std::vector<std::vector<double>> normalizeUnit(const std::vector<std::vector<double>>& matrix);
+std::vector<std::vector<double>> normalizeUnit(const std::vector<std::vector<double>>& matrix, const double sumWeight);
 
 /// @author SD
 /// @brief Normalize a matrix of doubles to integers in the range [threshold, 255]

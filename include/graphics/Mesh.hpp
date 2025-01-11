@@ -21,6 +21,6 @@ class Mesh {
 };
 
 void ComputeNormals(Mesh& mesh);
-void PrintMesh(const Mesh& mesh);
+void ExportToObj(const Mesh& mesh, const std::string& filename);
 
 #endif

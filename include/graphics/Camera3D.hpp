@@ -5,9 +5,23 @@
 
 class Camera3D final : public Camera {
    public:
-   Camera3D(float *width, float *height, glm::vec3 position): Camera(width, height, position) {};
+   float yaw = 0.0f;
+   float pitch = 20.0f;
+   double lastMouseX = 0.0f;
+   double lastMouseY = 0.0f;
+   Camera3D(float* width, float* height, glm::vec3 position) : Camera(width, height, position) {};
 
+   /// @brief handles keyboard and mouse events
+   /// @param window
+   /// @note additionally, it handles object rotation through `yaw` and `pitch`
    void Inputs(GLFWwindow* window) override;
+
+   /// @brief updates the `cameraMatrix` based on current values of `Position` and `Orientation`
+   /// @param FOVdeg field of view in degrees
+   /// @param nearPlane minimum distance at which the camera can see
+   /// @param farPlane maximum distance at which the camera can see
+   /// @note additionally, it handles object rotation through `yaw` and `pitch`
+   void updateMatrix(float FOVdeg, float nearPlane, float farPlane) override;
 };
 
 #endif //INC_3DCAMERA_HPP

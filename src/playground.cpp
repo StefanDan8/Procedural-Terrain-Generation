@@ -22,16 +22,17 @@
 #include "ShaderManager.hpp"
 
 #include <Camera3D.hpp>
+#include <Map.hpp>
 
-bool is3Dmode = false;
+bool is3DMode = false;
 bool switchedRecently = false;
 
 std::vector<std::vector<std::string>> shaders = {
-   {"2DShader.vert"}, //2D shaders
+   {"Beach2DShader.vert", "Mono2DShader.vert"}, //2D shaders
    {"beachShader.vert", "default.vert"} // 3D shaders
 };
 
-std::string previousVertexShader = shaders[is3Dmode][0];
+std::string previousVertexShader = shaders[is3DMode][0];
 std::string previousFragmentShader = "default.frag";
 
 std::string currentVertexShader = previousVertexShader;
@@ -55,45 +56,58 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
    framebufferHeight = height;
 }
 
-// 3D Specific
+// Both
+int previousSeed = 42;
+int seed = previousSeed;
+double flattenFactor = 2.0;
+double lastFlattenFactor = flattenFactor;
+
 float oceanUpperBound = 0.01f;
 float sandLowerBound = 0.01f;
+
+// 3D Specific
 float sandUpperBound = 0.04f;
 float grassLowerBound = 0.04f;
 float grassUpperBound = 0.1f;
 
 // 2D Specific
+float lowerGrassUpperBound;
+float upperGrassUpperBound;
+float lowerPeaksBound;
+float upperPeaksBound;
+
 int chunkSize = 16;
 int nChunksX = 16;
 int nChunksY = 16;
 
-// General
-int previousSeed = 42;
-int seed = previousSeed;
+int frameSinceChange = 0;
+const int fuse = 30; // 30 frames until change takes placec
 
 void RenderCommonImGui() {
    ImGui::Text("Pick display mode:");
 
    if (ImGui::Button("2D Mode")) {
-      is3Dmode = false;
+      is3DMode = false;
       switchedRecently = true;
    }
    ImGui::SameLine();
    if (ImGui::Button("3D Mode")) {
-      is3Dmode = true;
+      is3DMode = true;
       switchedRecently = true;
    }
 }
 void shaderDropdown() {
+   ImGui::PushItemWidth(140.f);
    static unsigned currentItem = 0; // Index of the currently selected item
    //std::vector<std::string> items = {"Option 1", "Option 2", "Option 3", "Option 4"};
 
-   if (ImGui::BeginCombo("Select a Shader", shaders[is3Dmode][currentItem].c_str())) {
-      for (unsigned i = 0; i < shaders[is3Dmode].size(); i++) {
+   ImGui::Text("\nSelect a Shader");
+   if (ImGui::BeginCombo("##xa", shaders[is3DMode][currentItem].c_str())) {
+      for (unsigned i = 0; i < shaders[is3DMode].size(); i++) {
          bool isSelected = (currentItem == i);
-         if (ImGui::Selectable(shaders[is3Dmode][i].c_str(), isSelected)) {
+         if (ImGui::Selectable(shaders[is3DMode][i].c_str(), isSelected)) {
             currentItem = i; // Update selected item index
-            currentVertexShader = shaders[is3Dmode][i];
+            currentVertexShader = shaders[is3DMode][i];
          }
          // Set the initial focus when opening the combo (scrolling to current item)
          if (isSelected) {
@@ -103,75 +117,183 @@ void shaderDropdown() {
       ImGui::EndCombo();
    }
 }
-void saveToFile() {
-   ImGui::Text("\n\nSave current object\n\n");
+
+void _3DInputControls() {
+   ImGui::Text(R"(
+--- Keyboard Controls ---
+NOTE: cursor must be in the rendering area
+
+  W  = Zoom In
+  S  = Zoom Out
+  A  = Move Camera Left
+  D  = Move Camera Right
+
+  Rotate Object:
+
+  Left Ctrl + W  = Increase Pitch
+  Left Ctrl + A  = Decrease Yaw
+  Left Ctrl + S  = Decrease Pitch
+  Left Ctrl + D  = Increase Yaw
+
+--- Mouse Controls ---
+
+  Click and Drag to move camera
+
+)");
+}
+
+void _2DInputControls() {
+   ImGui::Text(R"(
+--- Keyboard Controls ---
+NOTE: Cursor must be in the rendering area
+
+   W = Move Camera Up
+   S = Move Camera Down
+   A = Move Camera Left
+   D = Move Camera Right
+
+--- Mouse Controls ---
+
+   Click and Drag to move camera
+   Scroll Wheel = Zoom In/Out
+
+)");
+}
+
+void saveToFile3D(Mesh& mesh) {
+   ImGui::Text("\n\nSave Current Object to .obj\n");
    static char _user_save_path[256] = "";
-   ImGui::InputText("Name of file", _user_save_path, sizeof(_user_save_path));
-   if (ImGui::Button("Save current")) {
-      std::cout << "Saved to " << _user_save_path << ".\n";
+   ImGui::InputText("Filename", _user_save_path, sizeof(_user_save_path));
+   if (ImGui::Button("Save")) {
+      ExportToObj(mesh, std::string(OUTPUT_FOLDER_PATH) + "/" + _user_save_path + ".obj");
+   }
+}
+void saveToFile2D(Map& map) {
+   ImGui::Text("\nSave Current Image");
+   static char _user_save_path[256] = "";
+   ImGui::InputText("Filename", _user_save_path, sizeof(_user_save_path));
+   if (ImGui::Button("Save to .png")) {
+      auto filename = std::string(OUTPUT_FOLDER_PATH) + "/" + _user_save_path + ".png";
+      map.exportToPNG(filename);
+   }
+   ImGui::SameLine();
+   if (ImGui::Button("Save to .ppm")) {
+      auto filename = std::string(OUTPUT_FOLDER_PATH) + "/" + _user_save_path + ".ppm";
+      map.exportToPPM(filename);
    }
 }
 
-void Render3DImGui(ShaderManager& manager) {
+void userShaderParameters(ShaderManager& manager) {
+   ImGui::Text("User Shader Parameters\n");
+   unsigned num = manager.getShader().userFloatUniforms.size();
+   for (unsigned i = 0; i < num; ++i) {
+      ImGui::PushID(i * 999);
+      ImGui::SetNextItemWidth(90.f);
+      ImGui::SliderFloat("", &(manager.getShader().userFloatValues[i]), -1.0f, 1.0f);
+      ImGui::PopID();
+      ImGui::SameLine();
+      ImGui::PushID(i * 998);
+      if (ImGui::Button("-")) {
+         manager.getShader().userFloatValues[i] -= 0.002f;
+      }
+      ImGui::SameLine();
+      ImGui::PopID();
+      ImGui::PushID(i * 777);
+      if (ImGui::Button("+")) {
+         manager.getShader().userFloatValues[i] += 0.002f;
+      }
+      ImGui::PopID();
+      ImGui::SameLine();
+      ImGui::Text(manager.getShader().userFloatUniforms[i].c_str());
+   }
+}
+
+void meshSettings() {
+   ImGui::Text("Mesh Settings");
+   ImGui::SetNextItemWidth(80.f);
+   ImGui::InputInt("Seed", &seed);
+
+   ImGui::PushItemWidth(70.f);
+   ImGui::InputDouble("##xx", &flattenFactor, 0.0, 0.0, "%.2f");
+   ImGui::SameLine();
+   if (ImGui::Button("-")) {
+      flattenFactor -= 0.2;
+   }
+   ImGui::SameLine();
+   if (ImGui::Button("+")) {
+      flattenFactor += 0.2;
+   }
+   ImGui::SameLine();
+   ImGui::Text("Flatten Factor");
+}
+
+void Render3DImGui(ShaderManager& manager, Mesh& mesh) {
    ImGui::Begin("Controls", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
    RenderCommonImGui();
    ImGui::Text("\n3D Mode\n\n");
 
-   ImGui::Text("User shader parameters\n\n");
-   unsigned num = manager.getShader().userFloatUniforms.size();
-   for (unsigned i = 0; i < num; ++i) {
-      ImGui::SliderFloat(manager.getShader().userFloatUniforms[i].c_str(), &(manager.getShader().userFloatValues[i]), -1.0f, 1.0f);
-   }
-
-   // ImGui::SliderFloat("Ocean Upper Bound", &oceanUpperBound, -1.0f, 0.5f);
-   // ImGui::SliderFloat("Sand Lower Bound", &sandLowerBound, -0.1f, 0.5f);
-   // ImGui::SliderFloat("Sand Upper Bound", &sandUpperBound, -0.1f, 0.5f);
-   // ImGui::SliderFloat("Grass Lower Bound", &grassLowerBound, -0.1f, 0.5f);
-   // ImGui::SliderFloat("Grass Upper Bound", &grassUpperBound, -0.1f, 0.5f);
-   ImGui::Text("Mesh Settings");
-   ImGui::InputInt("Seed", &seed);
+   userShaderParameters(manager);
+   meshSettings();
    shaderDropdown();
-   saveToFile();
+
+   saveToFile3D(mesh);
+   _3DInputControls();
    ImGui::End();
 }
 
-void Render2DImGui() {
+void Render2DImGui(ShaderManager& manager, Map& map) {
    ImGui::Begin("Controls", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
    RenderCommonImGui();
    ImGui::Text("\n2D Mode\n\n");
-   ImGui::Text("Mesh Settings");
-   ImGui::InputInt("Seed", &seed);
+
+   userShaderParameters(manager);
+   meshSettings();
 
    ImGui::SliderInt("Chunk Size", &chunkSize, 0, 32);
-   ImGui::SliderInt("Number of Chunks (X axis)", &nChunksX, 0, 32);
-   ImGui::SliderInt("Number of Chunks (Y axis)", &nChunksY, 0, 32);
+   ImGui::SliderInt("Chunks Number (X axis)", &nChunksX, 0, 32);
+   ImGui::SliderInt("Chunks Number (Y axis)", &nChunksY, 0, 32);
+
    shaderDropdown();
-   saveToFile();
+
+   saveToFile2D(map);
+   _2DInputControls();
+
    ImGui::End();
 }
 
-Mesh generateMeshFromSeed(int seed) {
+std::vector<std::vector<double>> commonGeneration(const int seed, const double flatteningFactor) {
    perlin::AppConfig::getInstance().setGenerator(seed);
 
-   const unsigned sizeX = 720;
-   const unsigned sizeY = 720;
-   std::vector<std::pair<unsigned, double>> params4{std::make_pair(720, 60), std::make_pair(360, 500), std::make_pair(180, 100),
-                                                    std::make_pair(90, 100), std::make_pair(45, 20), std::make_pair(12, 10), std::make_pair(8, 5), std::make_pair(3, 2)};
+   const unsigned sizeX = 1440;
+   const unsigned sizeY = 1440;
+   std::vector<std::pair<unsigned, double>> params4{std::make_pair(720, 30), std::make_pair(360, 250), std::make_pair(180, 50),
+      std::make_pair(90, 50), std::make_pair(45, 20), std::make_pair(12, 5), std::make_pair(8, 2), std::make_pair(3, 1)};
 
    perlin::PerlinNoise2D noise = perlin::PerlinNoise2D(sizeX, sizeY, params4);
+   double sumWeight = noise.getWeightSum();
    perlin::matrix result(sizeX, std::vector<double>(sizeY, 0.0));
    noise.fill();
    result = noise.getResult();
    
    perlin::matrix filter(sizeX, std::vector<double>(sizeY, 0.0));
-   std::vector<std::pair<unsigned, double>> filterParams{std::make_pair(180, 5), std::make_pair(120, 5), std::make_pair(60, 10), std::make_pair(30, 1)};
+   std::vector<std::pair<unsigned, double>> filterParams{std::make_pair(180, 2), std::make_pair(120, 2), std::make_pair(60, 2), std::make_pair(30, 1)};
    perlin::PerlinNoise2D noiseFilter(sizeX, sizeY, filterParams);
    noiseFilter.fill();
    filter = noiseFilter.getResult();
 
    render::Max(result, filter);
 
-   auto normalized = render::normalizeUnit(result);
+   return render::normalizeUnit(result, sumWeight * flatteningFactor);
+}
+
+Map generateMapFromSeed(const int seed, const double flatteningFactor = 1.0f) {
+   std::vector<std::vector<double>> normalized = commonGeneration(seed, flatteningFactor);
+   Map myMap(normalized);
+   return myMap;
+}
+
+Mesh generateMeshFromSeed(const int seed, const double flatteningFactor = 1.0) {
+   std::vector<std::vector<double>> normalized = commonGeneration(seed, flatteningFactor);
    Mesh myMesh(normalized);
    return myMesh;
 }
@@ -215,22 +337,16 @@ int main() {
    ImGui_ImplOpenGL3_Init("#version 330");
    ImGui::StyleColorsDark();
 
-   // //Shader shaderProgram("beachShader.vert", "default.frag");
-   // Shader shaderProgram("2DShader.vert", "default.frag");
-   // shaderProgram.Activate();
    ShaderManager shaderManager(previousVertexShader, previousFragmentShader);
 
-   // Mesh myMesh(normalized);
    Mesh myMesh = generateMeshFromSeed(42);
-   //ComputeNormals(myMesh);
-   //PrintMesh(myMesh);
+   Map myMap = generateMapFromSeed(42);
 
    glEnable(GL_DEPTH_TEST);
 
    // Create both here else it'll recreate the camera every frame
-   Camera3D camera_3d( &RENDER_WIDTH, &RENDER_HEIGHT, glm::vec3(0.0f, 0.5f, 2.0f));
-   Camera2D camera_2d( &RENDER_WIDTH, &RENDER_HEIGHT, glm::vec3(0.0f, 0.5f, 2.0f), window);
-
+   Camera3D camera_3d(&RENDER_WIDTH, &RENDER_HEIGHT, glm::vec3(-0.1f, 0.0f, 2.0f));
+   Camera2D camera_2d(&RENDER_WIDTH, &RENDER_HEIGHT, glm::vec3(-0.1f, 0.0f, 2.5f), window); // handpicked to fit nicely
    while (!glfwWindowShouldClose(window)) {
       // Recalculate the framebuffer size and set the viewport accordingly
       glfwGetFramebufferSize(window, &framebufferWidth, &framebufferHeight);
@@ -249,10 +365,10 @@ int main() {
       ImGui::SetNextWindowSize(ImVec2(IMGUI_WIDTH, framebufferHeight), ImGuiCond_Always);
       ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
 
-      if (is3Dmode) {
-         Render3DImGui(shaderManager);
+      if (is3DMode) {
+         Render3DImGui(shaderManager, myMesh);
       } else {
-         Render2DImGui();
+         Render2DImGui(shaderManager, myMap);
       }
 
       glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
@@ -260,7 +376,7 @@ int main() {
 
       if (switchedRecently) {
          switchedRecently = false;
-         currentVertexShader = previousVertexShader = shaders[is3Dmode][0];
+         currentVertexShader = previousVertexShader = shaders[is3DMode][0];
          shaderManager.SwitchShader(currentVertexShader, currentFragmentShader);
       }
 
@@ -269,30 +385,29 @@ int main() {
          std::cout << "Changed shader\n";
          shaderManager.SwitchShader(currentVertexShader, currentFragmentShader);
       }
-      // if (is3Dmode) {
-      //    shaderManager.getShader().setUniforms(std::make_tuple("oceanUpperBound", oceanUpperBound),
-      //                                          std::make_tuple("sandLowerBound", sandLowerBound),
-      //                                          std::make_tuple("sandUpperBound", sandUpperBound),
-      //                                          std::make_tuple("grassLowerBound", grassLowerBound),
-      //                                          std::make_tuple("grassUpperBound", grassUpperBound));
-      // }
-      shaderManager.getShader().setUniforms();
 
-      // glUniform1f(glGetUniformLocation(shaderProgram.ID, "oceanUpperBound"), oceanUpperBound);
-      // glUniform1f(glGetUniformLocation(shaderProgram.ID, "sandLowerBound"), sandLowerBound);
-      // glUniform1f(glGetUniformLocation(shaderProgram.ID, "sandUpperBound"), sandUpperBound);
-      // glUniform1f(glGetUniformLocation(shaderProgram.ID, "grassLowerBound"), grassLowerBound);
-      // glUniform1f(glGetUniformLocation(shaderProgram.ID, "grassUpperBound"), grassUpperBound);
+      shaderManager.getShader().setUniforms();
 
       // // Render ImGUI
       ImGui::Render();
 
-      if (previousSeed != seed) {
+      if (previousSeed != seed || abs(flattenFactor - lastFlattenFactor) > 0.1) { // only do meaningful changes
+         frameSinceChange = 0;
          previousSeed = seed;
-         myMesh = generateMeshFromSeed(seed);
+         lastFlattenFactor = flattenFactor;
+      } else {
+         if (frameSinceChange > -1) {
+            frameSinceChange++;
+         }
       }
 
-      Camera* camera = is3Dmode ? static_cast<Camera*>(&camera_3d) : static_cast<Camera*>(&camera_2d);
+      if (frameSinceChange > fuse) {
+         frameSinceChange = -1;
+         std::cout << "recompute\n";
+         myMesh = generateMeshFromSeed(seed, flattenFactor);
+      }
+
+      Camera* camera = is3DMode ? static_cast<Camera*>(&camera_3d) : static_cast<Camera*>(&camera_2d);
 
       camera->Inputs(window);
       camera->updateMatrix(45.0f, 0.1f, 100.0f);
