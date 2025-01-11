@@ -22,6 +22,15 @@ We express our gratitude to the authors of these libraries for creating, maintai
 
 All other files in this project are our own, with the mention that the architecture of the rendering engine follows the great OpenGL tutorial of Victor Gordan https://github.com/VictorGordan/opengl-tutorials (classes `EBO`, `VAO`, `VBO` are very close to the original, while classes `Camera` and `ShaderClass` have been substantially adjusted to fit our needs).
 
+## Clone Sprint 2
+
+```
+git clone https://gitlab.lrz.de/advprog2024/group-44.git
+cd group-44
+git checkout sprint2
+
+```
+
 ## Build
 
 The project contains a configuration file, such that it can be easily built with CMake. This way, you can build the project in the
