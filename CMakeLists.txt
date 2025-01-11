@@ -90,9 +90,9 @@ target_link_libraries(shaders glad)
 # add_executable(test_all test/testSprint1.cpp)
 # target_link_libraries(test_all perlin gtest gtest_main pthread)
 
-### Main
-add_executable(main src/main.cpp)
-target_link_libraries(main perlin render gui lodepng)
+# ### Main
+# add_executable(main src/main.cpp)
+# target_link_libraries(main perlin render gui lodepng)
 
 ### Playground
 add_executable(playground src/playground.cpp)

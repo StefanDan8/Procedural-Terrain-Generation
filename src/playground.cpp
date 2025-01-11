@@ -75,9 +75,6 @@ float upperGrassUpperBound;
 float lowerPeaksBound;
 float upperPeaksBound;
 
-int chunkSize = 16;
-int nChunksX = 16;
-int nChunksY = 16;
 
 int frameSinceChange = 0;
 const int fuse = 30; // 30 frames until change takes placec
@@ -290,10 +287,6 @@ void Render2DImGui(ShaderManager& manager, Map& map) {
    userShaderParameters(manager);
    meshSettings();
 
-   ImGui::SliderInt("Chunk Size", &chunkSize, 0, 32);
-   ImGui::SliderInt("Chunks Number (X axis)", &nChunksX, 0, 32);
-   ImGui::SliderInt("Chunks Number (Y axis)", &nChunksY, 0, 32);
-
    shaderDropdown();
 
    saveToFile2D(map);
@@ -385,7 +378,7 @@ Mesh generateMeshFromSeed(const int seed, const double flatteningFactor = 1.0) {
 }
 
 int main() {
-   perlin::AppConfig::initialize(55);
+   perlin::AppConfig::initialize(42);
 
    glfwInit();
 
@@ -425,8 +418,8 @@ int main() {
 
    ShaderManager shaderManager(previousVertexShader, previousFragmentShader);
 
-   Mesh myMesh = generateMeshFromSeed(42);
-   Map myMap = generateMapFromSeed(42);
+   Mesh myMesh = generateMeshFromSeed(42, flattenFactor);
+   Map myMap = generateMapFromSeed(42, flattenFactor);
 
    glEnable(GL_DEPTH_TEST);
 
