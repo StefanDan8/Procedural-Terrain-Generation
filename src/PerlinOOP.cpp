@@ -109,11 +109,11 @@ void PerlinNoise2D::fill() {
    }
 
    // Normalize the result
-   for (auto& row : resultMatrix) {
-      for (auto& val : row) {
-         val /= weightSum;
-      }
-   }
+   // for (auto& row : resultMatrix) {
+   //    for (auto& val : row) {
+   //       val /= weightSum;
+   //    }
+   // }
 }
 
 void PerlinNoise2D::setLayers(std::vector<PerlinLayer2D>& newLayers) {
