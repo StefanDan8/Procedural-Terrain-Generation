@@ -44,34 +44,8 @@ double lerp(const double a, const double b, const double t) {
    return a + t * (b - a);
 }
 
-
-
 // ----- Layer functions -----
 
-double PerlinLayer2D::computeWithIndices(const unsigned x, const unsigned y, const int valBL, const int valBR, const int valTL, const int valTR) {
-   // Compute the position of the point within the square
-   double dx = (x % chunkSize + 1) / (double) chunkSize;
-   double dy = (y % chunkSize + 1) / (double) chunkSize;
-
-   // Find the vectors pointing to the point from the 4 corners of the square
-   vec2d BL = {dx, dy};
-   vec2d BR = {dx - 1.0, dy};
-   vec2d TL = {dx, dy - 1.0};
-   vec2d TR = {dx - 1.0, dy - 1.0};
-
-   // Compute the corresponding dot products
-   double dotBL = dot(gradients.at(valBL), BL);
-   double dotBR = dot(gradients.at(valBR), BR);
-   double dotTL = dot(gradients.at(valTL), TL);
-   double dotTR = dot(gradients.at(valTR), TR);
-
-   // Compute fade curves for x and y
-   double u = fade(dx);
-   double v = fade(dy);
-
-   // Interpolate the 4 results
-   return (lerp(lerp(dotBL, dotBR, u), lerp(dotTL, dotTR, u), v)) * weight;
-}
 double PerlinLayer2D::compute(const unsigned x, const unsigned y, const unsigned chunkX, const unsigned chunkY) {
    // Compute the position of the point within the square
    double dx = (x % chunkSize + 1) / (double) chunkSize;
@@ -89,6 +63,31 @@ double PerlinLayer2D::compute(const unsigned x, const unsigned y, const unsigned
    int valBR = simpleHash(chunkX + 1, chunkY, size);
    int valTL = simpleHash(chunkX, chunkY + 1, size);
    int valTR = simpleHash(chunkX + 1, chunkY + 1, size);
+
+   // Compute the corresponding dot products
+   double dotBL = dot(gradients.at(valBL), BL);
+   double dotBR = dot(gradients.at(valBR), BR);
+   double dotTL = dot(gradients.at(valTL), TL);
+   double dotTR = dot(gradients.at(valTR), TR);
+
+   // Compute fade curves for x and y
+   double u = fade(dx);
+   double v = fade(dy);
+
+   // Interpolate the 4 results
+   return (lerp(lerp(dotBL, dotBR, u), lerp(dotTL, dotTR, u), v)) * weight;
+}
+
+double PerlinLayer2D::computeWithIndices(const unsigned x, const unsigned y, const int valBL, const int valBR, const int valTL, const int valTR) {
+   // Compute the position of the point within the square
+   double dx = (x % chunkSize + 1) / (double) chunkSize;
+   double dy = (y % chunkSize + 1) / (double) chunkSize;
+
+   // Find the vectors pointing to the point from the 4 corners of the square
+   vec2d BL = {dx, dy};
+   vec2d BR = {dx - 1.0, dy};
+   vec2d TL = {dx, dy - 1.0};
+   vec2d TR = {dx - 1.0, dy - 1.0};
 
    // Compute the corresponding dot products
    double dotBL = dot(gradients.at(valBL), BL);
@@ -133,7 +132,30 @@ void PerlinLayer2D::fillMatrix(matrix& result) {
 
 // ----- Noise functions -----
 
-// -- Matrix functions --
+PerlinNoise2D::PerlinNoise2D(const unsigned sizeX, const unsigned sizeY, std::vector<std::pair<unsigned, double>>& layerParams) : sizeX(sizeX), sizeY(sizeY), resultMatrix(perlin::matrix(sizeX, std::vector<double>(sizeY, 0.0))) {
+      gradients.resize(128);
+      // initialize the gradients as random normalized 2D vectors
+      for (auto& grad : gradients) {
+         grad = random2DGrad();
+      }
+
+      // check if the size of the terrain is divisible by the chunk size
+      for (const auto& chunkSizeWeight : layerParams) {
+         if (sizeX % chunkSizeWeight.first != 0 || sizeY % chunkSizeWeight.first != 0) {
+            throw std::invalid_argument("The size of the terrain must be divisible by the chunk size.");
+         }
+      }
+
+      // create the layers
+      for (const auto& chunkSizeWeight : layerParams) {
+         auto chunkSize = chunkSizeWeight.first;
+         auto weight = chunkSizeWeight.second;
+         layers.push_back(PerlinLayer2D(chunkSize, sizeX / chunkSize, sizeY / chunkSize, gradients, weight));
+         weightSum += weight;
+      }
+   }
+
+// --- Matrix functions ---
 
 void PerlinNoise2D::resetMatrix() {
    resultMatrix = perlin::matrix(sizeX, std::vector<double>(sizeY, 0.0));

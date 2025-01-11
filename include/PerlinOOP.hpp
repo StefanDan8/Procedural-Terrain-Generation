@@ -27,15 +27,20 @@ using matrix = std::vector<std::vector<double>>;
 /// @brief 3D tensor with real values.
 using tensor = std::vector<std::vector<std::vector<double>>>;
 
-
 /// @brief Serves as global random number generator for Unif[0,1]
 extern UniformUnitGenerator unifGlbl;
+
 /// @brief Gradients for 2D generation. Assumed to have length = chunkSize
 extern std::vector<vec2d> gradients2D;
 
+/// @param i, j two input numbers, meant to be 2D coordinates
+/// @param N modulo value
 int simpleHash(int i, int j, int N);
 
+/// @brief Generates a random 2D normalized vector
 vec2d random2DGrad();
+
+/// @brief Generates a random 3D normalized vector
 vec3d random3DGrad();
 
 /// @author SD
@@ -48,19 +53,33 @@ vec2d random2DGrad(UniformUnitGenerator& generator);
 /// @param generator A random number generator for Unif[0,1]
 vec3d random3DGrad(UniformUnitGenerator& generator);
 
+/// @brief Computes the dot product of two 2D vectors
 double dot(vec2d& x, vec2d& y);
 
+/// @brief Computes the dot product of two 3D vectors
 double dot(vec3d& x, vec3d& y);
 
+/// @brief Computes the fade curve for Perlin noise. It is a growing smooth function mapping [0,1] to [0,1]
 double fade(const double t);
 
+/// @brief A linear interpolation function
+/// @param a, b values of the interval [a,b]
+/// @param t fraction of the distance from a to b
 double lerp(const double a, const double b, const double t);
 
 // ----- Layer Functions -----
 
 class PerlinLayer2D {
+   private:
+   // --- Class Parameters ---
+   const unsigned chunkSize; // The size of the chunk
+   const unsigned numChunksX; // The number of chunks in the x direction
+   const unsigned numChunksY; // The number of chunks in the y direction
+   std::vector<vec2d>& gradients; // The gradients used for computation
+   double weight = 1.0; // The weight of the layer
+
    public:
-   // constructors
+   // --- Constructors ---
    PerlinLayer2D(const unsigned chunkSize, const unsigned numChunksX, const unsigned numChunksY, std::vector<vec2d>& gradients) : chunkSize(chunkSize), numChunksX(numChunksX), numChunksY(numChunksY), gradients(gradients) {}
 
    PerlinLayer2D(const unsigned chunkSize, const unsigned numChunksX, const unsigned numChunksY, std::vector<vec2d>& gradients, double weight) : chunkSize(chunkSize), numChunksX(numChunksX), numChunksY(numChunksY), gradients(gradients), weight(weight) {}
@@ -108,14 +127,6 @@ class PerlinLayer2D {
    PerlinLayer2D operator=(const PerlinLayer2D& other) {
       return PerlinLayer2D(other.chunkSize, other.numChunksX, other.numChunksY, other.gradients, other.weight);
    }
-
-   private:
-   // --- Class Parameters ---
-   const unsigned chunkSize; // The size of the chunk
-   const unsigned numChunksX; // The number of chunks in the x direction
-   const unsigned numChunksY; // The number of chunks in the y direction
-   std::vector<vec2d>& gradients; // The gradients used for computation
-   double weight = 1.0; // The weight of the layer
 };
 
 // ----- Noise Functions -----
@@ -135,31 +146,11 @@ class PerlinNoise2D {
    /// @param sizeX The size of the terrain in the x direction
    /// @param sizeY The size of the terrain in the y direction
    /// @param layerParams A vector of pairs, each pair containing the chunk size and the weight of the layer
-   PerlinNoise2D(const unsigned sizeX, const unsigned sizeY, std::vector<std::pair<unsigned, double>>& layerParams) : sizeX(sizeX), sizeY(sizeY), resultMatrix(perlin::matrix(sizeX, std::vector<double>(sizeY, 0.0))) {
-      gradients.resize(128);
-      // initialize the gradients as random normalized 2D vectors
-      for (auto& grad : gradients) {
-         grad = random2DGrad();
-      }
-
-      // check if the size of the terrain is divisible by the chunk size
-      for (const auto& chunkSizeWeight : layerParams) {
-         if (sizeX % chunkSizeWeight.first != 0 || sizeY % chunkSizeWeight.first != 0) {
-            throw std::invalid_argument("The size of the terrain must be divisible by the chunk size.");
-         }
-      }
-
-      // create the layers
-      for (const auto& chunkSizeWeight : layerParams) {
-         auto chunkSize = chunkSizeWeight.first;
-         auto weight = chunkSizeWeight.second;
-         layers.push_back(PerlinLayer2D(chunkSize, sizeX / chunkSize, sizeY / chunkSize, gradients, weight));
-         weightSum += weight;
-      }
-   }
+   PerlinNoise2D(const unsigned sizeX, const unsigned sizeY, std::vector<std::pair<unsigned, double>>& layerParams);
 
    // --- Matrix functions ---
 
+   /// @brief Get the result matrix
    perlin::matrix getResult() {
       return resultMatrix;
    }
