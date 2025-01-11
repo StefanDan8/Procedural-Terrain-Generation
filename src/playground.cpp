@@ -42,6 +42,7 @@ int framebufferWidth, framebufferHeight;
 const unsigned WINDOW_WIDTH = 1000;
 const unsigned WINDOW_HEIGHT = 750;
 
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
    // Calculate the ImGui panel width as a percentage of the new framebuffer width
    float IMGUI_WIDTH = 0.25f * width;
