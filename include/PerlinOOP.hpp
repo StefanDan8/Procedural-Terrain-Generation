@@ -100,6 +100,12 @@ class PerlinNoise2D {
       return resultMatrix;
    }
 
+   /// @brief Initialize the matrix with zeros again
+   void resetMatrix();
+
+   /// @brief Resize the matrix to the new size and fill the new entries with 0, while keeping the original values at original positions
+   void resizeMatrix(unsigned newSizeX, unsigned newSizeY);
+
    /// @brief Fill the whole matrix with Perlin noise values
    void fill();
 

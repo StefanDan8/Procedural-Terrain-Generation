@@ -55,9 +55,32 @@ void PerlinLayer2D::fillMatrix(matrix& result) {
 
 // --- Noise functions ---
 
+void PerlinNoise2D::resetMatrix() {
+      resultMatrix = perlin::matrix(sizeX, std::vector<double>(sizeY, 0.0));
+}
+
+void PerlinNoise2D::resizeMatrix(unsigned newSizeX, unsigned newSizeY) {
+      sizeX = newSizeX;
+      sizeY = newSizeY;
+      // Resize outer vector to sizeX
+      resultMatrix.resize(sizeX);
+
+      // Resize each inner vector to sizeY
+      for (auto& row : resultMatrix) {
+         row.resize(sizeY, 0.0); // Initialize new elements with 0.0
+      }
+   }
+
 void PerlinNoise2D::fill() {
    for (auto& layer : layers) {
       layer.fillMatrix(resultMatrix);
+   }
+
+   // Normalize the result
+   for (auto& row : resultMatrix) {
+      for (auto& val : row) {
+         val /= weightSum;
+      }
    }
 }
 
