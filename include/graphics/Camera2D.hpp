@@ -23,7 +23,7 @@ class Camera2D final : public Camera {
     * @param window Pointer of the current window (in which the camera is in)
     * @author PK
     */
-   void Inputs(GLFWwindow* window) override;
+   void Inputs(GLFWwindow* window, float elapsedTimeSinceLastFrame) override;
 
    /**
     * Static function to use in GLFW callback for handling scroll events.

@@ -9,6 +9,7 @@
 #include <iostream>
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
+#include <chrono>
 
 // Include source files
 #include "AppConfig.hpp"
@@ -79,6 +80,11 @@ float upperPeaksBound;
 
 int frameSinceChange = 0;
 const int fuse = 30; // 30 frames until change takes placec
+int fpsPrintTimer = 0;
+float printFps = 0.0f;
+float fpsAvg = 0.0f;
+
+
 
 /**
  * Renders the common ImGui elements for both 2D and 3D modes.
@@ -260,7 +266,9 @@ void meshSettings() {
  * @param mesh Mesh object to be rendered, passed for saveToFile3D()
  * @author SD, PK (extracted method)
  */
-void Render3DImGui(ShaderManager& manager, Mesh& mesh) {
+void Render3DImGui(ShaderManager& manager, Mesh& mesh, float fps) {
+   fpsPrintTimer++;
+   fpsAvg+=fps;
    ImGui::Begin("Controls", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
    RenderCommonImGui();
    ImGui::Text("\n3D Mode\n\n");
@@ -271,6 +279,12 @@ void Render3DImGui(ShaderManager& manager, Mesh& mesh) {
 
    saveToFile3D(mesh);
    _3DInputControls();
+   if(fpsPrintTimer > 99){
+      fpsPrintTimer = 0;
+      printFps = fpsAvg/100;
+      fpsAvg = 0.0;
+   }
+   ImGui::Text("FPS: %1.f", printFps);
    ImGui::End();
 }
 
@@ -280,7 +294,9 @@ void Render3DImGui(ShaderManager& manager, Mesh& mesh) {
  * @param map Map object to be rendered, passed for saveToFile2D()
  * @author PK, SD
  */
-void Render2DImGui(ShaderManager& manager, Map& map) {
+void Render2DImGui(ShaderManager& manager, Map& map, float fps) {
+   fpsPrintTimer++;
+   fpsAvg+=fps;
    ImGui::Begin("Controls", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
    RenderCommonImGui();
    ImGui::Text("\n2D Mode\n\n");
@@ -292,7 +308,12 @@ void Render2DImGui(ShaderManager& manager, Map& map) {
 
    saveToFile2D(map);
    _2DInputControls();
-
+    if(fpsPrintTimer > 99){
+      fpsPrintTimer = 0;
+      printFps = fpsAvg/100;
+      fpsAvg = 0.0;
+   }
+   ImGui::Text("FPS: %1.f", printFps);
    ImGui::End();
 }
 
@@ -379,6 +400,7 @@ Mesh generateMeshFromSeed(const int seed, const double flatteningFactor = 1.0) {
 }
 
 int main() {
+   auto lastFrameTime = std::chrono::high_resolution_clock::now();
    perlin::AppConfig::initialize(42);
 
    glfwInit();
@@ -428,6 +450,14 @@ int main() {
    Camera3D camera_3d(&RENDER_WIDTH, &RENDER_HEIGHT, glm::vec3(-0.1f, 0.0f, 2.0f));
    Camera2D camera_2d(&RENDER_WIDTH, &RENDER_HEIGHT, glm::vec3(-0.1f, 0.0f, 2.5f), window); // handpicked to fit nicely
    while (!glfwWindowShouldClose(window)) {
+      auto currentTime = std::chrono::high_resolution_clock::now();
+      std::chrono::duration<float> deltaTime = currentTime - lastFrameTime;
+      lastFrameTime = currentTime;
+
+      float elapsedSinceLastFrame = deltaTime.count(); // in seconds
+      //std::cout<<elapsedSinceLastFrame<<std::endl;
+
+
       // Recalculate the framebuffer size and set the viewport accordingly
       glfwGetFramebufferSize(window, &framebufferWidth, &framebufferHeight);
       IMGUI_WIDTH = 0.25f * framebufferWidth;
@@ -446,9 +476,9 @@ int main() {
       ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
 
       if (is3DMode) {
-         Render3DImGui(shaderManager, myMesh);
+         Render3DImGui(shaderManager, myMesh, 1.0f/elapsedSinceLastFrame);
       } else {
-         Render2DImGui(shaderManager, myMap);
+         Render2DImGui(shaderManager, myMap, 1.0f/elapsedSinceLastFrame);
       }
 
       glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
@@ -489,7 +519,7 @@ int main() {
 
       Camera* camera = is3DMode ? static_cast<Camera*>(&camera_3d) : static_cast<Camera*>(&camera_2d);
 
-      camera->Inputs(window);
+      camera->Inputs(window, elapsedSinceLastFrame);
       camera->updateMatrix(45.0f, 0.1f, 100.0f);
 
       myMesh.Draw(shaderManager.getShader(), *camera);

@@ -11,7 +11,7 @@ void Camera3D::updateMatrix(float FOVdeg, float nearPlane, float farPlane) {
    cameraMatrix = projection * view * model;
 }
 
-void Camera3D::Inputs(GLFWwindow* window) {
+void Camera3D::Inputs(GLFWwindow* window, float elapsedTimeSinceLastFrame) {
    // Stores the coordinates of the cursor
    double mouseX;
    double mouseY;
@@ -38,29 +38,29 @@ void Camera3D::Inputs(GLFWwindow* window) {
    */
    if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) != GLFW_PRESS) {
       if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-         Position += speed * Orientation;
+         Position += elapsedTimeSinceLastFrame* speed * Orientation;
       }
       if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-         Position += speed * -Right;
+         Position += elapsedTimeSinceLastFrame* speed * -Right;
       }
       if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-         Position += speed * -Orientation;
+         Position += elapsedTimeSinceLastFrame* speed * -Orientation;
       }
       if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-         Position += speed * Right;
+         Position += elapsedTimeSinceLastFrame* speed * Right;
       }
    } else { // Left Ctrl pressed
       if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-         pitch += sensitivity;
+         pitch += elapsedTimeSinceLastFrame * sensitivity;
       }
       if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-         pitch += -sensitivity;
+         pitch += -elapsedTimeSinceLastFrame * sensitivity;
       }
       if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-         yaw += -sensitivity;
+         yaw += -elapsedTimeSinceLastFrame * sensitivity;
       }
       if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-         yaw += sensitivity;
+         yaw += elapsedTimeSinceLastFrame * sensitivity;
       }
    }
 
@@ -92,7 +92,7 @@ void Camera3D::Inputs(GLFWwindow* window) {
       lastMouseX = mouseX;
       lastMouseY = mouseY;
       // Change position
-      Position += speed * glm::vec3(-deltaX, deltaY, 0.0f);
+      Position += elapsedTimeSinceLastFrame* speed * glm::vec3(-deltaX, deltaY, 0.0f);
    } else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE) {
       glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
       firstClick = true;

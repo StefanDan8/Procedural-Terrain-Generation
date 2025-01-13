@@ -38,10 +38,10 @@ class Camera {
    glm::mat4 cameraMatrix = glm::mat4(1.0f);
 
    /// @brief scaling factor for keyboard input
-   float speed = 0.01f;
+   float speed = 0.7f;
 
    /// @brief scaling factor for mouse input
-   float sensitivity = 0.1f;
+   float sensitivity = 50.0f;
 
    bool firstClick = true;
 
@@ -60,7 +60,7 @@ class Camera {
 
    /// @brief handles keyboard and mouse events
    /// @param window
-   virtual void Inputs(GLFWwindow* window) = 0;
+   virtual void Inputs(GLFWwindow* window, float elapsedTimeSinceLastFrame) = 0;
 };
 
 #endif

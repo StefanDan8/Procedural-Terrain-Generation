@@ -18,7 +18,7 @@ class Camera3D final : public Camera {
    /// @brief handles keyboard and mouse events
    /// @param window
    /// @note additionally, it handles object rotation through `yaw` and `pitch`
-   void Inputs(GLFWwindow* window) override;
+   void Inputs(GLFWwindow* window, float elapsedTimeSinceLastFrame) override;
 
    /// @brief updates the `cameraMatrix` based on current values of `Position` and `Orientation`
    /// @param FOVdeg field of view in degrees
