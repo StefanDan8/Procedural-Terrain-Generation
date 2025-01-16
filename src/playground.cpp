@@ -4,12 +4,12 @@
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
 #include "imgui.h"
+#include <chrono>
 #include <cmath>
 #include <cstdio>
 #include <iostream>
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
-#include <chrono>
 
 // Include source files
 #include "AppConfig.hpp"
@@ -42,7 +42,6 @@ int framebufferWidth, framebufferHeight;
 
 const unsigned WINDOW_WIDTH = 1000;
 const unsigned WINDOW_HEIGHT = 750;
-
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
    // Calculate the ImGui panel width as a percentage of the new framebuffer width
@@ -77,14 +76,11 @@ float upperGrassUpperBound;
 float lowerPeaksBound;
 float upperPeaksBound;
 
-
-int frameSinceChange = 0;
+int frameSinceChange = -1;
 const int fuse = 30; // 30 frames until change takes placec
 int fpsPrintTimer = 0;
 float printFps = 0.0f;
 float fpsAvg = 0.0f;
-
-
 
 /**
  * Renders the common ImGui elements for both 2D and 3D modes.
@@ -268,7 +264,7 @@ void meshSettings() {
  */
 void Render3DImGui(ShaderManager& manager, Mesh& mesh, float fps) {
    fpsPrintTimer++;
-   fpsAvg+=fps;
+   fpsAvg += fps;
    ImGui::Begin("Controls", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
    RenderCommonImGui();
    ImGui::Text("\n3D Mode\n\n");
@@ -279,9 +275,9 @@ void Render3DImGui(ShaderManager& manager, Mesh& mesh, float fps) {
 
    saveToFile3D(mesh);
    _3DInputControls();
-   if(fpsPrintTimer > 99){
+   if (fpsPrintTimer > 99) {
       fpsPrintTimer = 0;
-      printFps = fpsAvg/100;
+      printFps = fpsAvg / 100;
       fpsAvg = 0.0;
    }
    ImGui::Text("FPS: %1.f", printFps);
@@ -296,7 +292,7 @@ void Render3DImGui(ShaderManager& manager, Mesh& mesh, float fps) {
  */
 void Render2DImGui(ShaderManager& manager, Map& map, float fps) {
    fpsPrintTimer++;
-   fpsAvg+=fps;
+   fpsAvg += fps;
    ImGui::Begin("Controls", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
    RenderCommonImGui();
    ImGui::Text("\n2D Mode\n\n");
@@ -308,9 +304,9 @@ void Render2DImGui(ShaderManager& manager, Map& map, float fps) {
 
    saveToFile2D(map);
    _2DInputControls();
-    if(fpsPrintTimer > 99){
+   if (fpsPrintTimer > 99) {
       fpsPrintTimer = 0;
-      printFps = fpsAvg/100;
+      printFps = fpsAvg / 100;
       fpsAvg = 0.0;
    }
    ImGui::Text("FPS: %1.f", printFps);
@@ -333,12 +329,12 @@ std::vector<std::vector<double>> commonGeneration(const int seed, const double f
 
    // Parameters for the first noise layer
    std::vector<std::pair<unsigned, double>> params4{std::make_pair(720, 30), std::make_pair(360, 250), std::make_pair(180, 50),
-      std::make_pair(90, 50), std::make_pair(45, 20), std::make_pair(12, 5), std::make_pair(8, 2), std::make_pair(3, 1)};
+                                                    std::make_pair(90, 50), std::make_pair(45, 20), std::make_pair(12, 5), std::make_pair(8, 2), std::make_pair(3, 1)};
 
    // Generate and fill the first noise layer
    perlin::PerlinNoise2D noise = perlin::PerlinNoise2D(sizeX, sizeY, params4);
    noise.fill();
-   
+
    // Parameters for the second noise layer
    std::vector<std::pair<unsigned, double>> filterParams{std::make_pair(180, 2), std::make_pair(120, 2), std::make_pair(60, 2), std::make_pair(30, 1)};
 
@@ -348,29 +344,12 @@ std::vector<std::vector<double>> commonGeneration(const int seed, const double f
 
    // Filter and normalize the noise
    noise.filterMatrix(noiseFilter);
-   // noise.normalizeMatrixSUM(flatteningFactor);
 
    double sumWeight = noise.getWeightSum();
    perlin::matrix result(sizeX, std::vector<double>(sizeY, 0.0));
    result = noise.getResult();
 
    return render::normalizeUnit(result, sumWeight * flatteningFactor);
-
-   // perlin::PerlinNoise2D noise = perlin::PerlinNoise2D(sizeX, sizeY, params4);
-
-   // double sumWeight = noise.getWeightSum();
-   // perlin::matrix result(sizeX, std::vector<double>(sizeY, 0.0));
-   // noise.fill();
-   // result = noise.getResult();
-   
-   // perlin::matrix filter(sizeX, std::vector<double>(sizeY, 0.0));
-   // std::vector<std::pair<unsigned, double>> filterParams{std::make_pair(180, 2), std::make_pair(120, 2), std::make_pair(60, 2), std::make_pair(30, 1)};
-   // perlin::PerlinNoise2D noiseFilter(sizeX, sizeY, filterParams);
-   // noiseFilter.fill();
-   // filter = noiseFilter.getResult();
-
-   // render::Max(result, filter);
-
 }
 
 /**
@@ -442,6 +421,7 @@ int main() {
    ShaderManager shaderManager(previousVertexShader, previousFragmentShader);
 
    Mesh myMesh = generateMeshFromSeed(42, flattenFactor);
+
    Map myMap = generateMapFromSeed(42, flattenFactor);
 
    glEnable(GL_DEPTH_TEST);
@@ -456,7 +436,6 @@ int main() {
 
       float elapsedSinceLastFrame = deltaTime.count(); // in seconds
       //std::cout<<elapsedSinceLastFrame<<std::endl;
-
 
       // Recalculate the framebuffer size and set the viewport accordingly
       glfwGetFramebufferSize(window, &framebufferWidth, &framebufferHeight);
@@ -476,9 +455,9 @@ int main() {
       ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
 
       if (is3DMode) {
-         Render3DImGui(shaderManager, myMesh, 1.0f/elapsedSinceLastFrame);
+         Render3DImGui(shaderManager, myMesh, 1.0f / elapsedSinceLastFrame);
       } else {
-         Render2DImGui(shaderManager, myMap, 1.0f/elapsedSinceLastFrame);
+         Render2DImGui(shaderManager, myMap, 1.0f / elapsedSinceLastFrame);
       }
 
       glClearColor(0.07f, 0.13f, 0.17f, 1.0f);

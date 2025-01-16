@@ -20,7 +20,7 @@ class Mesh {
    VAO myVAO;
 
    Mesh(std::vector<Vertex>& vertices, std::vector<GLuint>& indices);
-   Mesh(std::vector<std::vector<double>>& matrix);
+   Mesh(const std::vector<std::vector<double>>& matrix);
 
    /**
     * Shows the mesh in the rendering area.

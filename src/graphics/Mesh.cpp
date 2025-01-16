@@ -18,7 +18,7 @@ Mesh::Mesh(std::vector<Vertex>& vertices, std::vector<GLuint>& indices) {
    EBO.Unbind();
 }
 
-Mesh::Mesh(std::vector<std::vector<double>>& matrix) {
+Mesh::Mesh(const std::vector<std::vector<double>>& matrix) {
    unsigned numX = matrix.size() - 1;
    unsigned numY = matrix[0].size() - 1;
    unsigned numVertices = (numX + 1) * (numY + 1);

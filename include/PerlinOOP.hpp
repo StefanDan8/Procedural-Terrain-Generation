@@ -1,15 +1,15 @@
 #ifndef _PERLIN_OOP
 #define _PERLIN_OOP
-#include <stdexcept>
-#include <vector>
+#include "AppConfig.hpp"
+#include <algorithm>
 #include <array>
+#include <cassert>
+#include <cmath>
 #include <iomanip> // For std::fixed and std::setprecision
 #include <iostream>
 #include <random>
-#include "AppConfig.hpp"
-#include <algorithm>
-#include <cassert>
-#include <cmath>
+#include <stdexcept>
+#include <vector>
 
 namespace perlin {
 
@@ -26,7 +26,6 @@ using matrix = std::vector<std::vector<double>>;
 
 /// @brief 3D tensor with real values.
 using tensor = std::vector<std::vector<std::vector<double>>>;
-
 
 /// @brief Gradients for 2D generation. Assumed to have length = chunkSize
 extern std::vector<vec2d> gradients2D;
@@ -144,12 +143,12 @@ class PerlinNoise2D {
    /// @param sizeX The size of the terrain in the x direction
    /// @param sizeY The size of the terrain in the y direction
    /// @param layerParams A vector of pairs, each pair containing the chunk size and the weight of the layer
-   PerlinNoise2D(const unsigned sizeX, const unsigned sizeY, std::vector<std::pair<unsigned, double>>& layerParams);
+   PerlinNoise2D(const unsigned sizeX, const unsigned sizeY, const std::vector<std::pair<unsigned, double>>& layerParams);
 
    // --- Matrix functions ---
 
    /// @brief Get the result matrix
-   perlin::matrix getResult() {
+   std::vector<std::vector<double>> getResult() {
       return resultMatrix;
    }
 
@@ -204,7 +203,7 @@ class PerlinNoise2D {
    void removeLayer(unsigned index);
 
    /// @brief Recompute a layer at a specific index with new parameters
-   void recomputeLayer(unsigned index, std::pair<unsigned, double>& layerParams);
+   void recomputeLayer(unsigned index, const std::pair<unsigned, double>& layerParams);
 
    /// @brief Recompute a layer at a specific index with new parameters
    void recomputeLayer(unsigned index, unsigned chunkSize, double weight);
@@ -228,7 +227,6 @@ class PerlinNoise2D {
       }
       return weightSum;
    }
-
 };
 
 }

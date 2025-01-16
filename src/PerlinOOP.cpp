@@ -131,28 +131,28 @@ void PerlinLayer2D::fillMatrix(matrix& result) {
 
 // ----- Noise functions -----
 
-PerlinNoise2D::PerlinNoise2D(const unsigned sizeX, const unsigned sizeY, std::vector<std::pair<unsigned, double>>& layerParams) : sizeX(sizeX), sizeY(sizeY), resultMatrix(perlin::matrix(sizeX, std::vector<double>(sizeY, 0.0))) {
-      gradients.resize(128);
-      // initialize the gradients as random normalized 2D vectors
-      for (auto& grad : gradients) {
-         grad = random2DGrad();
-      }
+PerlinNoise2D::PerlinNoise2D(const unsigned sizeX, const unsigned sizeY, const std::vector<std::pair<unsigned, double>>& layerParams) : sizeX(sizeX), sizeY(sizeY), resultMatrix(perlin::matrix(sizeX, std::vector<double>(sizeY, 0.0))) {
+   gradients.resize(128);
+   // initialize the gradients as random normalized 2D vectors
+   for (auto& grad : gradients) {
+      grad = random2DGrad();
+   }
 
-      // check if the size of the terrain is divisible by the chunk size
-      for (const auto& chunkSizeWeight : layerParams) {
-         if (sizeX % chunkSizeWeight.first != 0 || sizeY % chunkSizeWeight.first != 0) {
-            throw std::invalid_argument("The size of the terrain must be divisible by the chunk size.");
-         }
-      }
-
-      // create the layers
-      for (const auto& chunkSizeWeight : layerParams) {
-         auto chunkSize = chunkSizeWeight.first;
-         auto weight = chunkSizeWeight.second;
-         layers.push_back(PerlinLayer2D(chunkSize, sizeX / chunkSize, sizeY / chunkSize, gradients, weight));
-         weightSum += weight;
+   // check if the size of the terrain is divisible by the chunk size
+   for (const auto& chunkSizeWeight : layerParams) {
+      if (sizeX % chunkSizeWeight.first != 0 || sizeY % chunkSizeWeight.first != 0) {
+         throw std::invalid_argument("The size of the terrain must be divisible by the chunk size.");
       }
    }
+
+   // create the layers
+   for (const auto& chunkSizeWeight : layerParams) {
+      auto chunkSize = chunkSizeWeight.first;
+      auto weight = chunkSizeWeight.second;
+      layers.push_back(PerlinLayer2D(chunkSize, sizeX / chunkSize, sizeY / chunkSize, gradients, weight));
+      weightSum += weight;
+   }
+}
 
 // --- Matrix functions ---
 
@@ -161,16 +161,16 @@ void PerlinNoise2D::resetMatrix() {
 }
 
 void PerlinNoise2D::resizeMatrix(unsigned newSizeX, unsigned newSizeY) {
-      sizeX = newSizeX;
-      sizeY = newSizeY;
-      // Resize outer vector to sizeX
-      resultMatrix.resize(sizeX);
+   sizeX = newSizeX;
+   sizeY = newSizeY;
+   // Resize outer vector to sizeX
+   resultMatrix.resize(sizeX);
 
-      // Resize each inner vector to sizeY
-      for (auto& row : resultMatrix) {
-         row.resize(sizeY, 0.0); // Initialize new elements with 0.0
-      }
+   // Resize each inner vector to sizeY
+   for (auto& row : resultMatrix) {
+      row.resize(sizeY, 0.0); // Initialize new elements with 0.0
    }
+}
 
 void PerlinNoise2D::fill() {
    for (auto& layer : layers) {
@@ -178,7 +178,7 @@ void PerlinNoise2D::fill() {
    }
 }
 
-std::pair<double, double> PerlinNoise2D::getMinMaxVal(){
+std::pair<double, double> PerlinNoise2D::getMinMaxVal() {
    // Find the minimum and maximum values in the matrix
    double minVal = resultMatrix[0][0];
    double maxVal = resultMatrix[0][0];
@@ -192,7 +192,7 @@ std::pair<double, double> PerlinNoise2D::getMinMaxVal(){
    return std::make_pair(minVal, maxVal);
 }
 
-void PerlinNoise2D::normalizeMatrix0255(){
+void PerlinNoise2D::normalizeMatrix0255() {
    // Find the minimum and maximum values in the matrix
    auto minmax = getMinMaxVal();
    double minVal = minmax.first;
@@ -206,7 +206,7 @@ void PerlinNoise2D::normalizeMatrix0255(){
    }
 }
 
-void PerlinNoise2D::normalizeMatrixPM1(){
+void PerlinNoise2D::normalizeMatrixPM1() {
    // Find the minimum and maximum values in the matrix
    auto minmax = getMinMaxVal();
    double minVal = minmax.first;
@@ -220,7 +220,7 @@ void PerlinNoise2D::normalizeMatrixPM1(){
    }
 }
 
-void PerlinNoise2D::normalizeMatrixSUM(const double flatteningFactor){
+void PerlinNoise2D::normalizeMatrixSUM(const double flatteningFactor) {
    // Normalize the matrix by dividing by the sum of the weights
    for (size_t i = 0; i < sizeX; ++i) {
       for (size_t j = 0; j < sizeY; ++j) {
@@ -229,13 +229,13 @@ void PerlinNoise2D::normalizeMatrixSUM(const double flatteningFactor){
    }
 }
 
-void PerlinNoise2D::normalizeMatrixReLU(const double threshold){
+void PerlinNoise2D::normalizeMatrixReLU(const double threshold) {
    // Normalize the matrix to [0, 255] and apply the ReLU function with minimal threshold to the matrix
    normalizeMatrix0255();
    matrixReLU(threshold);
 }
 
-void PerlinNoise2D::matrixReLU(const double threshold){
+void PerlinNoise2D::matrixReLU(const double threshold) {
    // Apply the ReLU function with minimal threshold to the matrix
    for (auto& row : resultMatrix) {
       for (auto& el : row) {
@@ -244,7 +244,7 @@ void PerlinNoise2D::matrixReLU(const double threshold){
    }
 }
 
-void PerlinNoise2D::filterMatrix(perlin::PerlinNoise2D& other){
+void PerlinNoise2D::filterMatrix(perlin::PerlinNoise2D& other) {
    // Update the own matrix with the maximum values of the own and another PerlinNoise2D object's matrix
    auto otherMatrix = other.getResult();
    for (unsigned i = 0; i < sizeX; i++) {
@@ -294,7 +294,7 @@ void PerlinNoise2D::removeLayer(unsigned index) {
    layers.erase(layers.begin() + index);
 }
 
-void PerlinNoise2D::recomputeLayer(unsigned index, std::pair<unsigned, double>& layerParams) {
+void PerlinNoise2D::recomputeLayer(unsigned index, const std::pair<unsigned, double>& layerParams) {
    if (sizeX % layerParams.first != 0 || sizeY % layerParams.first != 0) {
       throw std::invalid_argument("The size of the terrain must be divisible by the chunk size.");
    }
