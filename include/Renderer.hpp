@@ -35,6 +35,20 @@ void create_png(const std::vector<std::vector<int>>& noise, const std::string& f
 /// @return a matrix of integers in range [0, 255]
 std::vector<std::vector<int>> normalizeMatrix(const std::vector<std::vector<double>>& matrix);
 
+std::vector<std::vector<double>> normalizePlusMinusOne(const std::vector<std::vector<double>>& matrix);
+
+std::vector<std::vector<double>> normalizeUnit(const std::vector<std::vector<double>>& matrix, const double sumWeight);
+
+/// @author SD
+/// @brief Normalize a matrix of doubles to integers in the range [threshold, 255]
+/// @param matrix
+/// @return a matrix of integers in range [threshold, 255]
+std::vector<std::vector<int>> normalizeMatrixReLU(const std::vector<std::vector<double>>& matrix, int threshold);
+
+void ReLU(std::vector<std::vector<double>>& matrix, double threshold);
+
+void Max(std::vector<std::vector<double>>& matrix, std::vector<std::vector<double>>& filter);
+
 /// @author SD
 /// @brief Writes an integer matrix to a .txt file which is stored in the `output` folder.
 /// @param matrix matrix to be written to file

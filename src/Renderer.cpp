@@ -5,7 +5,7 @@
 #include <fstream>
 #include <stdexcept>
 
-#include "PerlinAlgorithm.hpp"
+#include "PerlinOOP.hpp"
 
 namespace render {
 void create_ppm(const std::vector<std::vector<int>>& noise, const std::string& filename) {
@@ -100,6 +100,71 @@ std::vector<std::vector<int>> normalizeMatrix(const std::vector<std::vector<doub
    return normalized;
 }
 
+std::vector<std::vector<double>> normalizePlusMinusOne(const std::vector<std::vector<double>>& matrix) {
+   size_t rows = matrix.size();
+   size_t cols = matrix[0].size();
+
+   // Find the minimum and maximum values in the matrix
+   double minVal = matrix[0][0];
+   double maxVal = matrix[0][0];
+   for (const auto& row : matrix) {
+      for (double value : row) {
+         minVal = std::min(minVal, value);
+         maxVal = std::max(maxVal, value);
+      }
+   }
+
+   // Normalize the matrix to [-1,1]
+   std::vector<std::vector<double>> normalized(rows, std::vector<double>(cols));
+   for (size_t i = 0; i < rows; ++i) {
+      for (size_t j = 0; j < cols; ++j) {
+         normalized[i][j] =
+            2.0f * (matrix[i][j] - minVal) / (maxVal - minVal) - 1.0f;
+      }
+   }
+   return normalized;
+}
+
+std::vector<std::vector<double>> normalizeUnit(const std::vector<std::vector<double>>& matrix, const double sumWeight) {
+   size_t rows = matrix.size();
+   size_t cols = matrix[0].size();
+
+   // Normalize the matrix to [-1,1]
+   std::vector<std::vector<double>> normalized(rows, std::vector<double>(cols));
+   for (size_t i = 0; i < rows; ++i) {
+      for (size_t j = 0; j < cols; ++j) {
+         //normalized[i][j] = 2 * matrix[i][j] / (rows + cols);
+         normalized[i][j] = matrix[i][j] / sumWeight;
+      }
+   }
+   return normalized;
+}
+
+std::vector<std::vector<int>> normalizeMatrixReLU(const std::vector<std::vector<double>>& matrix, int threshold) {
+   size_t rows = matrix.size();
+   size_t cols = matrix[0].size();
+
+   // Find the minimum and maximum values in the matrix
+   double minVal = matrix[0][0];
+   double maxVal = matrix[0][0];
+   for (const auto& row : matrix) {
+      for (double value : row) {
+         minVal = std::min(minVal, value);
+         maxVal = std::max(maxVal, value);
+      }
+   }
+
+   // Normalize the matrix to [0, 255]
+   std::vector<std::vector<int>> normalized(rows, std::vector<int>(cols));
+   for (size_t i = 0; i < rows; ++i) {
+      for (size_t j = 0; j < cols; ++j) {
+         normalized[i][j] = std::max(threshold, static_cast<int>(255 * (matrix[i][j] - minVal) / (maxVal - minVal)));
+      }
+   }
+
+   return normalized;
+}
+
 void writeMatrixToFile(const std::vector<std::vector<int>>& matrix, const std::string& filename) {
    std::string fullPath = "../output/" + filename;
 
@@ -118,6 +183,22 @@ void writeMatrixToFile(const std::vector<std::vector<int>>& matrix, const std::s
 
    file.close();
    std::cout << "Matrix written to " << fullPath << std::endl;
+}
+
+void ReLU(perlin::matrix& matrix, double threshold) {
+   for (auto& row : matrix) {
+      for (auto& el : row) {
+         el = std::max(el, threshold);
+      }
+   }
+}
+
+void Max(perlin::matrix& matrix, perlin::matrix& filter) {
+   for (unsigned i = 0; i < matrix.size(); i++) {
+      for (unsigned j = 0; j < matrix[0].size(); j++) {
+         matrix[i][j] = std::max(matrix[i][j], filter[i][j]);
+      }
+   }
 }
 
 void createPolyMesh(const perlin::matrix& matrix, unsigned width, unsigned height, const std::string& filename) {
