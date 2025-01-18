@@ -27,9 +27,6 @@ using matrix = std::vector<std::vector<double>>;
 /// @brief 3D tensor with real values.
 using tensor = std::vector<std::vector<std::vector<double>>>;
 
-/// @brief Gradients for 2D generation. Assumed to have length = chunkSize
-extern std::vector<vec2d> gradients2D;
-
 /// @param i, j two input numbers, meant to be 2D coordinates
 /// @param N modulo value
 int simpleHash(int i, int j, int N);
@@ -51,10 +48,10 @@ vec2d random2DGrad(UniformUnitGenerator& generator);
 vec3d random3DGrad(UniformUnitGenerator& generator);
 
 /// @brief Computes the dot product of two 2D vectors
-double dot(vec2d& x, vec2d& y);
+double dot(const vec2d& x, const vec2d& y);
 
 /// @brief Computes the dot product of two 3D vectors
-double dot(vec3d& x, vec3d& y);
+double dot(const vec3d& x, const vec3d& y);
 
 /// @brief Computes the fade curve for Perlin noise. It is a growing smooth function mapping [0,1] to [0,1]
 double fade(const double t);
@@ -72,7 +69,7 @@ class PerlinLayer2D {
    const unsigned chunkSize; // The size of the chunk
    const unsigned numChunksX; // The number of chunks in the x direction
    const unsigned numChunksY; // The number of chunks in the y direction
-   std::vector<vec2d>& gradients; // The gradients used for computation
+   std::vector<vec2d>& gradients; // The gradients used for computation  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Don't store here. Too much trouble when modifying seeds. Move to parameters to compute
    double weight = 1.0; // The weight of the layer
 
    public:
@@ -131,14 +128,15 @@ class PerlinLayer2D {
 class PerlinNoise2D {
    private:
    // --- Class Parameters ---
-   unsigned sizeX; // The size of the terrain in the x direction
-   unsigned sizeY; // The size of the terrain in the y direction
    double weightSum = 0.0; // The sum of the weights of the layers
-   std::vector<PerlinLayer2D> layers; // The layers of the noise
    std::vector<vec2d> gradients; // The constant gradients used for computation
    perlin::matrix resultMatrix; // The matrix to fill
 
    public:
+   std::vector<PerlinLayer2D> layers; // The layers of the noise
+   unsigned sizeX; // The size of the terrain in the x direction
+   unsigned sizeY; // The size of the terrain in the y direction
+
    /// @brief Noise constructor, initializes the gradients and the layers
    /// @param sizeX The size of the terrain in the x direction
    /// @param sizeY The size of the terrain in the y direction

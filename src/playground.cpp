@@ -4,6 +4,7 @@
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
 #include "imgui.h"
+#include <charconv>
 #include <chrono>
 #include <cmath>
 #include <cstdio>
@@ -17,6 +18,7 @@
 #include "Camera3D.hpp"
 #include "PerlinOOP.hpp"
 #include "Renderer.hpp"
+#include "Terrain3D.hpp"
 #include "UserInterface.hpp"
 
 // Include additional graphics files
@@ -255,6 +257,46 @@ void meshSettings() {
    ImGui::SameLine();
    ImGui::Text("Flatten Factor");
 }
+bool InputUnsigned(const char* label, unsigned int* v, unsigned int step = 1, unsigned int step_fast = 10, ImGuiInputTextFlags flags = 0) {
+   int value = static_cast<int>(*v); // Cast to signed for ImGui input
+   bool changed = ImGui::InputInt(label, &value, static_cast<int>(step), static_cast<int>(step_fast), flags);
+
+   // Enforce unsigned constraint
+   if (value < 0) {
+      value = 0; // Clamp to zero if negative
+   }
+   *v = static_cast<unsigned int>(value); // Update the original unsigned value
+   return changed;
+}
+void noiseLayersGui(Terrain3D& terrain) {
+   ImGui::Text("Noise parameters");
+   unsigned index = 0;
+   ImGui::Text("Chunk Size          Weight");
+   for (const auto& layer : terrain.noise.layers) {
+      ImGui::PushID(index * 9999 + 76);
+      if (InputUnsigned("##xx", &terrain.noiseLayerParams[index].first)) {
+      }
+      ImGui::PopID();
+      ImGui::SameLine();
+      ImGui::PushID(index * 99999 + 77);
+      ImGui::InputDouble("##xx", &terrain.noiseLayerParams[index].second);
+      ImGui::PopID();
+      index++;
+   }
+   index = 0;
+   ImGui::Text("Baseline noise parameters");
+   for (const auto& layer : terrain.baseline.layers) {
+      ImGui::PushID(index * 9999 + 86);
+      if (InputUnsigned("##xx", &terrain.baselineLayerParams[index].first)) {
+      }
+      ImGui::PopID();
+      ImGui::SameLine();
+      ImGui::PushID(index * 99999 + 87);
+      ImGui::InputDouble("##xx", &terrain.baselineLayerParams[index].second);
+      ImGui::PopID();
+      index++;
+   }
+}
 
 /**
  * Renders the full ImGui window for the 3D mode.
@@ -262,7 +304,7 @@ void meshSettings() {
  * @param mesh Mesh object to be rendered, passed for saveToFile3D()
  * @author SD, PK (extracted method)
  */
-void Render3DImGui(ShaderManager& manager, Mesh& mesh, float fps) {
+void Render3DImGui(ShaderManager& manager, Mesh& mesh, Terrain3D& terrain, float fps) {
    fpsPrintTimer++;
    fpsAvg += fps;
    ImGui::Begin("Controls", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
@@ -272,7 +314,7 @@ void Render3DImGui(ShaderManager& manager, Mesh& mesh, float fps) {
    userShaderParameters(manager);
    meshSettings();
    shaderDropdown();
-
+   noiseLayersGui(terrain);
    saveToFile3D(mesh);
    _3DInputControls();
    if (fpsPrintTimer > 99) {
@@ -421,7 +463,7 @@ int main() {
    ShaderManager shaderManager(previousVertexShader, previousFragmentShader);
 
    Mesh myMesh = generateMeshFromSeed(42, flattenFactor);
-
+   Terrain3D terrain(1440, 1440, seed = 42, flattenFactor = 2.0);
    Map myMap = generateMapFromSeed(42, flattenFactor);
 
    glEnable(GL_DEPTH_TEST);
@@ -455,7 +497,7 @@ int main() {
       ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
 
       if (is3DMode) {
-         Render3DImGui(shaderManager, myMesh, 1.0f / elapsedSinceLastFrame);
+         Render3DImGui(shaderManager, myMesh, terrain, 1.0f / elapsedSinceLastFrame);
       } else {
          Render2DImGui(shaderManager, myMap, 1.0f / elapsedSinceLastFrame);
       }
@@ -493,7 +535,8 @@ int main() {
       if (frameSinceChange > fuse) {
          frameSinceChange = -1;
          std::cout << "recompute\n";
-         myMesh = generateMeshFromSeed(seed, flattenFactor);
+         terrain.recompute(seed, flattenFactor);
+         //myMesh = generateMeshFromSeed(seed, flattenFactor);
       }
 
       Camera* camera = is3DMode ? static_cast<Camera*>(&camera_3d) : static_cast<Camera*>(&camera_2d);
@@ -501,7 +544,7 @@ int main() {
       camera->Inputs(window, elapsedSinceLastFrame);
       camera->updateMatrix(45.0f, 0.1f, 100.0f);
 
-      myMesh.Draw(shaderManager.getShader(), *camera);
+      terrain.Draw(shaderManager.getShader(), *camera);
 
       ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 

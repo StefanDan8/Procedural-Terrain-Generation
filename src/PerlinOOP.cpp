@@ -27,11 +27,11 @@ vec3d random3DGrad(UniformUnitGenerator& unif) {
    return vec3d{h * cos(theta), h * sin(theta), cosphi};
 }
 
-double dot(vec2d& x, vec2d& y) {
+double dot(const vec2d& x, const vec2d& y) {
    return x[0] * y[0] + x[1] * y[1];
 }
 
-double dot(vec3d& x, vec3d& y) {
+double dot(const vec3d& x, const vec3d& y) {
    return x[0] * y[0] + x[1] * y[1] + x[2] * y[2];
 }
 
@@ -108,6 +108,7 @@ void PerlinLayer2D::fillChunk(matrix& result, const unsigned chunkX, const unsig
 
    // Select a value for each of the 4 corners of the square from the permutation table
    auto size = gradients.size();
+   // Here is PROBLEM gradients.size() is 0 here
    int valBL = simpleHash(chunkX, chunkY, size);
    int valBR = simpleHash(chunkX + 1, chunkY, size);
    int valTL = simpleHash(chunkX, chunkY + 1, size);
@@ -144,7 +145,6 @@ PerlinNoise2D::PerlinNoise2D(const unsigned sizeX, const unsigned sizeY, const s
          throw std::invalid_argument("The size of the terrain must be divisible by the chunk size.");
       }
    }
-
    // create the layers
    for (const auto& chunkSizeWeight : layerParams) {
       auto chunkSize = chunkSizeWeight.first;
