@@ -4,6 +4,18 @@
 #include <cmath>
 #include <vector>
 
+enum UpdateState {
+   NONE, // 0
+   WEIGHT, // 1
+   CHUNK_SIZE, // 2
+   BOTH // 3
+};
+
+enum LayerType {
+   NOISE_LAYER,
+   BASELINE_LAYER
+};
+
 namespace perlin {
 class PerlinLayer {
    // I do not save a reference to gradients. Managing such a reference makes it hard to reassign layers to new objects as the owners of the reference might get deleted. (Happened before and the vector got reset-> bug)

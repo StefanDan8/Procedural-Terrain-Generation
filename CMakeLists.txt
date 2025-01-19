@@ -94,7 +94,7 @@ target_link_libraries(shaders glad)
 # target_link_libraries(main perlin render gui lodepng)
 
 ### Playground
-add_executable(playground src/playground.cpp src/Terrain3D.cpp)
+add_executable(playground src/playground.cpp src/Terrain3D.cpp src/Terrain.cpp src/PerlinLayer.cpp src/Fuse.cpp)
 target_include_directories(playground PRIVATE graphicsExternal.glfw-3.4/include graphicsExternal/glad/include graphicsExternal/imgui/include graphicsExternal/imgui/include/backends)
 target_link_libraries(playground perlin render lodepng glfw glad imgui shaders)
 

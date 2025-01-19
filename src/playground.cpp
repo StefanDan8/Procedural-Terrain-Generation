@@ -16,8 +16,10 @@
 #include "AppConfig.hpp"
 #include "Camera2D.hpp"
 #include "Camera3D.hpp"
+#include "Fuse.hpp"
 #include "PerlinOOP.hpp"
 #include "Renderer.hpp"
+#include "Terrain.hpp"
 #include "Terrain3D.hpp"
 #include "UserInterface.hpp"
 
@@ -78,8 +80,8 @@ float upperGrassUpperBound;
 float lowerPeaksBound;
 float upperPeaksBound;
 
-int frameSinceChange = -1;
-const int fuse = 30; // 30 frames until change takes placec
+// int frameSinceChange = -1;
+// const int fuse = 30; // 30 frames until change takes placec
 int fpsPrintTimer = 0;
 float printFps = 0.0f;
 float fpsAvg = 0.0f;
@@ -268,31 +270,37 @@ bool InputUnsigned(const char* label, unsigned int* v, unsigned int step = 1, un
    *v = static_cast<unsigned int>(value); // Update the original unsigned value
    return changed;
 }
-void noiseLayersGui(Terrain3D& terrain) {
+void noiseLayersGui(Terrain& terrain, Fuse& fuse) {
    ImGui::Text("Noise parameters");
    unsigned index = 0;
    ImGui::Text("Chunk Size          Weight");
-   for (const auto& layer : terrain.noise.layers) {
+   for (auto& layerParam : terrain.noiseParams) {
       ImGui::PushID(index * 9999 + 76);
-      if (InputUnsigned("##xx", &terrain.noiseLayerParams[index].first)) {
+      if (InputUnsigned("##xx", &layerParam.first)) {
+         fuse.planLayerUpdate(index, NOISE_LAYER, CHUNK_SIZE);
       }
       ImGui::PopID();
       ImGui::SameLine();
       ImGui::PushID(index * 99999 + 77);
-      ImGui::InputDouble("##xx", &terrain.noiseLayerParams[index].second);
+      if (ImGui::InputDouble("##xx", &layerParam.second)) {
+         fuse.planLayerUpdate(index, NOISE_LAYER, WEIGHT);
+      }
       ImGui::PopID();
       index++;
    }
    index = 0;
    ImGui::Text("Baseline noise parameters");
-   for (const auto& layer : terrain.baseline.layers) {
+   for (auto& layerParam : terrain.baselineParams) {
       ImGui::PushID(index * 9999 + 86);
-      if (InputUnsigned("##xx", &terrain.baselineLayerParams[index].first)) {
+      if (InputUnsigned("##xx", &layerParam.first)) {
+         fuse.planLayerUpdate(index, BASELINE_LAYER, CHUNK_SIZE);
       }
       ImGui::PopID();
       ImGui::SameLine();
       ImGui::PushID(index * 99999 + 87);
-      ImGui::InputDouble("##xx", &terrain.baselineLayerParams[index].second);
+      if (ImGui::InputDouble("##xx", &layerParam.second)) {
+         fuse.planLayerUpdate(index, BASELINE_LAYER, WEIGHT);
+      }
       ImGui::PopID();
       index++;
    }
@@ -304,7 +312,28 @@ void noiseLayersGui(Terrain3D& terrain) {
  * @param mesh Mesh object to be rendered, passed for saveToFile3D()
  * @author SD, PK (extracted method)
  */
-void Render3DImGui(ShaderManager& manager, Mesh& mesh, Terrain3D& terrain, float fps) {
+// void Render3DImGui(ShaderManager& manager, Mesh& mesh, Terrain3D& terrain, float fps) {
+//    fpsPrintTimer++;
+//    fpsAvg += fps;
+//    ImGui::Begin("Controls", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
+//    RenderCommonImGui();
+//    ImGui::Text("\n3D Mode\n\n");
+
+//    userShaderParameters(manager);
+//    meshSettings();
+//    shaderDropdown();
+//    noiseLayersGui(terrain);
+//    saveToFile3D(mesh);
+//    _3DInputControls();
+//    if (fpsPrintTimer > 99) {
+//       fpsPrintTimer = 0;
+//       printFps = fpsAvg / 100;
+//       fpsAvg = 0.0;
+//    }
+//    ImGui::Text("FPS: %1.f", printFps);
+//    ImGui::End();
+// }
+void Render3DImGui(ShaderManager& manager, Terrain& terrain, Fuse& fuse, float fps) {
    fpsPrintTimer++;
    fpsAvg += fps;
    ImGui::Begin("Controls", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
@@ -314,8 +343,8 @@ void Render3DImGui(ShaderManager& manager, Mesh& mesh, Terrain3D& terrain, float
    userShaderParameters(manager);
    meshSettings();
    shaderDropdown();
-   noiseLayersGui(terrain);
-   saveToFile3D(mesh);
+   noiseLayersGui(terrain, fuse);
+   saveToFile3D(terrain.mesh.value());
    _3DInputControls();
    if (fpsPrintTimer > 99) {
       fpsPrintTimer = 0;
@@ -462,9 +491,17 @@ int main() {
 
    ShaderManager shaderManager(previousVertexShader, previousFragmentShader);
 
-   Mesh myMesh = generateMeshFromSeed(42, flattenFactor);
-   Terrain3D terrain(1440, 1440, seed = 42, flattenFactor = 2.0);
+   // Mesh myMesh = generateMeshFromSeed(42, flattenFactor);
+   // Terrain3D terrain(1440, 1440, seed = 42, flattenFactor = 2.0);
+   BasicConfigParams configParams{42, 1440, 1440, 2.0};
+   std::vector<std::pair<unsigned, double>> paramsNoise{std::make_pair(720, 30), std::make_pair(360, 250), std::make_pair(180, 50),
+                                                        std::make_pair(90, 50), std::make_pair(45, 20), std::make_pair(12, 5), std::make_pair(8, 2), std::make_pair(3, 1)};
+   std::vector<std::pair<unsigned, double>> filterParams{std::make_pair(180, 2), std::make_pair(120, 2), std::make_pair(60, 2), std::make_pair(30, 1)};
+
+   Terrain terrain(configParams, paramsNoise, filterParams);
    Map myMap = generateMapFromSeed(42, flattenFactor);
+
+   Fuse fuse(200, paramsNoise.size(), filterParams.size()); // create fuse with 200 frames capacity
 
    glEnable(GL_DEPTH_TEST);
 
@@ -497,7 +534,8 @@ int main() {
       ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
 
       if (is3DMode) {
-         Render3DImGui(shaderManager, myMesh, terrain, 1.0f / elapsedSinceLastFrame);
+         Render3DImGui(shaderManager, terrain, fuse, 1.0f / elapsedSinceLastFrame);
+         //Render3DImGui(shaderManager, myMesh, terrain, 1.0f / elapsedSinceLastFrame);
       } else {
          Render2DImGui(shaderManager, myMap, 1.0f / elapsedSinceLastFrame);
       }
@@ -522,22 +560,43 @@ int main() {
       // // Render ImGUI
       ImGui::Render();
 
-      if (previousSeed != seed || abs(flattenFactor - lastFlattenFactor) > 0.1) { // only do meaningful changes
-         frameSinceChange = 0;
+      fuse.tick();
+
+      if (previousSeed != seed) {
+         fuse.planSeedUpdate();
          previousSeed = seed;
+      }
+      if (abs(flattenFactor - lastFlattenFactor) > 0.1) { // only do meaningful changes
+         fuse.planFlattenFactorUpdate();
          lastFlattenFactor = flattenFactor;
-      } else {
-         if (frameSinceChange > -1) {
-            frameSinceChange++;
-         }
+      }
+      if (fuse.isSeedUpdateNow()) {
+         terrain.createFromSeed(seed);
+      }
+      if (fuse.isFlattenFactorUpdateNow()) {
+         terrain.computeMesh(flattenFactor);
       }
 
-      if (frameSinceChange > fuse) {
-         frameSinceChange = -1;
-         std::cout << "recompute\n";
-         terrain.recompute(seed, flattenFactor);
-         //myMesh = generateMeshFromSeed(seed, flattenFactor);
+      if (fuse.isLayerUpdateNow()) {
+         terrain.recomputeLayers(fuse.noiseLayerUpdate, fuse.baselineLayerUpdate);
       }
+
+      // if (previousSeed != seed || abs(flattenFactor - lastFlattenFactor) > 0.1) { // only do meaningful changes
+      //    frameSinceChange = 0;
+      //    previousSeed = seed;
+      //    lastFlattenFactor = flattenFactor;
+      // } else {
+      //    if (frameSinceChange > -1) {
+      //       frameSinceChange++;
+      //    }
+      // }
+
+      // if (frameSinceChange > fuse) {
+      //    frameSinceChange = -1;
+      //    std::cout << "recompute\n";
+      //    //terrain.recompute(seed, flattenFactor);
+      //    //myMesh = generateMeshFromSeed(seed, flattenFactor);
+      // }
 
       Camera* camera = is3DMode ? static_cast<Camera*>(&camera_3d) : static_cast<Camera*>(&camera_2d);
 

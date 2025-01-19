@@ -4,6 +4,30 @@ Mesh::Mesh(std::vector<Vertex>& vertices, std::vector<GLuint>& indices) {
    Mesh::vertices = vertices;
    Mesh::indices = indices;
 
+   // Compute normals per face
+   for (size_t i = 0; i < indices.size(); i += 3) {
+      GLuint i0 = indices[i];
+      GLuint i1 = indices[i + 1];
+      GLuint i2 = indices[i + 2];
+
+      glm::vec3 v0 = vertices[i0].position;
+      glm::vec3 v1 = vertices[i1].position;
+      glm::vec3 v2 = vertices[i2].position;
+
+      // Compute the face normal
+      glm::vec3 normal = glm::normalize(glm::cross(v1 - v0, v2 - v0));
+
+      // Add the face normal to each vertex normal
+      vertices[i0].normal += normal;
+      vertices[i1].normal += normal;
+      vertices[i2].normal += normal;
+   }
+
+   // Normalize the vertex normals
+   for (auto& vertex : vertices) {
+      vertex.normal = glm::normalize(-vertex.normal);
+   }
+
    myVAO.Bind();
    VBO VBO(vertices);
    EBO EBO(indices);
@@ -23,8 +47,6 @@ Mesh::Mesh(const std::vector<std::vector<double>>& matrix) {
    unsigned numY = matrix[0].size() - 1;
    unsigned numVertices = (numX + 1) * (numY + 1);
    unsigned numFaces = numX * numY;
-   // Mesh::vertices.resize(numVertices);
-   // Mesh::indices.resize(numFaces * 4);
    std::vector<Vertex> _vertices(numVertices);
    std::vector<GLuint> _indices(numFaces * 6);
    float invNumX = 1.0f / numX;

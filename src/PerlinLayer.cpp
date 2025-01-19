@@ -23,7 +23,7 @@ double PerlinLayer::computeWithIndices(const std::vector<vec2d>& gradients, cons
    double v = fade(dy);
 
    // Interpolate the 4 results
-   return (lerp(lerp(dotBL, dotBR, u), lerp(dotTL, dotTR, u), v)) * weight;
+   return (lerp(lerp(dotBL, dotBR, u), lerp(dotTL, dotTR, u), v));
 }
 
 void PerlinLayer::fillChunk(const std::vector<vec2d>& gradients, const unsigned chunkX, const unsigned chunkY) {
@@ -73,6 +73,7 @@ void PerlinLayer::changeChunkSize(const std::vector<vec2d>& gradients, const uns
 }
 
 void PerlinLayer::accumulate(matrix& accumulator, const double weightFactor) {
+   std::cout << "Accumulate called with weight " << weightFactor << std::endl;
    for (unsigned i = 0; i < accumulator.size(); ++i) {
       for (unsigned j = 0; j < accumulator[0].size(); ++j) {
          accumulator[i][j] += weightFactor * result[i][j];
