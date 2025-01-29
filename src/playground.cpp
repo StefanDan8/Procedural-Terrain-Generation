@@ -24,7 +24,6 @@
 #include "UserInterface.hpp"
 
 // Include additional graphics files
-#include "Map.hpp"
 #include "Mesh.hpp"
 #include "ShaderManager.hpp"
 
@@ -192,18 +191,18 @@ void saveToFile3D(Mesh& mesh) {
  * @param map Map to be saved to a file
  * @author PK
  */
-void saveToFile2D(Map& map) {
+void saveToFile2D(Mesh& mesh) {
    ImGui::Text("\nSave Current Image");
    static char _user_save_path[256] = "";
    ImGui::InputText("Filename", _user_save_path, sizeof(_user_save_path));
    if (ImGui::Button("Save to .png")) {
       auto filename = std::string(OUTPUT_FOLDER_PATH) + "/" + _user_save_path + ".png";
-      map.exportToPNG(filename);
+      mesh.exportToPNG(filename);
    }
    ImGui::SameLine();
    if (ImGui::Button("Save to .ppm")) {
       auto filename = std::string(OUTPUT_FOLDER_PATH) + "/" + _user_save_path + ".ppm";
-      map.exportToPPM(filename);
+      mesh.exportToPPM(filename);
    }
 }
 
@@ -361,7 +360,7 @@ void Render3DImGui(ShaderManager& manager, Terrain& terrain, Fuse& fuse, float f
  * @param map Map object to be rendered, passed for saveToFile2D()
  * @author PK, SD
  */
-void Render2DImGui(ShaderManager& manager, Map& map, float fps) {
+void Render2DImGui(ShaderManager& manager, Terrain& terrain, float fps) {
    fpsPrintTimer++;
    fpsAvg += fps;
    ImGui::Begin("Controls", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
@@ -373,7 +372,7 @@ void Render2DImGui(ShaderManager& manager, Map& map, float fps) {
 
    shaderDropdown();
 
-   saveToFile2D(map);
+   saveToFile2D(terrain.mesh.value());
    _2DInputControls();
    if (fpsPrintTimer > 99) {
       fpsPrintTimer = 0;
@@ -421,19 +420,6 @@ std::vector<std::vector<double>> commonGeneration(const int seed, const double f
    result = noise.getResult();
 
    return render::normalizeUnit(result, sumWeight * flatteningFactor);
-}
-
-/**
- * Creates a Map object with noise (2D mode).
- * @param seed For the noise generation (random seed)
- * @param flatteningFactor For the noise generation (squishes the noise)
- * @return Map object with the generated noise
- * @author PK
- */
-Map generateMapFromSeed(const int seed, const double flatteningFactor = 1.0f) {
-   std::vector<std::vector<double>> normalized = commonGeneration(seed, flatteningFactor);
-   Map myMap(normalized);
-   return myMap;
 }
 
 /**
@@ -499,7 +485,6 @@ int main() {
    std::vector<std::pair<unsigned, double>> filterParams{std::make_pair(180, 2), std::make_pair(120, 2), std::make_pair(60, 2), std::make_pair(30, 1)};
 
    Terrain terrain(configParams, paramsNoise, filterParams);
-   Map myMap = generateMapFromSeed(42, flattenFactor);
 
    Fuse fuse(200, paramsNoise.size(), filterParams.size()); // create fuse with 200 frames capacity
 
@@ -537,7 +522,7 @@ int main() {
          Render3DImGui(shaderManager, terrain, fuse, 1.0f / elapsedSinceLastFrame);
          //Render3DImGui(shaderManager, myMesh, terrain, 1.0f / elapsedSinceLastFrame);
       } else {
-         Render2DImGui(shaderManager, myMap, 1.0f / elapsedSinceLastFrame);
+         Render2DImGui(shaderManager, terrain, 1.0f / elapsedSinceLastFrame);
       }
 
       glClearColor(0.07f, 0.13f, 0.17f, 1.0f);

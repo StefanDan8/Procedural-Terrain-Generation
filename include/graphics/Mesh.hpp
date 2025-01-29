@@ -17,6 +17,9 @@ class Mesh {
    std::vector<Vertex> vertices;
    std::vector<GLuint> indices;
 
+   // Size of the mesh, so it doesn't need to be recalculated later during 2D saves.
+   unsigned long sizeX, sizeY;
+
    VAO myVAO;
 
    Mesh(std::vector<Vertex>& vertices, std::vector<GLuint>& indices);
@@ -29,6 +32,20 @@ class Mesh {
     * @author SD
     */
    void Draw(Shader& shader, Camera& camera);
+
+   /**
+    * Exports the current map to a PNG file.
+    * @param filename Name (and location) of the file to be saved
+    * @author PK
+    */
+   void exportToPNG(const std::string& filename) const;
+
+   /**
+    * Exports the current map to a NetBPM (PPM) file.
+    * @param filename Name (and location) of the file to be saved
+    * @author PK
+    */
+   void exportToPPM(const std::string& filename) const;
 };
 
 // void ComputeNormals(Mesh& mesh);
