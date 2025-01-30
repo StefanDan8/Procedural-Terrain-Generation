@@ -3,127 +3,7 @@
 
 #include "PerlinLayer.hpp"
 
-// #include <algorithm>
-// #include <array>
-// #include <cassert>
-// #include <cmath>
-// #include <iomanip> // For std::fixed and std::setprecision
-// #include <iostream>
-// #include <random>
-// #include <stdexcept>
-// #include <vector>
-
 namespace perlin {
-
-// // ----- General Functions -----
-
-// /// @brief 2D normalized real vector
-// using vec2d = std::array<double, 2>;
-
-// /// @brief 3D normalized real vector
-// using vec3d = std::array<double, 3>;
-
-// /// @brief Matrix with real values.
-// using matrix = std::vector<std::vector<double>>;
-
-// /// @brief 3D tensor with real values.
-// using tensor = std::vector<std::vector<std::vector<double>>>;
-
-// /// @param i, j two input numbers, meant to be 2D coordinates
-// /// @param N modulo value
-// int simpleHash(int i, int j, int N);
-
-// /// @brief Generates a random 2D normalized vector
-// vec2d random2DGrad();
-
-// /// @brief Generates a random 3D normalized vector
-// vec3d random3DGrad();
-
-// /// @author SD
-// /// @brief Generates a random 2D normalized vector
-// /// @param generator A random number generator for Unif[0,1]
-// vec2d random2DGrad(UniformUnitGenerator& generator);
-
-// /// @author SD
-// /// @brief Generates a random 3D normalized vector
-// /// @param generator A random number generator for Unif[0,1]
-// vec3d random3DGrad(UniformUnitGenerator& generator);
-
-// /// @brief Computes the dot product of two 2D vectors
-// double dot(const vec2d& x, const vec2d& y);
-
-// /// @brief Computes the dot product of two 3D vectors
-// double dot(const vec3d& x, const vec3d& y);
-
-// /// @brief Computes the fade curve for Perlin noise. It is a growing smooth function mapping [0,1] to [0,1]
-// double fade(const double t);
-
-// /// @brief A linear interpolation function
-// /// @param a, b values of the interval [a,b]
-// /// @param t fraction of the distance from a to b
-// double lerp(const double a, const double b, const double t);
-
-// ----- Layer Functions -----
-
-// class PerlinLayer2D {
-//    private:
-//    // --- Class Parameters ---
-//    const unsigned chunkSize; // The size of the chunk
-//    const unsigned numChunksX; // The number of chunks in the x direction
-//    const unsigned numChunksY; // The number of chunks in the y direction
-//    std::vector<vec2d>& gradients; // The gradients used for computation  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Don't store here. Too much trouble when modifying seeds. Move to parameters to compute
-//    double weight = 1.0; // The weight of the layer
-
-//    public:
-//    // --- Constructors ---
-//    PerlinLayer2D(const unsigned chunkSize, const unsigned numChunksX, const unsigned numChunksY, std::vector<vec2d>& gradients) : chunkSize(chunkSize), numChunksX(numChunksX), numChunksY(numChunksY), gradients(gradients) {}
-
-//    PerlinLayer2D(const unsigned chunkSize, const unsigned numChunksX, const unsigned numChunksY, std::vector<vec2d>& gradients, double weight) : chunkSize(chunkSize), numChunksX(numChunksX), numChunksY(numChunksY), gradients(gradients), weight(weight) {}
-
-//    // --- Methods ---
-
-//    /// @brief Compute the Perlin noise value of a pixel
-//    /// @param x x-coordinate within the chunk
-//    /// @param y y-coordinate within the chunk
-//    /// @param chunkX x-coordinate of the chunk within the entire grid
-//    /// @param chunkY y-coordinate of the chunk within the entire grid
-//    double compute(const unsigned x, const unsigned y, const unsigned chunkX, const unsigned chunkY);
-
-//    /// @brief Compute the Perlin noise value of a pixel
-//    /// @param x x-coordinate within the chunk
-//    /// @param y y-coordinate within the chunk
-//    /// @param valBL index of bottom left gradient
-//    /// @param valBR index of bottom right gradient
-//    /// @param valTL index of top left gradient
-//    /// @param valTR index of top right gradient
-//    double computeWithIndices(const unsigned x, const unsigned y, const int valBL, const int valBR, const int valTL, const int valTR);
-
-//    /// @brief Fill a chunk of the matrix with Perlin noise values
-//    /// @param result The matrix to fill
-//    /// @param chunkX x-coordinate of the chunk within the entire grid
-//    /// @param chunkY y-coordinate of the chunk within the entire grid
-//    void fillChunk(matrix& result, const unsigned chunkX, const unsigned chunkY);
-
-//    /// @brief Fill the entire matrix with Perlin noise values
-//    /// @param result The matrix to fill
-//    void fillMatrix(matrix& result);
-
-//    void setWeight(double w) {
-//       weight = w;
-//    }
-
-//    double getWeight() {
-//       return weight;
-//    }
-
-//    unsigned getChunkSize() {
-//       return chunkSize;
-//    }
-
-//    PerlinLayer2D operator=(const PerlinLayer2D& other) {
-//       return PerlinLayer2D(other.chunkSize, other.numChunksX, other.numChunksY, other.gradients, other.weight);
-//    }
-// }; // class PerlinLayer2D
 
 // ----- Noise Functions -----
 
@@ -227,11 +107,11 @@ class PerlinNoise2D {
 
    /// @note The check is added for test purposes, if the code works properly (the weight sum is updated correctly by each function involved) the check should be REMOVED - for performance reasons
    double getWeightSum() {
-      double tmp = weightSum;
-      updateWeightSum();
-      if (tmp != weightSum) {
-         throw std::logic_error("Weight sum was not measured correctly!");
-      }
+      // double tmp = weightSum;
+      // updateWeightSum();
+      // if (tmp != weightSum) {
+      //    throw std::logic_error("Weight sum was not measured correctly!");
+      // }
       return weightSum;
    }
 }; // class PerlinNoise2D

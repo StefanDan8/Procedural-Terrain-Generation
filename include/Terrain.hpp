@@ -27,30 +27,7 @@ class Terrain {
 
    public:
 
-   // //Terrain(const std::string& configFile); TODO
-   // Terrain(const BasicConfigParams& basicConfigParams, const std::vector<layerP>& noiseParams, const std::vector<layerP>& baselineParams);
-
-   // // get current weight, add (weight-currentWeight)*layer to noise
-   // void adjustNoiseLayerWeight(const unsigned index, const double weight);
-   // // subtract weight*layer from noise, recompute layer, add weight*layer to noise
-   // void adjustNoiseLayerChunkSize(const unsigned index, const unsigned chunkSize);
-   // void adjustBaselineLayerWeight(const unsigned index, const double weight);
-   // void adjustBaselineLayerChunkSize(const unsigned index, const unsigned chunkSize);
-
-   // void adjustNoiseBoth(const unsigned index, const layerP pair);
-   // void adjustBaselineBoth(const unsigned index, const layerP pair);
-
-   // void initializeNoise(const std::vector<layerP>& noiseParams);
-   // void initializeBaseline(const std::vector<layerP>& baselineParams);
-
-   // void computeMesh(const double flattenFactor);
-
-   // void createFromSeed(const int newSeed);
-
-   // void Draw(Shader& shader, Camera& camera);
-   // //void ExportConfiguration(const std::string& filename); // to JSON
-
-   // void recomputeLayers(std::vector<UpdateState>& noiseLayerUpdate, std::vector<UpdateState>& baselineLayerUpdate);
+   //Terrain(const std::string& configFile); TODO
 
    /// @brief Constructor to initialize Terrain with basic configuration parameters, noise parameters, and baseline parameters.
    /// @param basicConfigParams Basic configuration parameters.
@@ -61,11 +38,13 @@ class Terrain {
    /// @brief Adjust the weight of a noise layer.
    /// @param index Index of the noise layer.
    /// @param weight New weight for the noise layer.
+   /// @note get current weight, add (weight-currentWeight)*layer to noise
    void adjustNoiseLayerWeight(const unsigned index, const double weight);
 
    /// @brief Adjust the chunk size of a noise layer.
    /// @param index Index of the noise layer.
    /// @param chunkSize New chunk size for the noise layer.
+   /// @note subtract weight*layer from noise, recompute layer, add weight*layer to noise
    void adjustNoiseLayerChunkSize(const unsigned index, const unsigned chunkSize);
 
    /// @brief Adjust the weight of a baseline layer.
@@ -108,6 +87,8 @@ class Terrain {
    /// @param shader Shader to use for drawing.
    /// @param camera Camera to use for drawing.
    void Draw(Shader& shader, Camera& camera);
+
+   //void ExportConfiguration(const std::string& filename); // to JSON
 
    /// @brief Recompute layers with given update states.
    /// @param noiseLayerUpdate Update states for noise layers.

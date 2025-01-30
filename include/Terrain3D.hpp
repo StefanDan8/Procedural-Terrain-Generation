@@ -5,6 +5,17 @@
 #include "PerlinNoise.hpp"
 
 class Terrain3D {
+   private:
+   unsigned sizeX;
+   unsigned sizeY;
+   int seed;
+   double flattenFactor;
+   std::optional<Mesh> mesh;
+   std::vector<std::pair<unsigned, double>> noiseLayerParams;
+   std::vector<std::pair<unsigned, double>> baselineLayerParams;
+   perlin::PerlinNoise2D noise;
+   perlin::PerlinNoise2D baseline;
+   
    public:
    /// @brief Constructor to initialize Terrain3D with size, seed, and flatten factor.
    /// @param sizeX Width of the terrain.
@@ -22,12 +33,6 @@ class Terrain3D {
    /// @param flattenFactor Factor to flatten the terrain.
    Terrain3D(const unsigned sizeX, const unsigned sizeY, std::vector<std::pair<unsigned, double>>& noiseLayerParams,
              std::vector<std::pair<unsigned, double>>& baselineLayerParams, const int seed = 42, const double flattenFactor = 2.0);
-
-   std::optional<Mesh> mesh;
-   std::vector<std::pair<unsigned, double>> noiseLayerParams;
-   std::vector<std::pair<unsigned, double>> baselineLayerParams;
-   perlin::PerlinNoise2D noise;
-   perlin::PerlinNoise2D baseline;
 
    /// @brief Resize the terrain.
    /// @param sizeX New width of the terrain.
@@ -79,10 +84,6 @@ class Terrain3D {
       flattenFactor = some_flattenFactor;
    }
 
-   private:
-   unsigned sizeX;
-   unsigned sizeY;
-   int seed;
-   double flattenFactor;
-};
+}; // class Terrain3D
+
 #endif // TERRAIN_3D_CLASS_HPP
