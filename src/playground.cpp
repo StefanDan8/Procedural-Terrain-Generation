@@ -274,7 +274,7 @@ void noiseLayersGui(Terrain& terrain, Fuse& fuse) {
    ImGui::Text("Noise parameters");
    unsigned index = 0;
    ImGui::Text("Chunk Size          Weight");
-   for (auto& layerParam : terrain.noiseParams) {
+   for (auto& layerParam : terrain.getNoiseParams()) {
       ImGui::PushID(index * 9999 + 76);
       if (InputUnsigned("##xx", &layerParam.first)) {
          fuse.planLayerUpdate(index, NOISE_LAYER, CHUNK_SIZE);
@@ -290,7 +290,7 @@ void noiseLayersGui(Terrain& terrain, Fuse& fuse) {
    }
    index = 0;
    ImGui::Text("Baseline noise parameters");
-   for (auto& layerParam : terrain.baselineParams) {
+   for (auto& layerParam : terrain.getBaselineParams()) {
       ImGui::PushID(index * 9999 + 86);
       if (InputUnsigned("##xx", &layerParam.first)) {
          fuse.planLayerUpdate(index, BASELINE_LAYER, CHUNK_SIZE);
@@ -344,7 +344,7 @@ void Render3DImGui(ShaderManager& manager, Terrain& terrain, Fuse& fuse, float f
    meshSettings();
    shaderDropdown();
    noiseLayersGui(terrain, fuse);
-   saveToFile3D(terrain.mesh.value());
+   saveToFile3D(terrain.getMesh());
    _3DInputControls();
    if (fpsPrintTimer > 99) {
       fpsPrintTimer = 0;
@@ -373,7 +373,7 @@ void Render2DImGui(ShaderManager& manager, Terrain& terrain, float fps) {
 
    shaderDropdown();
 
-   saveToFile2D(terrain.mesh.value());
+   saveToFile2D(terrain.getMesh());
    _2DInputControls();
    if (fpsPrintTimer > 99) {
       fpsPrintTimer = 0;
