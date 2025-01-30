@@ -45,90 +45,90 @@ namespace perlin {
 
 // ----- Layer functions -----
 
-double PerlinLayer2D::compute(const unsigned x, const unsigned y, const unsigned chunkX, const unsigned chunkY) {
-   // Compute the position of the point within the square
-   double dx = (x % chunkSize + 1) / (double) chunkSize;
-   double dy = (y % chunkSize + 1) / (double) chunkSize;
+// double PerlinLayer2D::compute(const unsigned x, const unsigned y, const unsigned chunkX, const unsigned chunkY) {
+//    // Compute the position of the point within the square
+//    double dx = (x % chunkSize + 1) / (double) chunkSize;
+//    double dy = (y % chunkSize + 1) / (double) chunkSize;
 
-   // Find the vectors pointing to the point from the 4 corners of the square
-   vec2d BL = {dx, dy};
-   vec2d BR = {dx - 1.0, dy};
-   vec2d TL = {dx, dy - 1.0};
-   vec2d TR = {dx - 1.0, dy - 1.0};
+//    // Find the vectors pointing to the point from the 4 corners of the square
+//    vec2d BL = {dx, dy};
+//    vec2d BR = {dx - 1.0, dy};
+//    vec2d TL = {dx, dy - 1.0};
+//    vec2d TR = {dx - 1.0, dy - 1.0};
 
-   // Select a value for each of the 4 corners of the square from the permutation table
-   auto size = gradients.size();
-   int valBL = simpleHash(chunkX, chunkY, size);
-   int valBR = simpleHash(chunkX + 1, chunkY, size);
-   int valTL = simpleHash(chunkX, chunkY + 1, size);
-   int valTR = simpleHash(chunkX + 1, chunkY + 1, size);
+//    // Select a value for each of the 4 corners of the square from the permutation table
+//    auto size = gradients.size();
+//    int valBL = simpleHash(chunkX, chunkY, size);
+//    int valBR = simpleHash(chunkX + 1, chunkY, size);
+//    int valTL = simpleHash(chunkX, chunkY + 1, size);
+//    int valTR = simpleHash(chunkX + 1, chunkY + 1, size);
 
-   // Compute the corresponding dot products
-   double dotBL = dot(gradients.at(valBL), BL);
-   double dotBR = dot(gradients.at(valBR), BR);
-   double dotTL = dot(gradients.at(valTL), TL);
-   double dotTR = dot(gradients.at(valTR), TR);
+//    // Compute the corresponding dot products
+//    double dotBL = dot(gradients.at(valBL), BL);
+//    double dotBR = dot(gradients.at(valBR), BR);
+//    double dotTL = dot(gradients.at(valTL), TL);
+//    double dotTR = dot(gradients.at(valTR), TR);
 
-   // Compute fade curves for x and y
-   double u = fade(dx);
-   double v = fade(dy);
+//    // Compute fade curves for x and y
+//    double u = fade(dx);
+//    double v = fade(dy);
 
-   // Interpolate the 4 results
-   return (lerp(lerp(dotBL, dotBR, u), lerp(dotTL, dotTR, u), v)) * weight;
-}
+//    // Interpolate the 4 results
+//    return (lerp(lerp(dotBL, dotBR, u), lerp(dotTL, dotTR, u), v)) * weight;
+// }
 
-double PerlinLayer2D::computeWithIndices(const unsigned x, const unsigned y, const int valBL, const int valBR, const int valTL, const int valTR) {
-   // Compute the position of the point within the square
-   double dx = (x % chunkSize + 1) / (double) chunkSize;
-   double dy = (y % chunkSize + 1) / (double) chunkSize;
+// double PerlinLayer2D::computeWithIndices(const unsigned x, const unsigned y, const int valBL, const int valBR, const int valTL, const int valTR) {
+//    // Compute the position of the point within the square
+//    double dx = (x % chunkSize + 1) / (double) chunkSize;
+//    double dy = (y % chunkSize + 1) / (double) chunkSize;
 
-   // Find the vectors pointing to the point from the 4 corners of the square
-   vec2d BL = {dx, dy};
-   vec2d BR = {dx - 1.0, dy};
-   vec2d TL = {dx, dy - 1.0};
-   vec2d TR = {dx - 1.0, dy - 1.0};
+//    // Find the vectors pointing to the point from the 4 corners of the square
+//    vec2d BL = {dx, dy};
+//    vec2d BR = {dx - 1.0, dy};
+//    vec2d TL = {dx, dy - 1.0};
+//    vec2d TR = {dx - 1.0, dy - 1.0};
 
-   // Compute the corresponding dot products
-   double dotBL = dot(gradients.at(valBL), BL);
-   double dotBR = dot(gradients.at(valBR), BR);
-   double dotTL = dot(gradients.at(valTL), TL);
-   double dotTR = dot(gradients.at(valTR), TR);
+//    // Compute the corresponding dot products
+//    double dotBL = dot(gradients.at(valBL), BL);
+//    double dotBR = dot(gradients.at(valBR), BR);
+//    double dotTL = dot(gradients.at(valTL), TL);
+//    double dotTR = dot(gradients.at(valTR), TR);
 
-   // Compute fade curves for x and y
-   double u = fade(dx);
-   double v = fade(dy);
+//    // Compute fade curves for x and y
+//    double u = fade(dx);
+//    double v = fade(dy);
 
-   // Interpolate the 4 results
-   return (lerp(lerp(dotBL, dotBR, u), lerp(dotTL, dotTR, u), v)) * weight;
-}
+//    // Interpolate the 4 results
+//    return (lerp(lerp(dotBL, dotBR, u), lerp(dotTL, dotTR, u), v)) * weight;
+// }
 
-void PerlinLayer2D::fillChunk(matrix& result, const unsigned chunkX, const unsigned chunkY) {
-   const unsigned offsetX = chunkSize * chunkX;
-   const unsigned offsetY = chunkSize * chunkY;
+// void PerlinLayer2D::fillChunk(matrix& result, const unsigned chunkX, const unsigned chunkY) {
+//    const unsigned offsetX = chunkSize * chunkX;
+//    const unsigned offsetY = chunkSize * chunkY;
 
-   // Select a value for each of the 4 corners of the square from the permutation table
-   auto size = gradients.size();
-   // Here is PROBLEM gradients.size() is 0 here
-   int valBL = simpleHash(chunkX, chunkY, size);
-   int valBR = simpleHash(chunkX + 1, chunkY, size);
-   int valTL = simpleHash(chunkX, chunkY + 1, size);
-   int valTR = simpleHash(chunkX + 1, chunkY + 1, size);
+//    // Select a value for each of the 4 corners of the square from the permutation table
+//    auto size = gradients.size();
+//    // Here is PROBLEM gradients.size() is 0 here
+//    int valBL = simpleHash(chunkX, chunkY, size);
+//    int valBR = simpleHash(chunkX + 1, chunkY, size);
+//    int valTL = simpleHash(chunkX, chunkY + 1, size);
+//    int valTR = simpleHash(chunkX + 1, chunkY + 1, size);
 
-   for (unsigned i = offsetX; i < offsetX + chunkSize; i++) {
-      for (unsigned j = offsetY; j < offsetY + chunkSize; j++) {
-         //result[i][j] += compute(i, j, chunkX, chunkY);
-         result[i][j] += computeWithIndices(i, j, valBL, valBR, valTL, valTR);
-      }
-   }
-}
+//    for (unsigned i = offsetX; i < offsetX + chunkSize; i++) {
+//       for (unsigned j = offsetY; j < offsetY + chunkSize; j++) {
+//          //result[i][j] += compute(i, j, chunkX, chunkY);
+//          result[i][j] += computeWithIndices(i, j, valBL, valBR, valTL, valTR);
+//       }
+//    }
+// }
 
-void PerlinLayer2D::fillMatrix(matrix& result) {
-   for (unsigned chunkX = 0; chunkX < numChunksX; chunkX++) {
-      for (unsigned chunkY = 0; chunkY < numChunksY; chunkY++) {
-         fillChunk(result, chunkX, chunkY);
-      }
-   }
-}
+// void PerlinLayer2D::fillMatrix(matrix& result) {
+//    for (unsigned chunkX = 0; chunkX < numChunksX; chunkX++) {
+//       for (unsigned chunkY = 0; chunkY < numChunksY; chunkY++) {
+//          fillChunk(result, chunkX, chunkY);
+//       }
+//    }
+// }
 
 // ----- Noise functions -----
 
@@ -146,10 +146,11 @@ PerlinNoise2D::PerlinNoise2D(unsigned sizeX, unsigned sizeY, const std::vector<s
       }
    }
    // create the layers
+   layers.reserve(layerParams.size());
    for (const auto& chunkSizeWeight : layerParams) {
       auto chunkSize = chunkSizeWeight.first;
       auto weight = chunkSizeWeight.second;
-      layers.push_back(PerlinLayer2D(chunkSize, sizeX / chunkSize, sizeY / chunkSize, gradients, weight));
+      layers.push_back(PerlinLayer(sizeX, sizeY, chunkSize, weight));
       weightSum += weight;
    }
 }
@@ -174,7 +175,8 @@ void PerlinNoise2D::resizeMatrix(unsigned newSizeX, unsigned newSizeY) {
 
 void PerlinNoise2D::fill() {
    for (auto& layer : layers) {
-      layer.fillMatrix(resultMatrix);
+      layer.fill(gradients);
+      layer.accumulate(resultMatrix, layer.getWeight());
    }
 }
 
@@ -246,37 +248,38 @@ void PerlinNoise2D::matrixReLU(const double threshold) {
 
 void PerlinNoise2D::filterMatrix(perlin::PerlinNoise2D& other) {
    // Update the own matrix with the maximum values of the own and another PerlinNoise2D object's matrix
-   auto otherMatrix = other.getResult();
+   matrix otherMatrix = other.getResultRef();
    for (unsigned i = 0; i < sizeX; i++) {
       for (unsigned j = 0; j < sizeY; j++) {
-         resultMatrix[i][j] = std::max(resultMatrix[i][j], otherMatrix[i][j]);
+         resultMatrix[i][j] = std::max(resultMatrix.at(i).at(j), otherMatrix.at(i).at(j));
       }
    }
 }
 
 // --- Layer functions ---
 
-void PerlinNoise2D::setLayers(std::vector<PerlinLayer2D>& newLayers) {
-   layers = newLayers;
-   updateWeightSum();
-}
+// Disable copy semantics -- copying is very inefficient
+// compiler should complain if copying is done
+// void PerlinNoise2D::setLayers(std::vector<PerlinLayer>& newLayers) {
+//    layers = newLayers;
+//    updateWeightSum();
+// }
 
 void PerlinNoise2D::setLayers(std::vector<std::pair<unsigned, double>>& newLayerParams) {
-   layers = {};
+   layers.clear();
+   layers.reserve(newLayerParams.size());
    weightSum = 0.0;
    // create the layers
    for (const auto& chunkSizeWeight : newLayerParams) {
-      auto chunkSize = chunkSizeWeight.first;
-      auto weight = chunkSizeWeight.second;
-      layers.push_back(PerlinLayer2D(chunkSize, sizeX / chunkSize, sizeY / chunkSize, gradients, weight));
-      weightSum += weight;
+      layers.push_back(PerlinLayer(sizeX, sizeY, chunkSizeWeight.first, chunkSizeWeight.second));
+      weightSum += chunkSizeWeight.second;
    }
 }
 
 void PerlinNoise2D::addLayer(std::pair<unsigned, double>& newLayer) {
    auto chunkSize = newLayer.first;
    auto weight = newLayer.second;
-   layers.push_back(PerlinLayer2D(chunkSize, sizeX / chunkSize, sizeY / chunkSize, gradients, weight));
+   layers.push_back(PerlinLayer(sizeX, sizeY, chunkSize, weight));
    weightSum += weight;
 }
 
@@ -295,11 +298,8 @@ void PerlinNoise2D::removeLayer(unsigned index) {
 }
 
 void PerlinNoise2D::recomputeLayer(unsigned index, const std::pair<unsigned, double>& layerParams) {
-   if (sizeX % layerParams.first != 0 || sizeY % layerParams.first != 0) {
-      throw std::invalid_argument("The size of the terrain must be divisible by the chunk size.");
-   }
-   weightSum += layerParams.second - layers.at(index).getWeight();
-   layers.at(index) = PerlinLayer2D(layerParams.first, sizeX / layerParams.first, sizeY / layerParams.first, gradients, layerParams.second);
+   // first - chunk size, second - weight
+   PerlinNoise2D::recomputeLayer(index, layerParams.first, layerParams.second);
 }
 
 void PerlinNoise2D::recomputeLayer(unsigned index, unsigned chunkSize, double weight) {
@@ -307,7 +307,7 @@ void PerlinNoise2D::recomputeLayer(unsigned index, unsigned chunkSize, double we
       throw std::invalid_argument("The size of the terrain must be divisible by the chunk size.");
    }
    weightSum += weight - layers.at(index).getWeight();
-   layers.at(index) = PerlinLayer2D(chunkSize, sizeX / chunkSize, sizeY / chunkSize, gradients, weight);
+   layers.at(index) = PerlinLayer(sizeX, sizeY, chunkSize, weight);
 }
 
 void PerlinNoise2D::recomputeLayerChunkSize(unsigned index, unsigned chunkSize) {
@@ -315,12 +315,12 @@ void PerlinNoise2D::recomputeLayerChunkSize(unsigned index, unsigned chunkSize) 
       throw std::invalid_argument("The size of the terrain must be divisible by the chunk size.");
    }
 
-   layers.at(index) = PerlinLayer2D(chunkSize, sizeX / chunkSize, sizeY / chunkSize, gradients, layers.at(index).getWeight());
+   layers.at(index) = PerlinLayer(sizeX, sizeY, chunkSize, layers.at(index).getWeight());
 }
 
 void PerlinNoise2D::recomputeLayerWeight(unsigned index, double weight) {
    weightSum += weight - layers.at(index).getWeight();
-   layers.at(index) = PerlinLayer2D(layers.at(index).getChunkSize(), sizeX / layers.at(index).getChunkSize(), sizeY / layers.at(index).getChunkSize(), gradients, weight);
+   layers.at(index) = PerlinLayer(sizeX, sizeY, layers.at(index).getChunkSize(), weight);
 }
 
 void PerlinNoise2D::updateWeightSum() {

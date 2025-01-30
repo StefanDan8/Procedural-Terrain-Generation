@@ -1,7 +1,7 @@
 #ifndef PERLIN_LAYER_HPP
 #define PERLIN_LAYER_HPP
 
-#include "PerlinNoise.hpp"
+#include "PerlinUtils.hpp"
 
 enum UpdateState {
    NONE, // 0
