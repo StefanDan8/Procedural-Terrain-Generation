@@ -43,14 +43,28 @@ class PerlinLayer {
    PerlinLayer(const PerlinLayer&) = delete;
    PerlinLayer& operator=(const PerlinLayer&) = delete;
 
-   void fill(const std::vector<vec2d>& gradients);
-   void changeWeight(const double newWeight);
-   void changeChunkSize(const std::vector<vec2d>& gradients, const unsigned newChunkSize); // triggers recompute
+   // --- Methods ---
 
+   /// @brief Fill the entire result matrix with Perlin noise values
+   /// @param gradients Constant gradients used for computation
+   void fill(const std::vector<vec2d>& gradients);
+
+   void changeWeight(const double newWeight);
+
+   /// @note Triggers recompute
+   void changeChunkSize(const std::vector<vec2d>& gradients, const unsigned newChunkSize);
+
+   /// @brief Add the values of the layer to the accumulator matrix
+   /// @param accumulator the matrix to accumulate the values to
+   /// @param weightFactor the factor to multiply the values with
    void accumulate(matrix& accumulator, const double weightFactor);
 
    double getWeight() {
       return weight;
+   }
+
+   unsigned getChunkSize() {
+      return chunkSize;
    }
 
    private:
@@ -60,8 +74,22 @@ class PerlinLayer {
    double weight = 1.0;
    matrix result;
 
+   /// @brief Compute the Perlin noise value of a pixel
+   /// @param gradients Constant gradients used for computation
+   /// @param x x-coordinate within the chunk
+   /// @param y y-coordinate within the chunk
+   /// @param valBL index of bottom left gradient
+   /// @param valBR index of bottom right gradient
+   /// @param valTL index of top left gradient
+   /// @param valTR index of top right gradient
    double computeWithIndices(const std::vector<vec2d>& gradients, const unsigned x, const unsigned y, const int valBL, const int valBR, const int valTL, const int valTR);
+
+   /// @brief Fill a chunk of the matrix with Perlin noise values
+   /// @param gradients Constant gradients used for computation
+   /// @param chunkX x-coordinate of the chunk within the entire grid
+   /// @param chunkY y-coordinate of the chunk within the entire grid
    void fillChunk(const std::vector<vec2d>& gradients, const unsigned chunkX, const unsigned chunkY);
+
 }; // End of PerlinLayer class
 } // End of namespace "perlin"
-#endif
+#endif // PERLIN_LAYER_HPP
