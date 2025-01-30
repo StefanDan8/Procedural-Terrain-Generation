@@ -17,7 +17,7 @@
 #include "Camera2D.hpp"
 #include "Camera3D.hpp"
 #include "Fuse.hpp"
-#include "PerlinOOP.hpp"
+#include "PerlinNoise.hpp"
 #include "Renderer.hpp"
 #include "Terrain.hpp"
 #include "Terrain3D.hpp"

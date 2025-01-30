@@ -5,7 +5,7 @@
 #include <fstream>
 #include <stdexcept>
 
-#include "PerlinOOP.hpp"
+#include "PerlinNoise.hpp"
 
 namespace render {
 void create_ppm(const std::vector<std::vector<int>>& noise, const std::string& filename) {

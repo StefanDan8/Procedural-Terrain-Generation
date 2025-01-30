@@ -1,4 +1,4 @@
-#include "PerlinOOP.hpp"
+#include "PerlinNoise.hpp"
 #include "Renderer.hpp"
 #include "UserInterface.hpp"
 

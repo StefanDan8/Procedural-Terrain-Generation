@@ -2,7 +2,7 @@
 #define TERRAIN_3D_CLASS_HPP
 
 #include "Mesh.hpp"
-#include "PerlinOOP.hpp"
+#include "PerlinNoise.hpp"
 #include <optional>
 class Terrain3D {
    public:

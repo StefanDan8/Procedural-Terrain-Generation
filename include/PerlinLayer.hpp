@@ -1,6 +1,6 @@
 #ifndef PERLIN_LAYER_HPP
 #define PERLIN_LAYER_HPP
-#include "PerlinOOP.hpp"
+#include "PerlinNoise.hpp"
 #include <cmath>
 #include <vector>
 

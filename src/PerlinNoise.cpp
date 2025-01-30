@@ -1,4 +1,4 @@
-#include "PerlinOOP.hpp"
+#include "PerlinNoise.hpp"
 namespace perlin {
 
 // ----- General functions -----
