@@ -3,8 +3,6 @@
 
 #include "Mesh.hpp"
 #include "PerlinLayer.hpp"
-#include "PerlinNoise.hpp"
-#include <optional>
 
 using layerP = std::pair<unsigned, double>;
 

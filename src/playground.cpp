@@ -13,7 +13,8 @@
 #include <glad/glad.h>
 
 // Include source files
-#include "AppConfig.hpp"
+// #include "AppConfig.hpp"
+// #include "PerlinUtils.hpp"
 #include "Camera2D.hpp"
 #include "Camera3D.hpp"
 #include "Fuse.hpp"
@@ -409,7 +410,7 @@ std::vector<std::vector<double>> commonGeneration(const int seed, const double f
    std::vector<std::pair<unsigned, double>> filterParams{std::make_pair(180, 2), std::make_pair(120, 2), std::make_pair(60, 2), std::make_pair(30, 1)};
 
    // Generate and fill the second noise layer
-   perlin::PerlinNoise2D noiseFilter(sizeX, sizeY, filterParams);
+   perlin::PerlinNoise2D noiseFilter = perlin::PerlinNoise2D(sizeX, sizeY, filterParams);
    noiseFilter.fill();
 
    // Filter and normalize the noise

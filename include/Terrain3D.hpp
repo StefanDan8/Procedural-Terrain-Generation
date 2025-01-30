@@ -3,7 +3,7 @@
 
 #include "Mesh.hpp"
 #include "PerlinNoise.hpp"
-#include <optional>
+
 class Terrain3D {
    public:
    Terrain3D(const unsigned sizeX, const unsigned sizeY, const int seed = 42, const double flattenFactor = 2.0);
