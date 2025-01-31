@@ -1,5 +1,4 @@
 #include "Mesh.hpp"
-#include "../lodepng/lodepng.h"
 
 Mesh::Mesh(std::vector<Vertex>& vertices, std::vector<GLuint>& indices) {
    Mesh::vertices = vertices;
@@ -10,8 +9,10 @@ Mesh::Mesh(std::vector<Vertex>& vertices, std::vector<GLuint>& indices) {
    float loopBackValue = vertices[0].position.z;
 
    for (Vertex vtx : vertices) {
-      if (vtx.position.z == loopBackValue) sizeX++;
-      else break;
+      if (vtx.position.z == loopBackValue)
+         sizeX++;
+      else
+         break;
    }
 
    sizeY = vertices.size() / sizeX;
@@ -172,7 +173,7 @@ void ExportToObj(const Mesh& mesh, const std::string& filename) {
    std::cout << "Mesh exported to " << filename << " successfully." << std::endl;
 }
 
-void Mesh::exportToPNG(const std::string &filename) const {
+void Mesh::exportToPNG(const std::string& filename) const {
    std::vector<unsigned char> image; // Create image vector to store "pixels"
    image.resize(sizeX * sizeY * 4);
 
@@ -198,7 +199,7 @@ void Mesh::exportToPNG(const std::string &filename) const {
    if (error) std::cout << "encoder error " << error << ": " << lodepng_error_text(error) << std::endl;
 }
 
-void Mesh::exportToPPM(const std::string &filename) const {
+void Mesh::exportToPPM(const std::string& filename) const {
    // Open stream to file
    std::ofstream file(filename);
    if (!file.is_open()) {

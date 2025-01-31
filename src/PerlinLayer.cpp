@@ -91,7 +91,7 @@ void PerlinLayer::fillChunk(const std::vector<vec2d>& gradients, const unsigned 
 
    // std::for_each(std::execution::par, result.begin(), result.end(), [this, &gradients, valBL, valBR, valTL, valTR](auto& row){
    //    unsigned i = &row - &result[0];  // Compute row index from the reference
-   //    std::for_each(std::execution::par, result[i].begin(), result[i].end(), 
+   //    std::for_each(std::execution::par, result[i].begin(), result[i].end(),
    //          [this, &gradients, valBL, valBR, valTL, valTR, i](auto& cell) {
    //              unsigned j = &cell - &result[i][0];  // Compute column index from the reference
    //              cell = computeWithIndices(gradients, i, j, valBL, valBR, valTL, valTR);
@@ -145,33 +145,33 @@ void PerlinLayer::accumulate(matrix& accumulator, const double weightFactor) {
    std::cout << "Accumulate called with weight " << weightFactor;
 
    // Ensure accumulator and result have the same dimensions
-    if (accumulator.empty() || accumulator.size() != result.size() || accumulator[0].size() != result[0].size()) {
-        throw std::runtime_error("Dimension mismatch between accumulator and result.");
-    }
+   if (accumulator.empty() || accumulator.size() != result.size() || accumulator[0].size() != result[0].size()) {
+      throw std::runtime_error("Dimension mismatch between accumulator and result.");
+   }
 
    // measuring the time
    auto start = std::chrono::high_resolution_clock::now();
 
    // --- sequential loop
    // Accumulate the values of the layer to the accumulator matrix
-   // for (unsigned i = 0; i < accumulator.size(); ++i) {
-   //    for (unsigned j = 0; j < accumulator[0].size(); ++j) {
-   //       accumulator[i][j] += weightFactor * result[i][j];
-   //    }
-   // }
+   for (unsigned i = 0; i < accumulator.size(); ++i) {
+      for (unsigned j = 0; j < accumulator[0].size(); ++j) {
+         accumulator[i][j] += weightFactor * result[i][j];
+      }
+   }
 
    // --- parallel loop
    // Parallel transformation for each row
-    std::transform(std::execution::par, accumulator.begin(), accumulator.end(),
-                   result.begin(), accumulator.begin(),
-                   [weightFactor](std::vector<double>& accRow, const std::vector<double>& resRow) {
-                       std::transform(std::execution::par, accRow.begin(), accRow.end(),
-                                      resRow.begin(), accRow.begin(),
-                                      [weightFactor](double accVal, double resVal) {
-                                          return accVal + weightFactor * resVal;
-                                      });
-                       return accRow;
-                   });
+   // std::transform(std::execution::par, accumulator.begin(), accumulator.end(),
+   //                result.begin(), accumulator.begin(),
+   //                [weightFactor](std::vector<double>& accRow, const std::vector<double>& resRow) {
+   //                   std::transform(std::execution::par, accRow.begin(), accRow.end(),
+   //                                  resRow.begin(), accRow.begin(),
+   //                                  [weightFactor](double accVal, double resVal) {
+   //                                     return accVal + weightFactor * resVal;
+   //                                  });
+   //                   return accRow;
+   //                });
 
    // measuring the time
    auto end = std::chrono::high_resolution_clock::now();

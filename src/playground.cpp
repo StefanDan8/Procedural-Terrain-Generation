@@ -1,20 +1,9 @@
 #define GLFW_INCLUDE_NONE
 
-// Include standard headers
-#include "backends/imgui_impl_glfw.h"
-#include "backends/imgui_impl_opengl3.h"
-#include "imgui.h"
+#include "gui/GUI.hpp"
 #include <charconv>
 #include <chrono>
-#include <cmath>
-#include <cstdio>
-#include <iostream>
-#include <GLFW/glfw3.h>
-#include <glad/glad.h>
 
-// Include source files
-// #include "AppConfig.hpp"
-// #include "PerlinUtils.hpp"
 #include "Camera2D.hpp"
 #include "Camera3D.hpp"
 #include "Fuse.hpp"
@@ -24,8 +13,6 @@
 #include "Terrain3D.hpp"
 #include "UserInterface.hpp"
 
-// Include additional graphics files
-#include "Mesh.hpp"
 #include "ShaderManager.hpp"
 
 bool is3DMode = false;
@@ -33,7 +20,7 @@ bool switchedRecently = false;
 
 std::vector<std::vector<std::string>> shaders = {
    {"Beach2DShader.vert", "Mono2DShader.vert"}, //2D shaders
-   {"beachShader.vert", "default.vert"} // 3D shaders
+   {"beachShader.vert", "default.vert", "Fjord.vert"} // 3D shaders
 };
 
 std::string previousVertexShader = shaders[is3DMode][0];
@@ -42,23 +29,8 @@ std::string previousFragmentShader = "default.frag";
 std::string currentVertexShader = previousVertexShader;
 std::string currentFragmentShader = previousFragmentShader;
 
-int framebufferWidth, framebufferHeight;
-
 const unsigned WINDOW_WIDTH = 1000;
 const unsigned WINDOW_HEIGHT = 750;
-
-void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
-   // Calculate the ImGui panel width as a percentage of the new framebuffer width
-   float IMGUI_WIDTH = 0.25f * width;
-   float RENDER_WIDTH = width - IMGUI_WIDTH;
-
-   // Set the OpenGL viewport for the rendering area
-   glViewport((int) IMGUI_WIDTH, 0, (int) RENDER_WIDTH, height);
-
-   // Update global framebuffer dimensions (if needed elsewhere)
-   framebufferWidth = width;
-   framebufferHeight = height;
-}
 
 // Both
 int previousSeed = 42;
@@ -312,27 +284,6 @@ void noiseLayersGui(Terrain& terrain, Fuse& fuse) {
  * @param mesh Mesh object to be rendered, passed for saveToFile3D()
  * @author SD, PK (extracted method)
  */
-// void Render3DImGui(ShaderManager& manager, Mesh& mesh, Terrain3D& terrain, float fps) {
-//    fpsPrintTimer++;
-//    fpsAvg += fps;
-//    ImGui::Begin("Controls", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
-//    RenderCommonImGui();
-//    ImGui::Text("\n3D Mode\n\n");
-
-//    userShaderParameters(manager);
-//    meshSettings();
-//    shaderDropdown();
-//    noiseLayersGui(terrain);
-//    saveToFile3D(mesh);
-//    _3DInputControls();
-//    if (fpsPrintTimer > 99) {
-//       fpsPrintTimer = 0;
-//       printFps = fpsAvg / 100;
-//       fpsAvg = 0.0;
-//    }
-//    ImGui::Text("FPS: %1.f", printFps);
-//    ImGui::End();
-// }
 void Render3DImGui(ShaderManager& manager, Terrain& terrain, Fuse& fuse, float fps) {
    fpsPrintTimer++;
    fpsAvg += fps;
@@ -384,102 +335,15 @@ void Render2DImGui(ShaderManager& manager, Terrain& terrain, float fps) {
    ImGui::End();
 }
 
-/**
- * Generates noise for both 2D and 3D modes.
- * @param seed Seed for the noise generation
- * @param flatteningFactor Flattening factor for the noise generation
- * @return 2D vector of doubles representing the generated noise
- * @note Shouldn't be called directly, rather through generateMapFromSeed() and generateMeshFromSeed()
- * @author SD, PK (extracted method)
- */
-std::vector<std::vector<double>> commonGeneration(const int seed, const double flatteningFactor) {
-   perlin::AppConfig::getInstance().setGenerator(seed);
-
-   const unsigned sizeX = 1440;
-   const unsigned sizeY = 1440;
-
-   // Parameters for the first noise layer
-   std::vector<std::pair<unsigned, double>> params4{std::make_pair(720, 30), std::make_pair(360, 250), std::make_pair(180, 50),
-                                                    std::make_pair(90, 50), std::make_pair(45, 20), std::make_pair(12, 5), std::make_pair(8, 2), std::make_pair(3, 1)};
-
-   // Generate and fill the first noise layer
-   perlin::PerlinNoise2D noise = perlin::PerlinNoise2D(sizeX, sizeY, params4);
-   noise.fill();
-
-   // Parameters for the second noise layer
-   std::vector<std::pair<unsigned, double>> filterParams{std::make_pair(180, 2), std::make_pair(120, 2), std::make_pair(60, 2), std::make_pair(30, 1)};
-
-   // Generate and fill the second noise layer
-   perlin::PerlinNoise2D noiseFilter = perlin::PerlinNoise2D(sizeX, sizeY, filterParams);
-   noiseFilter.fill();
-
-   // Filter and normalize the noise
-   noise.filterMatrix(noiseFilter);
-
-   double sumWeight = noise.getWeightSum();
-   perlin::matrix result(sizeX, std::vector<double>(sizeY, 0.0));
-   result = noise.getResult();
-
-   return render::normalizeUnit(result, sumWeight * flatteningFactor);
-}
-
-/**
- * Creates a Mesh object with noise (3D mode).
- * @param seed For the noise generation (random seed)
- * @param flatteningFactor For the noise generation (squishes the noise)
- * @return Mesh object with the generated noise
- * @author SD
- */
-Mesh generateMeshFromSeed(const int seed, const double flatteningFactor = 1.0) {
-   std::vector<std::vector<double>> normalized = commonGeneration(seed, flatteningFactor);
-   Mesh myMesh(normalized);
-   return myMesh;
-}
-
 int main() {
    auto lastFrameTime = std::chrono::high_resolution_clock::now();
    perlin::AppConfig::initialize(42);
 
-   glfwInit();
-
-   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-   GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Group44", NULL, NULL);
-   if (window == NULL) {
-      std::cout << "Failed to create GLFW window.\n";
-      glfwTerminate();
-      return -1;
-   }
-   glfwMakeContextCurrent(window);
-
-   gladLoadGL();
-
-   // Query the actual framebuffer size and set the viewport accordingly
-   glfwGetFramebufferSize(window, &framebufferWidth, &framebufferHeight);
-   float IMGUI_WIDTH = 0.25f * framebufferWidth;
-   float RENDER_WIDTH = framebufferWidth - IMGUI_WIDTH;
-   float RENDER_HEIGHT = framebufferHeight;
-
-   glViewport((int) IMGUI_WIDTH, 0, (int) RENDER_WIDTH, framebufferHeight);
-
-   glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-
-   // // ImGUI Setup
-   IMGUI_CHECKVERSION();
-   ImGui::CreateContext();
-   ImGuiIO& io = ImGui::GetIO();
-   io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
-   io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad; // Enable Gamepad Controls (optional)
-   ImGui_ImplGlfw_InitForOpenGL(window, true);
-   ImGui_ImplOpenGL3_Init("#version 330");
-   ImGui::StyleColorsDark();
+   Window window(WINDOW_WIDTH, WINDOW_HEIGHT);
+   GUI gui(window);
 
    ShaderManager shaderManager(previousVertexShader, previousFragmentShader);
 
-   // Mesh myMesh = generateMeshFromSeed(42, flattenFactor);
-   // Terrain3D terrain(1440, 1440, seed = 42, flattenFactor = 2.0);
    BasicConfigParams configParams{42, 1440, 1440, 2.0};
    std::vector<std::pair<unsigned, double>> paramsNoise{std::make_pair(720, 30), std::make_pair(360, 250), std::make_pair(180, 50),
                                                         std::make_pair(90, 50), std::make_pair(45, 20), std::make_pair(12, 5), std::make_pair(8, 2), std::make_pair(3, 1)};
@@ -492,36 +356,19 @@ int main() {
    glEnable(GL_DEPTH_TEST);
 
    // Create both here else it'll recreate the camera every frame
-   Camera3D camera_3d(&RENDER_WIDTH, &RENDER_HEIGHT, glm::vec3(-0.1f, 0.0f, 2.0f));
-   Camera2D camera_2d(&RENDER_WIDTH, &RENDER_HEIGHT, glm::vec3(-0.1f, 0.0f, 2.5f), window); // handpicked to fit nicely
-   while (!glfwWindowShouldClose(window)) {
+   Camera3D camera_3d(window.getRenderWidth(), window.getRenderHeight(), glm::vec3(-0.1f, 0.0f, 2.0f));
+   Camera2D camera_2d(window.getRenderWidth(), window.getRenderHeight(), glm::vec3(-0.1f, 0.0f, 2.5f), window.getWindow()); // handpicked to fit nicely
+   while (window.isActive()) {
       auto currentTime = std::chrono::high_resolution_clock::now();
       std::chrono::duration<float> deltaTime = currentTime - lastFrameTime;
       lastFrameTime = currentTime;
 
       float elapsedSinceLastFrame = deltaTime.count(); // in seconds
-      //std::cout<<elapsedSinceLastFrame<<std::endl;
-
-      // Recalculate the framebuffer size and set the viewport accordingly
-      glfwGetFramebufferSize(window, &framebufferWidth, &framebufferHeight);
-      IMGUI_WIDTH = 0.25f * framebufferWidth;
-      RENDER_WIDTH = framebufferWidth - IMGUI_WIDTH;
-      RENDER_HEIGHT = framebufferHeight;
-
-      glViewport((int) IMGUI_WIDTH, 0, (int) RENDER_WIDTH, framebufferHeight);
-      glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-
-      // Start ImGUI frame
-      ImGui_ImplOpenGL3_NewFrame();
-      ImGui_ImplGlfw_NewFrame();
-      ImGui::NewFrame();
-
-      ImGui::SetNextWindowSize(ImVec2(IMGUI_WIDTH, framebufferHeight), ImGuiCond_Always);
-      ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
+      window.setViewport();
+      gui.NewFrame();
 
       if (is3DMode) {
          Render3DImGui(shaderManager, terrain, fuse, 1.0f / elapsedSinceLastFrame);
-         //Render3DImGui(shaderManager, myMesh, terrain, 1.0f / elapsedSinceLastFrame);
       } else {
          Render2DImGui(shaderManager, terrain, 1.0f / elapsedSinceLastFrame);
       }
@@ -567,43 +414,18 @@ int main() {
          terrain.recomputeLayers(fuse.noiseLayerUpdate, fuse.baselineLayerUpdate);
       }
 
-      // if (previousSeed != seed || abs(flattenFactor - lastFlattenFactor) > 0.1) { // only do meaningful changes
-      //    frameSinceChange = 0;
-      //    previousSeed = seed;
-      //    lastFlattenFactor = flattenFactor;
-      // } else {
-      //    if (frameSinceChange > -1) {
-      //       frameSinceChange++;
-      //    }
-      // }
-
-      // if (frameSinceChange > fuse) {
-      //    frameSinceChange = -1;
-      //    std::cout << "recompute\n";
-      //    //terrain.recompute(seed, flattenFactor);
-      //    //myMesh = generateMeshFromSeed(seed, flattenFactor);
-      // }
-
       Camera* camera = is3DMode ? static_cast<Camera*>(&camera_3d) : static_cast<Camera*>(&camera_2d);
 
-      camera->Inputs(window, elapsedSinceLastFrame);
+      camera->Inputs(window.getWindow(), elapsedSinceLastFrame);
       camera->updateMatrix(45.0f, 0.1f, 100.0f);
 
       terrain.Draw(shaderManager.getShader(), *camera);
-
-      ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-      glfwSwapBuffers(window);
-      glfwPollEvents();
+      gui.RenderDrawData();
    }
 
    shaderManager.Delete();
-
-   glfwDestroyWindow(window);
-   // Shutdown ImGUI
-   ImGui_ImplOpenGL3_Shutdown();
-   ImGui_ImplGlfw_Shutdown();
-   ImGui::DestroyContext();
+   window.Delete();
+   gui.Shutdown();
    glfwTerminate();
    return 0;
 }

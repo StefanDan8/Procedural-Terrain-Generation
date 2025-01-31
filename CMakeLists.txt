@@ -60,11 +60,15 @@ $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 $<INSTALL_INTERFACE:include>
 PRIVATE src)
 
-add_library(gui src/UserInterface.cpp)
-target_include_directories(gui PUBLIC
-$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-$<INSTALL_INTERFACE:include>
-PRIVATE src)
+# add_library(gui src/UserInterface.cpp)
+# target_include_directories(gui PUBLIC
+# $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+# $<INSTALL_INTERFACE:include>
+# PRIVATE src)
+
+add_library(gui src/gui/GUI.cpp src/gui/Window.cpp)
+target_include_directories(gui PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/gui)
+target_link_libraries(gui imgui)
 
 add_library(lodepng include/lodepng/lodepng.cpp)
 target_include_directories(lodepng PUBLIC
@@ -82,7 +86,7 @@ add_library(shaders src/graphics/ShaderClass.cpp
                     src/graphics/Camera2D.cpp
                     src/graphics/Camera3D.cpp)
 target_include_directories(shaders PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/graphics)
-target_link_libraries(shaders glad)
+target_link_libraries(shaders glad lodepng)
 
 # ### Tests
 # add_executable(test_all test/testSprint1.cpp)
@@ -95,7 +99,8 @@ target_link_libraries(shaders glad)
 ### Playground
 add_executable(playground src/playground.cpp src/Terrain3D.cpp src/Terrain.cpp src/PerlinLayer.cpp src/PerlinNoise.cpp src/Fuse.cpp)
 target_include_directories(playground PRIVATE graphicsExternal.glfw-3.4/include graphicsExternal/glad/include graphicsExternal/imgui/include graphicsExternal/imgui/include/backends)
-target_link_libraries(playground perlin render lodepng glfw glad imgui shaders)
+# target_link_libraries(playground perlin render lodepng glfw glad imgui shaders)
+target_link_libraries(playground perlin render gui shaders)
 
 
 
