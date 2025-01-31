@@ -1,6 +1,6 @@
 #include "Camera2D.hpp"
 
-void Camera2D::Inputs(GLFWwindow* window, float elapsedTimeSinceLastFrame ) {
+void Camera2D::Inputs(GLFWwindow* window, float elapsedTimeSinceLastFrame) {
    // Stores the coordinates of the cursor
    double mouseX;
    double mouseY;
@@ -8,7 +8,7 @@ void Camera2D::Inputs(GLFWwindow* window, float elapsedTimeSinceLastFrame ) {
    glfwGetCursorPos(window, &mouseX, &mouseY);
 
    // Calculate the speed, considering the z component of the camera position. Meaning, when zoomed in, the camera moves slower
-   const float contextualSpeed =  elapsedTimeSinceLastFrame* speed * (Position.z - .5f);
+   const float contextualSpeed = elapsedTimeSinceLastFrame * speed * (Position.z - .5f);
 
    // Keyboard related operations, only apply when the cursor is not in the rendering area
    if (mouseX > *width / 3) {
@@ -65,7 +65,7 @@ void Camera2D::ScrollCallback(GLFWwindow* window, double xOffset, double yOffset
    auto camera = static_cast<Camera2D*>(glfwGetWindowUserPointer(window));
    if (camera == nullptr) return;
 
-   auto newPos = camera->Position + camera->speed*0.01f * camera -> mouseScrollMultiplier * glm::vec3(0.0f, 0.0f, -yOffset);
+   auto newPos = camera->Position + camera->speed * 0.01f * camera->mouseScrollMultiplier * glm::vec3(0.0f, 0.0f, -yOffset);
    newPos.z = std::clamp(newPos.z, 1.1f, 2.5f); // Prevents zooming too far in or out
 
    camera->Position = newPos;

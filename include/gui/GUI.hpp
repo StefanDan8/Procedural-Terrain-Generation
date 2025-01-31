@@ -39,6 +39,9 @@ class GUI {
    void Render2DImGui(Terrain& terrain, float fps);
 
    void SwitchShader(ShaderManager& shaderManager);
+
+   const char* GUI_NAME = "Controls";
+
    bool is3DMode = false;
    bool switchedShaderRecently = false;
    const std::vector<std::vector<std::string>> shaders = {
@@ -56,6 +59,7 @@ class GUI {
    int fpsPrintTimer = 0;
    float printFps = 0.0f;
    float fpsAvg = 0.0f;
+   unsigned uselessIDcounter = 0;
    ShaderManager shaderManager;
    Fuse fuse;
    Window& window;

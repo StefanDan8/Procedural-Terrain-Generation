@@ -60,11 +60,19 @@ $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 $<INSTALL_INTERFACE:include>
 PRIVATE src)
 
-# add_library(gui src/UserInterface.cpp)
-# target_include_directories(gui PUBLIC
-# $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-# $<INSTALL_INTERFACE:include>
-# PRIVATE src)
+
+add_library(shader src/graphics/shader/ShaderClass.cpp 
+                   src/graphics/shader/ShaderManager.cpp
+            )
+target_include_directories(shader PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/graphics/shader)
+target_link_libraries(shader glad)
+
+add_library(camera src/graphics/camera/Camera.cpp 
+                   src/graphics/camera/Camera2D.cpp 
+                   src/graphics/camera/Camera3D.cpp
+            )
+target_include_directories(camera PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/graphics/camera)
+target_link_libraries(camera shader glfw)
 
 
 
@@ -72,19 +80,28 @@ add_library(lodepng include/lodepng/lodepng.cpp)
 target_include_directories(lodepng PUBLIC
 $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 $<INSTALL_INTERFACE:include>
-PRIVATE include/lodepng)
+PUBLIC include/lodepng)
 
-add_library(shaders src/graphics/ShaderClass.cpp
-                    src/graphics/EBO.cpp 
-                    src/graphics/VAO.cpp 
-                    src/graphics/VBO.cpp 
-                    src/graphics/Camera.cpp
-                    src/graphics/Mesh.cpp
-                    src/graphics/ShaderManager.cpp
-                    src/graphics/Camera2D.cpp
-                    src/graphics/Camera3D.cpp)
-target_include_directories(shaders PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/graphics)
-target_link_libraries(shaders glad lodepng)
+add_library(mesh src/graphics/mesh/VAO.cpp
+                 src/graphics/mesh/EBO.cpp
+                  
+                 src/graphics/mesh/VBO.cpp 
+                 src/graphics/mesh/Mesh.cpp
+                )
+target_include_directories(mesh PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/graphics/mesh)
+target_link_libraries(mesh camera lodepng)
+
+# add_library(shaders src/graphics/ShaderClass.cpp
+#                     src/graphics/EBO.cpp 
+#                     src/graphics/VAO.cpp 
+#                     src/graphics/VBO.cpp 
+#                     src/graphics/Camera.cpp
+#                     src/graphics/Mesh.cpp
+#                     src/graphics/ShaderManager.cpp
+#                     src/graphics/Camera2D.cpp
+#                     src/graphics/Camera3D.cpp)
+# target_include_directories(shaders PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/graphics)
+# target_link_libraries(shaders glad lodepng)
 
 add_library(terrain src/Terrain3D.cpp 
                     src/Terrain.cpp 
@@ -93,7 +110,7 @@ add_library(terrain src/Terrain3D.cpp
                     src/PerlinNoise.cpp 
                     src/Fuse.cpp)
 target_include_directories(terrain PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_link_libraries(terrain shaders)
+target_link_libraries(terrain mesh)
 
 add_library(gui src/gui/GUI.cpp src/gui/Window.cpp)
 target_include_directories(gui PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/gui)

@@ -1,7 +1,7 @@
 #ifndef MESH_CLASS_HPP
 #define MESH_CLASS_HPP
 
-#include "../lodepng/lodepng.h"
+#include "lodepng.h"
 #include "Camera.hpp"
 #include "EBO.hpp"
 #include "VAO.hpp"

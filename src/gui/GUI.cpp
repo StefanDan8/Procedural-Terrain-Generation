@@ -89,7 +89,13 @@ void GUI::SwitchShader(ShaderManager& shaderManager) {
 }
 
 void GUI::_3DInputControls() {
-   ImGui::Text(R"(
+   static bool isClicked = false;
+   if (ImGui::Button("Input Controls")) {
+      isClicked = !isClicked;
+   }
+
+   if (isClicked || ImGui::IsItemHovered()) {
+      ImGui::SetTooltip(R"(
 --- Keyboard Controls ---
 NOTE: cursor must be in the rendering area
 
@@ -110,6 +116,7 @@ NOTE: cursor must be in the rendering area
   Click and Drag to move camera
 
 )");
+   }
 }
 
 void GUI::_2DInputControls() {
@@ -173,18 +180,18 @@ void GUI::UserShaderParameters(ShaderManager& manager) {
    ImGui::Text("User Shader Parameters\n");
    unsigned num = manager.getShader().userFloatUniforms.size();
    for (unsigned i = 0; i < num; ++i) {
-      ImGui::PushID(i * 999);
+      ImGui::PushID(uselessIDcounter++);
       ImGui::SetNextItemWidth(90.f);
       ImGui::SliderFloat("", &(manager.getShader().userFloatValues[i]), -1.0f, 1.0f);
       ImGui::PopID();
       ImGui::SameLine();
-      ImGui::PushID(i * 998);
+      ImGui::PushID(uselessIDcounter++);
       if (ImGui::Button("-")) {
          manager.getShader().userFloatValues[i] -= 0.002f;
       }
       ImGui::SameLine();
       ImGui::PopID();
-      ImGui::PushID(i * 777);
+      ImGui::PushID(uselessIDcounter++);
       if (ImGui::Button("+")) {
          manager.getShader().userFloatValues[i] += 0.002f;
       }
@@ -200,19 +207,12 @@ void GUI::UserShaderParameters(ShaderManager& manager) {
  */
 void GUI::MeshSettings() {
    ImGui::Text("Mesh Settings");
-   ImGui::SetNextItemWidth(80.f);
+   ImGui::SetNextItemWidth(90.f);
    ImGui::InputInt("Seed", &seed);
 
-   ImGui::PushItemWidth(70.f);
-   ImGui::InputDouble("##xx", &flattenFactor, 0.0, 0.0, "%.2f");
-   ImGui::SameLine();
-   if (ImGui::Button("-")) {
-      flattenFactor -= 0.2;
-   }
-   ImGui::SameLine();
-   if (ImGui::Button("+")) {
-      flattenFactor += 0.2;
-   }
+   ImGui::PushItemWidth(90.f);
+   ImGui::InputDouble("##xx", &flattenFactor, 0.2, 1.0, "%.2f");
+
    ImGui::SameLine();
    ImGui::Text("Flatten Factor");
 }
@@ -232,16 +232,18 @@ bool GUI::InputUnsigned(const char* label, unsigned int* v, unsigned int step, u
 void GUI::NoiseLayersGui(Terrain& terrain, Fuse& fuse) {
    ImGui::Text("Noise parameters");
    unsigned index = 0;
-   ImGui::Text("Chunk Size          Weight");
+   ImGui::Text("Chunk Size       Weight");
    for (auto& layerParam : terrain.getNoiseParams()) {
-      ImGui::PushID(index * 9999 + 76);
-      if (InputUnsigned("##xx", &layerParam.first)) {
+      ImGui::PushID(uselessIDcounter++);
+      ImGui::SetNextItemWidth(110.f);
+      if (InputUnsigned("##xx", &layerParam.first, 10, 100)) {
          fuse.planLayerUpdate(index, NOISE_LAYER, CHUNK_SIZE);
       }
       ImGui::PopID();
       ImGui::SameLine();
-      ImGui::PushID(index * 99999 + 77);
-      if (ImGui::InputDouble("##xx", &layerParam.second)) {
+      ImGui::PushID(uselessIDcounter++);
+      ImGui::SetNextItemWidth(110.f);
+      if (ImGui::InputDouble("##xx", &layerParam.second, 1.0, 10.0, "%.1f")) {
          fuse.planLayerUpdate(index, NOISE_LAYER, WEIGHT);
       }
       ImGui::PopID();
@@ -250,14 +252,16 @@ void GUI::NoiseLayersGui(Terrain& terrain, Fuse& fuse) {
    index = 0;
    ImGui::Text("Baseline noise parameters");
    for (auto& layerParam : terrain.getBaselineParams()) {
-      ImGui::PushID(index * 9999 + 86);
-      if (InputUnsigned("##xx", &layerParam.first)) {
+      ImGui::PushID(uselessIDcounter++);
+      ImGui::SetNextItemWidth(110.f);
+      if (InputUnsigned("##xx", &layerParam.first, 10, 100)) {
          fuse.planLayerUpdate(index, BASELINE_LAYER, CHUNK_SIZE);
       }
       ImGui::PopID();
       ImGui::SameLine();
-      ImGui::PushID(index * 99999 + 87);
-      if (ImGui::InputDouble("##xx", &layerParam.second)) {
+      ImGui::PushID(uselessIDcounter++);
+      ImGui::SetNextItemWidth(110.f);
+      if (ImGui::InputDouble("##xx", &layerParam.second, 1.0, 10.0, "%.1f")) {
          fuse.planLayerUpdate(index, BASELINE_LAYER, WEIGHT);
       }
       ImGui::PopID();
@@ -274,16 +278,16 @@ void GUI::NoiseLayersGui(Terrain& terrain, Fuse& fuse) {
 void GUI::Render3DImGui(Terrain& terrain, float fps) {
    fpsPrintTimer++;
    fpsAvg += fps;
-   ImGui::Begin("Controls", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
+   ImGui::Begin("Controls", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
    RenderCommonImGui();
-   ImGui::Text("\n3D Mode\n\n");
+   _3DInputControls();
 
    UserShaderParameters(shaderManager);
    MeshSettings();
    ShaderDropdown();
    NoiseLayersGui(terrain, fuse);
    SaveToFile3D(terrain.getMesh());
-   _3DInputControls();
+
    if (fpsPrintTimer > 99) {
       fpsPrintTimer = 0;
       printFps = fpsAvg / 100;

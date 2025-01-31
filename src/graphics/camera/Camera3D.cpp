@@ -38,16 +38,16 @@ void Camera3D::Inputs(GLFWwindow* window, float elapsedTimeSinceLastFrame) {
    */
    if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) != GLFW_PRESS) {
       if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-         Position += elapsedTimeSinceLastFrame* speed * Orientation;
+         Position += elapsedTimeSinceLastFrame * speed * Orientation;
       }
       if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-         Position += elapsedTimeSinceLastFrame* speed * -Right;
+         Position += elapsedTimeSinceLastFrame * speed * -Right;
       }
       if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-         Position += elapsedTimeSinceLastFrame* speed * -Orientation;
+         Position += elapsedTimeSinceLastFrame * speed * -Orientation;
       }
       if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-         Position += elapsedTimeSinceLastFrame* speed * Right;
+         Position += elapsedTimeSinceLastFrame * speed * Right;
       }
    } else { // Left Ctrl pressed
       if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
@@ -92,7 +92,7 @@ void Camera3D::Inputs(GLFWwindow* window, float elapsedTimeSinceLastFrame) {
       lastMouseX = mouseX;
       lastMouseY = mouseY;
       // Change position
-      Position += elapsedTimeSinceLastFrame* speed * glm::vec3(-deltaX, deltaY, 0.0f);
+      Position += elapsedTimeSinceLastFrame * speed * glm::vec3(-deltaX, deltaY, 0.0f);
    } else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE) {
       glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
       firstClick = true;

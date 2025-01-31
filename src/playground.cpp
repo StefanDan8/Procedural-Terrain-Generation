@@ -7,8 +7,8 @@
 #include "Camera2D.hpp"
 #include "Camera3D.hpp"
 
-const unsigned WINDOW_WIDTH = 1000;
-const unsigned WINDOW_HEIGHT = 750;
+const unsigned WINDOW_WIDTH = 1200;
+const unsigned WINDOW_HEIGHT = 800;
 
 int main() {
    auto lastFrameTime = std::chrono::high_resolution_clock::now();
