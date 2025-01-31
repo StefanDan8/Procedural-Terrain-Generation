@@ -2,8 +2,6 @@
 
 #include "GUI.hpp"
 
-#include <chrono>
-
 #include "Camera2D.hpp"
 #include "Camera3D.hpp"
 
@@ -11,7 +9,7 @@ const unsigned WINDOW_WIDTH = 1200;
 const unsigned WINDOW_HEIGHT = 800;
 
 int main() {
-   auto lastFrameTime = std::chrono::high_resolution_clock::now();
+   auto lastFrameTime = std::chrono::steady_clock::now();
    perlin::AppConfig::initialize(42);
 
    Window window(WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -27,10 +25,10 @@ int main() {
    glEnable(GL_DEPTH_TEST);
 
    // Create both here else it'll recreate the camera every frame
-   Camera3D camera_3d(window.getRenderWidth(), window.getRenderHeight(), glm::vec3(-0.1f, 0.0f, 2.0f));
-   Camera2D camera_2d(window.getRenderWidth(), window.getRenderHeight(), glm::vec3(-0.1f, 0.0f, 2.5f), window.getWindow()); // handpicked to fit nicely
+   Camera3D camera_3d(window, glm::vec3(-0.15f, 0.0f, 1.6f));
+   Camera2D camera_2d(window, glm::vec3(-0.3f, 0.0f, 2.5f)); // handpicked to fit nicely
    while (window.isActive()) {
-      auto currentTime = std::chrono::high_resolution_clock::now();
+      auto currentTime = std::chrono::steady_clock::now();
       std::chrono::duration<float> deltaTime = currentTime - lastFrameTime;
       lastFrameTime = currentTime;
 
@@ -41,7 +39,9 @@ int main() {
 
       Camera* camera = gui.is3DModeActive() ? static_cast<Camera*>(&camera_3d) : static_cast<Camera*>(&camera_2d);
 
-      camera->Inputs(window.getWindow(), elapsedSinceLastFrame);
+      if (!gui.isGUIHovered()) {
+         camera->Inputs(elapsedSinceLastFrame);
+      }
       camera->updateMatrix(45.0f, 0.1f, 100.0f);
 
       gui.DrawTerrain(terrain, *camera);

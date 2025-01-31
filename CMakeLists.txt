@@ -26,6 +26,7 @@ endif()
 
 add_compile_definitions(SHADER_ROOT="${CMAKE_SOURCE_DIR}/shaders")
 add_compile_definitions(OUTPUT_FOLDER_PATH="${CMAKE_SOURCE_DIR}/output")
+add_compile_definitions(GUI_IDENTIFIER="Controls")
 
 
 ### Graphics External
@@ -54,11 +55,6 @@ target_include_directories(perlin PUBLIC
         $<INSTALL_INTERFACE:include>
         PRIVATE src)
 
-add_library(render src/Renderer.cpp)
-target_include_directories(render PUBLIC
-$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-$<INSTALL_INTERFACE:include>
-PRIVATE src)
 
 
 add_library(shader src/graphics/shader/ShaderClass.cpp 
@@ -67,12 +63,16 @@ add_library(shader src/graphics/shader/ShaderClass.cpp
 target_include_directories(shader PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/graphics/shader)
 target_link_libraries(shader glad)
 
+add_library(window src/gui/Window.cpp)
+target_include_directories(window PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/gui)
+target_link_libraries(window imgui)
+
 add_library(camera src/graphics/camera/Camera.cpp 
                    src/graphics/camera/Camera2D.cpp 
                    src/graphics/camera/Camera3D.cpp
             )
 target_include_directories(camera PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/graphics/camera)
-target_link_libraries(camera shader glfw)
+target_link_libraries(camera shader window)
 
 
 
@@ -83,25 +83,13 @@ $<INSTALL_INTERFACE:include>
 PUBLIC include/lodepng)
 
 add_library(mesh src/graphics/mesh/VAO.cpp
-                 src/graphics/mesh/EBO.cpp
-                  
+                 src/graphics/mesh/EBO.cpp    
                  src/graphics/mesh/VBO.cpp 
                  src/graphics/mesh/Mesh.cpp
                 )
 target_include_directories(mesh PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/graphics/mesh)
 target_link_libraries(mesh camera lodepng)
 
-# add_library(shaders src/graphics/ShaderClass.cpp
-#                     src/graphics/EBO.cpp 
-#                     src/graphics/VAO.cpp 
-#                     src/graphics/VBO.cpp 
-#                     src/graphics/Camera.cpp
-#                     src/graphics/Mesh.cpp
-#                     src/graphics/ShaderManager.cpp
-#                     src/graphics/Camera2D.cpp
-#                     src/graphics/Camera3D.cpp)
-# target_include_directories(shaders PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/graphics)
-# target_link_libraries(shaders glad lodepng)
 
 add_library(terrain src/Terrain3D.cpp 
                     src/Terrain.cpp 
@@ -112,23 +100,15 @@ add_library(terrain src/Terrain3D.cpp
 target_include_directories(terrain PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries(terrain mesh)
 
-add_library(gui src/gui/GUI.cpp src/gui/Window.cpp)
+add_library(gui src/gui/GUI.cpp)
 target_include_directories(gui PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/gui)
-target_link_libraries(gui imgui terrain)
+target_link_libraries(gui terrain)
 
-# ### Tests
-# add_executable(test_all test/testSprint1.cpp)
-# target_link_libraries(test_all perlin gtest gtest_main pthread)
-
-# ### Main
-# add_executable(main src/main.cpp)
-# target_link_libraries(main perlin render gui lodepng)
 
 ### Playground
 add_executable(playground src/playground.cpp )
 target_include_directories(playground PRIVATE graphicsExternal.glfw-3.4/include graphicsExternal/glad/include graphicsExternal/imgui/include graphicsExternal/imgui/include/backends)
-# target_link_libraries(playground perlin render lodepng glfw glad imgui shaders)
-target_link_libraries(playground perlin render gui)
+target_link_libraries(playground perlin gui)
 
 
 

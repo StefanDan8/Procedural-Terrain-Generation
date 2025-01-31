@@ -21,6 +21,8 @@ class GUI {
    bool is3DModeActive() {
       return is3DMode;
    }
+   bool isGUIHovered();
+   void setGUIHovered(bool state);
 
    private:
    //ImGui Elements
@@ -30,7 +32,7 @@ class GUI {
    void _2DInputControls();
    void SaveToFile3D(Mesh& mesh);
    void SaveToFile2D(Mesh& mesh);
-   void UserShaderParameters(ShaderManager& manager);
+   void UserShaderParameters();
    void MeshSettings();
    bool InputUnsigned(const char* label, unsigned int* v, unsigned int step = 1, unsigned int step_fast = 10, ImGuiInputTextFlags flags = 0);
    void NoiseLayersGui(Terrain& terrain, Fuse& fuse);
@@ -40,8 +42,7 @@ class GUI {
 
    void SwitchShader(ShaderManager& shaderManager);
 
-   const char* GUI_NAME = "Controls";
-
+   bool guiHovered = false;
    bool is3DMode = false;
    bool switchedShaderRecently = false;
    const std::vector<std::vector<std::string>> shaders = {
@@ -60,8 +61,8 @@ class GUI {
    float printFps = 0.0f;
    float fpsAvg = 0.0f;
    unsigned uselessIDcounter = 0;
+   Window& window;
    ShaderManager shaderManager;
    Fuse fuse;
-   Window& window;
 };
 #endif

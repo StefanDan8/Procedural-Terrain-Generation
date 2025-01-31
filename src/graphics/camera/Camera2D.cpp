@@ -1,52 +1,50 @@
 #include "Camera2D.hpp"
 
-void Camera2D::Inputs(GLFWwindow* window, float elapsedTimeSinceLastFrame) {
+void Camera2D::Inputs(float elapsedTimeSinceLastFrame) {
+   _Inputs(window.getWindow(), elapsedTimeSinceLastFrame);
+}
+
+void Camera2D::_Inputs(GLFWwindow* glfwWindow, float elapsedTimeSinceLastFrame) {
    // Stores the coordinates of the cursor
    double mouseX;
    double mouseY;
    // Get the cursor position variables
-   glfwGetCursorPos(window, &mouseX, &mouseY);
+   glfwGetCursorPos(glfwWindow, &mouseX, &mouseY);
 
    // Calculate the speed, considering the z component of the camera position. Meaning, when zoomed in, the camera moves slower
    const float contextualSpeed = elapsedTimeSinceLastFrame * speed * (Position.z - .5f);
 
-   // Keyboard related operations, only apply when the cursor is not in the rendering area
-   if (mouseX > *width / 3) {
-      if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-         Position += contextualSpeed * -glm::normalize(glm::cross(Orientation, Right));
-      }
-      if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-         Position += contextualSpeed * -glm::normalize(glm::cross(Orientation, Up));
-      }
-      if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-         Position += contextualSpeed * glm::normalize(glm::cross(Orientation, Right));
-      }
-      if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-         Position += contextualSpeed * glm::normalize(glm::cross(Orientation, Up));
-      }
+   if (glfwGetKey(glfwWindow, GLFW_KEY_W) == GLFW_PRESS) {
+      Position += contextualSpeed * -glm::normalize(glm::cross(Orientation, Right));
+   }
+   if (glfwGetKey(glfwWindow, GLFW_KEY_A) == GLFW_PRESS) {
+      Position += contextualSpeed * -glm::normalize(glm::cross(Orientation, Up));
+   }
+   if (glfwGetKey(glfwWindow, GLFW_KEY_S) == GLFW_PRESS) {
+      Position += contextualSpeed * glm::normalize(glm::cross(Orientation, Right));
+   }
+   if (glfwGetKey(glfwWindow, GLFW_KEY_D) == GLFW_PRESS) {
+      Position += contextualSpeed * glm::normalize(glm::cross(Orientation, Up));
    }
 
-   glfwSetScrollCallback(window, ScrollCallback);
+   glfwSetScrollCallback(glfwWindow, ScrollCallback);
 
    // Mouse related operations
-   if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+   if (glfwGetMouseButton(glfwWindow, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
       if (firstClick) {
-         // Check the current mouse position is in the rendering area. If not, return.
-         if (mouseX < *width / 3) return;
-
          // Prevents camera from jumping on the first click
-         glfwGetCursorPos(window, &lastMouseX, &lastMouseY);
+         glfwGetCursorPos(glfwWindow, &lastMouseX, &lastMouseY);
          firstClick = false;
       }
 
       // GLFW_CURSOR_DISABLED hides the cursor and allows for unlimited movement
-      glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+      glfwSetInputMode(glfwWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
       if (glfwRawMouseMotionSupported()) // If supported, use raw mouse motion, disabling acceleration
-         glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+         glfwSetInputMode(glfwWindow, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
 
       // Update the cursor position variables
-      glfwGetCursorPos(window, &mouseX, &mouseY);
+      glfwGetCursorPos(glfwWindow, &mouseX, &mouseY);
       // Calculate delta
       const double deltaX = (mouseX - lastMouseX) / 50;
       const double deltaY = (mouseY - lastMouseY) / 50;
@@ -55,8 +53,8 @@ void Camera2D::Inputs(GLFWwindow* window, float elapsedTimeSinceLastFrame) {
       lastMouseY = mouseY;
       // Change position. The speed is multiplied by the z component of the camera position, meaning when zoomed in, the camera moves slower
       Position += contextualSpeed * glm::vec3(-deltaX, deltaY, 0.0f);
-   } else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE) {
-      glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+   } else if (glfwGetMouseButton(glfwWindow, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE) {
+      glfwSetInputMode(glfwWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
       firstClick = true;
    }
 }

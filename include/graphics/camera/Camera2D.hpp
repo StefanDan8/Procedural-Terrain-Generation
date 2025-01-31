@@ -14,16 +14,9 @@ class Camera2D final : public Camera {
    // Increase speed on mouse drag + scroll
    float mouseScrollMultiplier = 3.0f;
 
-   Camera2D(float* width, float* height, glm::vec3 position, GLFWwindow* window) : Camera(width, height, position) {
-      glfwSetWindowUserPointer(window, this);
+   Camera2D(Window& window, glm::vec3 position) : Camera(window, position) {
+      glfwSetWindowUserPointer(window.getWindow(), this);
    };
-
-   /**
-    * Handles keyboard and mouse events for moving the 2D camera
-    * @param window Pointer of the current window (in which the camera is in)
-    * @author PK
-    */
-   void Inputs(GLFWwindow* window, float elapsedTimeSinceLastFrame) override;
 
    /**
     * Static function to use in GLFW callback for handling scroll events.
@@ -33,6 +26,16 @@ class Camera2D final : public Camera {
     * @author PK
     */
    static void ScrollCallback(GLFWwindow* window, double xOffset, double yOffset);
+
+   void Inputs(float elapsedTimeSinceLastFrame) override;
+
+   private:
+   /**
+    * Handles keyboard and mouse events for moving the 2D camera
+    * @param window Pointer of the current window (in which the camera is in)
+    * @author PK
+    */
+   void _Inputs(GLFWwindow* window, float elapsedTimeSinceLastFrame) override;
 };
 
 #endif //INC_2DCAMERA_HPP

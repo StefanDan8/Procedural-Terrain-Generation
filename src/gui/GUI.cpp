@@ -19,7 +19,7 @@ void GUI::NewFrame() {
    ImGui_ImplGlfw_NewFrame();
    ImGui::NewFrame();
 
-   ImGui::SetNextWindowSize(ImVec2(*window.getImguiWidth(), window.getFrameBufferHeight()), ImGuiCond_Always);
+   //ImGui::SetNextWindowSize(ImVec2(*window.getImguiWidth(), window.getFrameBufferHeight()), ImGuiCond_Always);
    ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
 }
 
@@ -50,11 +50,10 @@ void GUI::RenderCommonImGui() {
 }
 
 void GUI::ShaderDropdown() {
-   ImGui::PushItemWidth(140.f);
    static unsigned currentItem = 0; // Index of the currently selected item
-   //std::vector<std::string> items = {"Option 1", "Option 2", "Option 3", "Option 4"};
 
    ImGui::Text("\nSelect a Shader");
+   ImGui::SetNextItemWidth(160.0f);
    // is3DMode is a boolean, which really just means 0 for 2D, 1 for 3D
    if (ImGui::BeginCombo("##xa", shaders[is3DMode][currentItem].c_str())) {
       for (unsigned i = 0; i < shaders[is3DMode].size(); i++) {
@@ -89,12 +88,12 @@ void GUI::SwitchShader(ShaderManager& shaderManager) {
 }
 
 void GUI::_3DInputControls() {
-   static bool isClicked = false;
+   static bool isClicked3 = false;
    if (ImGui::Button("Input Controls")) {
-      isClicked = !isClicked;
+      isClicked3 = !isClicked3;
    }
 
-   if (isClicked || ImGui::IsItemHovered()) {
+   if (isClicked3 || ImGui::IsItemHovered()) {
       ImGui::SetTooltip(R"(
 --- Keyboard Controls ---
 NOTE: cursor must be in the rendering area
@@ -120,7 +119,13 @@ NOTE: cursor must be in the rendering area
 }
 
 void GUI::_2DInputControls() {
-   ImGui::Text(R"(
+   static bool isClicked2 = false;
+   if (ImGui::Button("Input Controls")) {
+      isClicked2 = !isClicked2;
+   }
+
+   if (isClicked2 || ImGui::IsItemHovered()) {
+      ImGui::SetTooltip(R"(
 --- Keyboard Controls ---
 NOTE: Cursor must be in the rendering area
 
@@ -135,6 +140,7 @@ NOTE: Cursor must be in the rendering area
    Scroll Wheel = Zoom In/Out
 
 )");
+   }
 }
 
 /**
@@ -176,28 +182,29 @@ void GUI::SaveToFile2D(Mesh& mesh) {
  * @param manager ShaderManger object
  * @author SD, PK (extracted method)
  */
-void GUI::UserShaderParameters(ShaderManager& manager) {
+void GUI::UserShaderParameters() {
    ImGui::Text("User Shader Parameters\n");
-   unsigned num = manager.getShader().userFloatUniforms.size();
+   unsigned num = shaderManager.getShader().userFloatUniforms.size();
    for (unsigned i = 0; i < num; ++i) {
       ImGui::PushID(uselessIDcounter++);
       ImGui::SetNextItemWidth(90.f);
-      ImGui::SliderFloat("", &(manager.getShader().userFloatValues[i]), -1.0f, 1.0f);
+      ImGui::SliderFloat("", &(shaderManager.getShader().userFloatValues[i]), -1.0f, 1.0f);
       ImGui::PopID();
       ImGui::SameLine();
       ImGui::PushID(uselessIDcounter++);
       if (ImGui::Button("-")) {
-         manager.getShader().userFloatValues[i] -= 0.002f;
+         std::cout << "hi" << std::endl;
+         shaderManager.getShader().userFloatValues[i] -= 0.002f;
       }
       ImGui::SameLine();
       ImGui::PopID();
       ImGui::PushID(uselessIDcounter++);
       if (ImGui::Button("+")) {
-         manager.getShader().userFloatValues[i] += 0.002f;
+         shaderManager.getShader().userFloatValues[i] += 0.002f;
       }
       ImGui::PopID();
       ImGui::SameLine();
-      ImGui::Text(manager.getShader().userFloatUniforms[i].c_str());
+      ImGui::Text(shaderManager.getShader().userFloatUniforms[i].c_str());
    }
 }
 
@@ -276,13 +283,15 @@ void GUI::NoiseLayersGui(Terrain& terrain, Fuse& fuse) {
  * @author SD, PK (extracted method)
  */
 void GUI::Render3DImGui(Terrain& terrain, float fps) {
+   uselessIDcounter = 0; // DON'T REMOVE EXTREMELY IMPORTANT ;)
    fpsPrintTimer++;
    fpsAvg += fps;
-   ImGui::Begin("Controls", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
+   ImGui::Begin(GUI_IDENTIFIER, nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove);
+   setGUIHovered(ImGui::IsWindowHovered());
    RenderCommonImGui();
    _3DInputControls();
 
-   UserShaderParameters(shaderManager);
+   UserShaderParameters();
    MeshSettings();
    ShaderDropdown();
    NoiseLayersGui(terrain, fuse);
@@ -304,19 +313,19 @@ void GUI::Render3DImGui(Terrain& terrain, float fps) {
  * @author PK, SD
  */
 void GUI::Render2DImGui(Terrain& terrain, float fps) {
+   uselessIDcounter = 0; // DON'T REMOVE EXTREMELY IMPORTANT ;)
    fpsPrintTimer++;
    fpsAvg += fps;
-   ImGui::Begin("Controls", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
+   ImGui::Begin(GUI_IDENTIFIER, nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove);
+   setGUIHovered(ImGui::IsWindowHovered());
    RenderCommonImGui();
-   ImGui::Text("\n2D Mode\n\n");
-
-   UserShaderParameters(shaderManager);
+   _2DInputControls();
+   UserShaderParameters();
    MeshSettings();
 
    ShaderDropdown();
 
    SaveToFile2D(terrain.getMesh());
-   _2DInputControls();
    if (fpsPrintTimer > 99) {
       fpsPrintTimer = 0;
       printFps = fpsAvg / 100;
@@ -379,4 +388,11 @@ void GUI::DrawTerrain(Terrain& terrain, Camera& camera) {
 
 void GUI::DeleteShaderManager() {
    shaderManager.Delete();
+}
+
+bool GUI::isGUIHovered() {
+   return guiHovered;
+}
+void GUI::setGUIHovered(bool state) {
+   guiHovered = state;
 }
