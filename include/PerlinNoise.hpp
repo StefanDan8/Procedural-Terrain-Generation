@@ -11,12 +11,12 @@ class PerlinNoise2D {
    private:
    // --- Class Parameters ---
    double weightSum = 0.0; // The sum of the weights of the layers
-   std::vector<vec2d> gradients; // The constant gradients used for computation
-   matrix resultMatrix; // The matrix to fill
-   std::vector<PerlinLayer> layers; // The layers of the noise
    unsigned sizeX; // The size of the terrain in the x direction
    unsigned sizeY; // The size of the terrain in the y direction
-
+   matrix resultMatrix; // The matrix to fill
+   std::vector<vec2d> gradients; // The constant gradients used for computation
+   std::vector<PerlinLayer> layers; // The layers of the noise
+   
    public:
 
    /// @brief Noise constructor, initializes the gradients and the layers
@@ -72,11 +72,6 @@ class PerlinNoise2D {
 
    // --- Layer functions ---
 
-   // Disable copy semantics -- copying is very inefficient
-   // compiler should complain if copying is done
-   /// @brief Set the layers of the noise with the already computed layers
-   // void setLayers(std::vector<PerlinLayer>& newLayers);
-
    /// @brief Set the layers of the noise with the parameters of the layers
    void setLayers(std::vector<std::pair<unsigned, double>>& newLayerParams);
 
@@ -105,13 +100,8 @@ class PerlinNoise2D {
    /// @note Should not be used in the future, but rather update the weight sum when adding or removing layers
    void updateWeightSum();
 
-   /// @note The check is added for test purposes, if the code works properly (the weight sum is updated correctly by each function involved) the check should be REMOVED - for performance reasons
+   /// @brief Get the weight sum of the layers
    double getWeightSum() {
-      // double tmp = weightSum;
-      // updateWeightSum();
-      // if (tmp != weightSum) {
-      //    throw std::logic_error("Weight sum was not measured correctly!");
-      // }
       return weightSum;
    }
 }; // class PerlinNoise2D

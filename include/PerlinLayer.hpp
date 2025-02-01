@@ -17,7 +17,6 @@ enum LayerType {
 
 namespace perlin {
 class PerlinLayer {
-   // I do not save a reference to gradients. Managing such a reference makes it hard to reassign layers to new objects as the owners of the reference might get deleted. (Happened before and the vector got reset-> bug)
    public:
    PerlinLayer(unsigned sizeX, unsigned sizeY, unsigned chunkSize, double weight) : sizeX(sizeX), sizeY(sizeY), chunkSize(chunkSize), weight(weight) {
       result = matrix(sizeX, std::vector<double>(sizeY, 0.0));
@@ -56,6 +55,7 @@ class PerlinLayer {
    /// @brief Add the values of the layer to the accumulator matrix
    /// @param accumulator the matrix to accumulate the values to
    /// @param weightFactor the factor to multiply the values with
+   /// @note Makes use of the std::execution::par parallel execution policy, which may not work on all platforms. If that's the case, then it can just be omitted from the code.
    void accumulate(matrix& accumulator, const double weightFactor);
 
    double getWeight() {

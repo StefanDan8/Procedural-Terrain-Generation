@@ -129,13 +129,6 @@ void PerlinNoise2D::filterMatrix(perlin::PerlinNoise2D& other) {
 
 // --- Layer functions ---
 
-// Disable copy semantics -- copying is very inefficient
-// compiler should complain if copying is done
-// void PerlinNoise2D::setLayers(std::vector<PerlinLayer>& newLayers) {
-//    layers = newLayers;
-//    updateWeightSum();
-// }
-
 void PerlinNoise2D::setLayers(std::vector<std::pair<unsigned, double>>& newLayerParams) {
    layers.clear();
    layers.reserve(newLayerParams.size());
