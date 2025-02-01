@@ -55,7 +55,7 @@ class PerlinLayer {
    /// @brief Add the values of the layer to the accumulator matrix
    /// @param accumulator the matrix to accumulate the values to
    /// @param weightFactor the factor to multiply the values with
-   /// @note Makes use of the std::execution::par parallel execution policy, which may not work on all platforms. If that's the case, then it can just be omitted from the code.
+   /// @note std::execution::par could also be used here, though doesn't work on all platforms
    void accumulate(matrix& accumulator, const double weightFactor);
 
    double getWeight() {

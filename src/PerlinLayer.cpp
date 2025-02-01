@@ -93,20 +93,13 @@ void PerlinLayer::accumulate(matrix& accumulator, const double weightFactor) {
    // measuring the time
    auto start = std::chrono::high_resolution_clock::now();
 
-   // --- sequential loop
-   // // Accumulate the values of the layer to the accumulator matrix
-   // for (unsigned i = 0; i < accumulator.size(); ++i) {
-   //    for (unsigned j = 0; j < accumulator[0].size(); ++j) {
-   //       accumulator[i][j] += weightFactor * result[i][j];
-   //    }
-   // }
-
    // --- parallel loop
    // Parallel transformation for each row
-   std::transform(std::execution::par, accumulator.begin(), accumulator.end(),
+   // std::execution::par could also be used here, though doesn't work on all platforms
+   std::transform(accumulator.begin(), accumulator.end(),
                   result.begin(), accumulator.begin(),
                   [weightFactor](std::vector<double>& accRow, const std::vector<double>& resRow) {
-                     std::transform(std::execution::par, accRow.begin(), accRow.end(),
+                     std::transform(accRow.begin(), accRow.end(),
                                     resRow.begin(), accRow.begin(),
                                     [weightFactor](double accVal, double resVal) {
                                        return accVal + weightFactor * resVal;
