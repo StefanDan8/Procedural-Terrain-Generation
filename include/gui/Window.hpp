@@ -9,8 +9,18 @@
 #include <string>
 #include <stdexcept>
 
+class Camera2D;
+class Window;
+
+/// @brief Introduced for managing multiple callbacks on same glfw window, as it can have only one parent. If any other callbacks would be added, put a pointer here.
+struct CallbackContext {
+   Window* window = nullptr;
+   Camera2D* camera2D = nullptr;
+};
+
 class Window {
    public:
+   CallbackContext context;
    Window(const unsigned width, const unsigned height);
 
    void setViewport();
@@ -33,10 +43,6 @@ class Window {
       return &renderHeight;
    }
 
-   float* getImguiWidth() {
-      return &imguiWidth;
-   }
-
    int getFrameBufferWidth() {
       return frameBufferWidth;
    }
@@ -52,7 +58,6 @@ class Window {
    static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
    int frameBufferWidth = 0;
    int frameBufferHeight = 0;
-   float imguiWidth = 0.0f;
    float renderWidth = 0.0f;
    float renderHeight = 0.0f;
    GLFWwindow* window = nullptr;

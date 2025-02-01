@@ -18,8 +18,6 @@ void GUI::NewFrame() {
    ImGui_ImplOpenGL3_NewFrame();
    ImGui_ImplGlfw_NewFrame();
    ImGui::NewFrame();
-
-   //ImGui::SetNextWindowSize(ImVec2(*window.getImguiWidth(), window.getFrameBufferHeight()), ImGuiCond_Always);
    ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
 }
 

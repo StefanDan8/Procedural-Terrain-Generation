@@ -27,6 +27,8 @@ int main() {
    // Create both here else it'll recreate the camera every frame
    Camera3D camera_3d(window, glm::vec3(-0.15f, 0.0f, 1.6f));
    Camera2D camera_2d(window, glm::vec3(-0.3f, 0.0f, 2.5f)); // handpicked to fit nicely
+   window.context.window = &window;
+   window.context.camera2D = &camera_2d;
    while (window.isActive()) {
       auto currentTime = std::chrono::steady_clock::now();
       std::chrono::duration<float> deltaTime = currentTime - lastFrameTime;
@@ -35,16 +37,23 @@ int main() {
       float elapsedSinceLastFrame = deltaTime.count(); // in seconds
       window.setViewport();
       gui.NewFrame();
+
       gui.DisplayGUI(terrain, elapsedSinceLastFrame);
-
-      Camera* camera = gui.is3DModeActive() ? static_cast<Camera*>(&camera_3d) : static_cast<Camera*>(&camera_2d);
-
+      Camera* camera = nullptr;
+      if (gui.is3DModeActive()) {
+         window.context.camera2D = nullptr;
+         camera = static_cast<Camera*>(&camera_3d);
+      } else {
+         window.context.camera2D = &camera_2d;
+         camera = static_cast<Camera*>(&camera_2d);
+      }
       if (!gui.isGUIHovered()) {
          camera->Inputs(elapsedSinceLastFrame);
       }
       camera->updateMatrix(45.0f, 0.1f, 100.0f);
 
       gui.DrawTerrain(terrain, *camera);
+
       gui.RenderDrawData();
    }
 

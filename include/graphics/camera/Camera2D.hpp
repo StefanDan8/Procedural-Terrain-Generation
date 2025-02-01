@@ -1,7 +1,7 @@
 #ifndef INC_2DCAMERA_HPP
 #define INC_2DCAMERA_HPP
 
-#include <Camera.hpp>
+#include "Camera.hpp"
 
 /**
  * Class for managing a 2D camera
@@ -14,9 +14,7 @@ class Camera2D final : public Camera {
    // Increase speed on mouse drag + scroll
    float mouseScrollMultiplier = 3.0f;
 
-   Camera2D(Window& window, glm::vec3 position) : Camera(window, position) {
-      glfwSetWindowUserPointer(window.getWindow(), this);
-   };
+   Camera2D(Window& window, glm::vec3 position) : Camera(window, position) {};
 
    /**
     * Static function to use in GLFW callback for handling scroll events.

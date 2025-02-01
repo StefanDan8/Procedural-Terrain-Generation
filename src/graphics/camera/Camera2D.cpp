@@ -26,7 +26,6 @@ void Camera2D::_Inputs(GLFWwindow* glfwWindow, float elapsedTimeSinceLastFrame) 
    if (glfwGetKey(glfwWindow, GLFW_KEY_D) == GLFW_PRESS) {
       Position += contextualSpeed * glm::normalize(glm::cross(Orientation, Up));
    }
-
    glfwSetScrollCallback(glfwWindow, ScrollCallback);
 
    // Mouse related operations
@@ -60,11 +59,11 @@ void Camera2D::_Inputs(GLFWwindow* glfwWindow, float elapsedTimeSinceLastFrame) 
 }
 
 void Camera2D::ScrollCallback(GLFWwindow* window, double xOffset, double yOffset) {
-   auto camera = static_cast<Camera2D*>(glfwGetWindowUserPointer(window));
-   if (camera == nullptr) return;
-
-   auto newPos = camera->Position + camera->speed * 0.01f * camera->mouseScrollMultiplier * glm::vec3(0.0f, 0.0f, -yOffset);
-   newPos.z = std::clamp(newPos.z, 1.1f, 2.5f); // Prevents zooming too far in or out
-
-   camera->Position = newPos;
+   CallbackContext* ctx = static_cast<CallbackContext*>(glfwGetWindowUserPointer(window));
+   (void) xOffset; // to avoid warning;
+   if (ctx->camera2D) {
+      auto newPos = ctx->camera2D->Position + ctx->camera2D->speed * 0.01f * ctx->camera2D->mouseScrollMultiplier * glm::vec3(0.0f, 0.0f, -yOffset);
+      newPos.z = std::clamp(newPos.z, 1.1f, 2.5f);
+      ctx->camera2D->Position = newPos;
+   }
 }
