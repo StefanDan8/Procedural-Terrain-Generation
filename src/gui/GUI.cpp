@@ -176,6 +176,112 @@ void GUI::SaveToFile2D(Mesh& mesh) {
 }
 
 /**
+ * Saves the current settings to a JSON file.
+ * @param terrain Required to pull noise and baseline params
+ * @param filename Absolute path to the JSON file
+ */
+void GUI::SaveJSON(Terrain &terrain, std::string filename) {
+   nlohmann::json j;
+   j["seed"] = seed;
+   j["flattenFactor"] = flattenFactor;
+   j["is3DMode"] = is3DMode;
+   j["shader"] = currentVertexShader;
+   j["shaderParams"] = nlohmann::json::object();
+   for (unsigned i = 0; i < shaderManager.getShader().userFloatValues.size(); ++i) {
+      j["shaderParams"][shaderManager.getShader().userFloatUniforms[i].c_str()] = shaderManager.getShader().userFloatValues[i];
+   }
+   j["noiseParams"] = nlohmann::json::array();
+   for (auto& layerParam : terrain.getNoiseParams()) {
+      j["noiseParams"].push_back({{"chunkSize", layerParam.first}, {"weight", layerParam.second}});
+   }
+   j["baselineParams"] = nlohmann::json::array();
+   for (auto& layerParam : terrain.getBaselineParams()) {
+      j["baselineParams"].push_back({{"chunkSize", layerParam.first}, {"weight", layerParam.second}});
+   }
+
+   std::ofstream file(filename);
+   file << j.dump();
+}
+
+/**
+ * Loads the settings from a JSON file.
+ * @param terrain Required to update noise and baseline params
+ * @param filename Absolute path to the JSON file
+ */
+void GUI::LoadJSON(Terrain &terrain, std::string filename) {
+   std::ifstream file(filename);
+   if (!file.is_open()) {
+      std::cerr << "Failed to open file: " << filename << std::endl;
+      return;
+   }
+   nlohmann::json j;
+   file >> j;
+
+   previousSeed = seed;
+   seed = j["seed"];
+   previousVertexShader = currentVertexShader;
+   currentVertexShader = j["shader"];
+   flattenFactor = j["flattenFactor"];
+   is3DMode = j["is3DMode"];
+
+   // Iterate through the shader parameters
+   for (auto& [key, value] : j["shaderParams"].items()) {
+      for (unsigned i = 0; i < shaderManager.getShader().userFloatUniforms.size(); ++i) {
+         if (shaderManager.getShader().userFloatUniforms[i].compare(key) == 0) {
+            shaderManager.getShader().userFloatValues[i] = value;
+            break;
+         }
+      }
+   }
+
+   // And now, the noise and baseline parameters
+   auto noiseParams = j["noiseParams"];
+   for (unsigned i = 0; i < noiseParams.size(); ++i) {
+      terrain.getNoiseParams()[i].first = noiseParams[i]["chunkSize"];
+      terrain.getNoiseParams()[i].second = noiseParams[i]["weight"];
+   }
+   auto baselineParams = j["baselineParams"];
+   for (unsigned i = 0; i < baselineParams.size(); ++i) {
+      terrain.getBaselineParams()[i].first = baselineParams[i]["chunkSize"];
+      terrain.getBaselineParams()[i].second = baselineParams[i]["weight"];
+   }
+
+}
+
+/**
+ * UI Logic for saving/loading to/from JSON files.
+ * @author PK
+ */
+void GUI::JSON_IO(Terrain& terrain) {
+   ImGui::Text("\nSave Current Settings");
+   static char _user_save_path[256] = "";
+   ImGui::InputText("JSON Filename", _user_save_path, sizeof(_user_save_path));
+   if (ImGui::Button("Save")) {
+      auto filename = std::string(OUTPUT_FOLDER_PATH) + "/" + _user_save_path + ".json";
+      SaveJSON(terrain, filename);
+   }
+   ImGui::SameLine();
+   if (ImGui::Button("Load")) {
+      // Create pop up to ask if they want to load the file
+      ImGui::OpenPopup("ConfirmJSONLoad");
+   }
+
+   if (ImGui::BeginPopupModal("ConfirmJSONLoad")) {
+      ImGui::Text("ARE YOU SURE?\n\nThis will irreversibly overwrite your current settings!");
+      if (ImGui::Button("Yes")) {
+         auto filename = std::string(OUTPUT_FOLDER_PATH) + "/" + _user_save_path + ".json";
+         LoadJSON(terrain, filename);
+         ImGui::CloseCurrentPopup();
+      }
+      ImGui::SameLine();
+      if (ImGui::Button("No")) {
+         ImGui::CloseCurrentPopup();
+      }
+      ImGui::EndPopup();
+   }
+}
+
+/**
  * Renders the user shader parameters in the ImGui window.
  * @param manager ShaderManger object
  * @author SD, PK (extracted method)
@@ -235,7 +341,7 @@ bool GUI::InputUnsigned(const char* label, unsigned int* v, unsigned int step, u
 }
 
 void GUI::NoiseLayersGui(Terrain& terrain, Fuse& fuse) {
-   ImGui::Text("Noise parameters");
+   ImGui::Text("\nNoise parameters");
    unsigned index = 0;
    ImGui::Text("Chunk Size       Weight");
    for (auto& layerParam : terrain.getNoiseParams()) {
@@ -318,12 +424,14 @@ void GUI::Render2DImGui(Terrain& terrain, float fps) {
    setGUIHovered(ImGui::IsWindowHovered());
    RenderCommonImGui();
    _2DInputControls();
+
    UserShaderParameters();
    MeshSettings();
-
    ShaderDropdown();
-
+   NoiseLayersGui(terrain, fuse);
+   JSON_IO(terrain);
    SaveToFile2D(terrain.getMesh());
+
    if (fpsPrintTimer > 99) {
       fpsPrintTimer = 0;
       printFps = fpsAvg / 100;

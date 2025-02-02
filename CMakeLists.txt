@@ -82,13 +82,19 @@ $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 $<INSTALL_INTERFACE:include>
 PUBLIC include/lodepng)
 
+add_library(json INTERFACE)
+target_include_directories(json INTERFACE
+$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+$<INSTALL_INTERFACE:include>
+${CMAKE_CURRENT_SOURCE_DIR}/include/json)
+
 add_library(mesh src/graphics/mesh/VAO.cpp
                  src/graphics/mesh/EBO.cpp    
                  src/graphics/mesh/VBO.cpp 
                  src/graphics/mesh/Mesh.cpp
                 )
 target_include_directories(mesh PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/graphics/mesh)
-target_link_libraries(mesh camera lodepng)
+target_link_libraries(mesh camera lodepng json)
 
 
 add_library(terrain src/Terrain3D.cpp 

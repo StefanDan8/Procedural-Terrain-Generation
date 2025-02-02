@@ -7,6 +7,7 @@
 #include "Terrain.hpp"
 #include "Fuse.hpp"
 #include <vector>
+#include <json.hpp>
 
 class GUI {
    public:
@@ -32,6 +33,11 @@ class GUI {
    void _2DInputControls();
    void SaveToFile3D(Mesh& mesh);
    void SaveToFile2D(Mesh& mesh);
+
+   void SaveJSON(Terrain &terrain, std::string filename);
+   void LoadJSON(Terrain &terrain, std::string filename);
+   void JSON_IO(Terrain& terrain);
+
    void UserShaderParameters();
    void MeshSettings();
    bool InputUnsigned(const char* label, unsigned int* v, unsigned int step = 1, unsigned int step_fast = 10, ImGuiInputTextFlags flags = 0);
