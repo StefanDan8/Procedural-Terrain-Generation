@@ -9,28 +9,38 @@
 #include <stdexcept>
 #include <string>
 #include <system_error>
+#include <unordered_map>
 #include <vector>
 #include <glad/glad.h>
 
-std::vector<std::string> parse_uniform_float_names(const std::string& contents);
-void parse_uniform_float_names_and_values(const std::string& contents,
-                                          std::vector<std::string>& uniformNames,
-                                          std::vector<float>& uniformValues);
+std::vector<std::string> parse_uniform_float_names(const std::string &contents);
+
+void parse_uniform_float_names_and_values(const std::string &contents,
+                                          std::vector<std::string> &uniformNames,
+                                          std::vector<float> &uniformValues);
+
 std::string get_file_contents(std::string filename);
 
 class Shader {
-   public:
-   GLuint ID;
-   std::vector<std::string> userFloatUniforms;
-   std::vector<float> userFloatValues;
-   Shader(std::string vertexFile, std::string fragmentFile);
+public:
+    GLuint ID;
+    std::string name;
+    std::vector<std::string> userFloatUniforms;
+    std::vector<float> userFloatValues;
 
-   void processUniform(const GLchar* name, float value);
+    /**
+     * Do not use this constructor, for some reason it just won't build without.
+     */
+    Shader();
 
-   void setUniforms();
+    Shader(const std::string &vertexFile, const std::string &fragmentFile);
 
-   void Activate();
-   void Delete();
+    void processUniform(const GLchar *name, float value);
+
+    void setUniforms();
+
+    void Activate();
+    void Delete();
 };
 
 #endif

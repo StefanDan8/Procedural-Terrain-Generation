@@ -1,6 +1,6 @@
 #include "GUI.hpp"
 
-GUI::GUI(Window& window) : window(window), shaderManager(previousVertexShader, previousFragmentShader), fuse(200, 8, 4) {
+GUI::GUI(Window& window) : window(window), shaderManager(shaders), fuse(200, 8, 4) {
    if (!window.getWindow()) {
       throw std::runtime_error("GLFW window is null in GUI constructor!");
    }
@@ -73,13 +73,13 @@ void GUI::SwitchShader(ShaderManager& shaderManager) {
    if (switchedShaderRecently) {
       switchedShaderRecently = false;
       currentVertexShader = previousVertexShader = shaders[is3DMode][0];
-      shaderManager.SwitchShader(currentVertexShader, currentFragmentShader);
+      shaderManager.SwitchShader(currentVertexShader);
    }
 
    if (currentVertexShader.compare(previousVertexShader)) {
       previousVertexShader = currentVertexShader;
       std::cout << "Changed shader\n";
-      shaderManager.SwitchShader(currentVertexShader, currentFragmentShader);
+      shaderManager.SwitchShader(currentVertexShader);
    }
 
    shaderManager.getShader().setUniforms();
@@ -187,9 +187,10 @@ void GUI::SaveJSON(Terrain &terrain, std::string filename) {
    j["is3DMode"] = is3DMode;
    j["shader"] = currentVertexShader;
    j["shaderParams"] = nlohmann::json::object();
-   for (unsigned i = 0; i < shaderManager.getShader().userFloatValues.size(); ++i) {
-      j["shaderParams"][shaderManager.getShader().userFloatUniforms[i].c_str()] = shaderManager.getShader().userFloatValues[i];
+   for (auto [name, param] : *shaderManager.getUserShaderParams()) {
+      j["shaderParams"][name] = param;
    }
+
    j["noiseParams"] = nlohmann::json::array();
    for (auto& layerParam : terrain.getNoiseParams()) {
       j["noiseParams"].push_back({{"chunkSize", layerParam.first}, {"weight", layerParam.second}});
@@ -224,17 +225,7 @@ void GUI::LoadJSON(Terrain &terrain, std::string filename) {
    flattenFactor = j["flattenFactor"];
    is3DMode = j["is3DMode"];
 
-   // Iterate through the shader parameters
-   for (auto& [key, value] : j["shaderParams"].items()) {
-      for (unsigned i = 0; i < shaderManager.getShader().userFloatUniforms.size(); ++i) {
-         if (shaderManager.getShader().userFloatUniforms[i].compare(key) == 0) {
-            shaderManager.getShader().userFloatValues[i] = value;
-            break;
-         }
-      }
-   }
-
-   // And now, the noise and baseline parameters
+   // Noise and baseline parameters
    auto noiseParams = j["noiseParams"];
    for (unsigned i = 0; i < noiseParams.size(); ++i) {
       terrain.getNoiseParams()[i].first = noiseParams[i]["chunkSize"];
@@ -246,6 +237,11 @@ void GUI::LoadJSON(Terrain &terrain, std::string filename) {
       terrain.getBaselineParams()[i].second = baselineParams[i]["weight"];
    }
 
+   // Iterate through the shader parameters
+   for (auto& [key, value] : j["shaderParams"].items()) {
+      auto params = *shaderManager.getUserShaderParams();
+      params[key] = value;
+   }
 }
 
 /**
@@ -288,27 +284,27 @@ void GUI::JSON_IO(Terrain& terrain) {
  */
 void GUI::UserShaderParameters() {
    ImGui::Text("User Shader Parameters\n");
-   unsigned num = shaderManager.getShader().userFloatUniforms.size();
-   for (unsigned i = 0; i < num; ++i) {
+   const auto userParams = *shaderManager.getUserShaderParams();
+   for (auto [param, val] : userParams) {
       ImGui::PushID(uselessIDcounter++);
       ImGui::SetNextItemWidth(90.f);
-      ImGui::SliderFloat("", &(shaderManager.getShader().userFloatValues[i]), -1.0f, 1.0f);
+      ImGui::SliderFloat("", &val, -1.0f, 1.0f);
       ImGui::PopID();
       ImGui::SameLine();
       ImGui::PushID(uselessIDcounter++);
       if (ImGui::Button("-")) {
          std::cout << "hi" << std::endl;
-         shaderManager.getShader().userFloatValues[i] -= 0.002f;
+         val -= 0.002f;
       }
       ImGui::SameLine();
       ImGui::PopID();
       ImGui::PushID(uselessIDcounter++);
       if (ImGui::Button("+")) {
-         shaderManager.getShader().userFloatValues[i] += 0.002f;
+         val += 0.002f;
       }
       ImGui::PopID();
       ImGui::SameLine();
-      ImGui::Text(shaderManager.getShader().userFloatUniforms[i].c_str());
+      ImGui::Text(param.c_str());
    }
 }
 
@@ -399,6 +395,7 @@ void GUI::Render3DImGui(Terrain& terrain, float fps) {
    MeshSettings();
    ShaderDropdown();
    NoiseLayersGui(terrain, fuse);
+   JSON_IO(terrain);
    SaveToFile3D(terrain.getMesh());
 
    if (fpsPrintTimer > 99) {
@@ -451,13 +448,13 @@ void GUI::DisplayGUI(Terrain& terrain, float elapsedSinceLastFrame) {
    if (switchedShaderRecently) {
       switchedShaderRecently = false;
       currentVertexShader = previousVertexShader = shaders[is3DMode][0];
-      shaderManager.SwitchShader(currentVertexShader, currentFragmentShader);
+      shaderManager.SwitchShader(currentVertexShader);
    }
 
    if (currentVertexShader.compare(previousVertexShader)) {
       previousVertexShader = currentVertexShader;
       std::cout << "Changed shader\n";
-      shaderManager.SwitchShader(currentVertexShader, currentFragmentShader);
+      shaderManager.SwitchShader(currentVertexShader);
    }
 
    shaderManager.getShader().setUniforms();
