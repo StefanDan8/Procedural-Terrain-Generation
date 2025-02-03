@@ -27,7 +27,7 @@ class GUI {
 
    private:
    //ImGui Elements
-   void RenderCommonImGui();
+   void RenderCommonImGui(Terrain &terrain, float fps);
    void ShaderDropdown();
    void _3DInputControls();
    void _2DInputControls();
@@ -38,10 +38,12 @@ class GUI {
    void LoadJSON(Terrain &terrain, std::string filename);
    void JSON_IO(Terrain& terrain);
 
+   void DisplayMode();
    void UserShaderParameters();
    void MeshSettings();
    bool InputUnsigned(const char* label, unsigned int* v, unsigned int step = 1, unsigned int step_fast = 10, ImGuiInputTextFlags flags = 0);
    void NoiseLayersGui(Terrain& terrain, Fuse& fuse);
+   void FPSDisplay();
 
    void Render3DImGui(Terrain& terrain, float fps);
    void Render2DImGui(Terrain& terrain, float fps);

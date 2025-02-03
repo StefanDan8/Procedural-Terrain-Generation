@@ -33,8 +33,25 @@ void GUI::Shutdown() {
 }
 
 //ImGui Elements
-void GUI::RenderCommonImGui() {
-   ImGui::Text("Pick display mode:");
+void GUI::RenderCommonImGui(Terrain &terrain, float fps) {
+   uselessIDcounter = 0; // DON'T REMOVE EXTREMELY IMPORTANT ;)
+   fpsPrintTimer++;
+   fpsAvg += fps;
+   ImGui::Begin(GUI_IDENTIFIER, nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove);
+   setGUIHovered(ImGui::IsWindowHovered());
+
+   DisplayMode();
+   MeshSettings();
+   ShaderDropdown();
+   ImGui::Text("\n");
+   UserShaderParameters();
+   NoiseLayersGui(terrain, fuse);
+   JSON_IO(terrain);
+}
+
+void GUI::DisplayMode() {
+   const std::string title = "DISPLAY MODE = " + std::string(is3DMode ? "3D" : "2D");
+   ImGui::Text(title.c_str());
 
    if (ImGui::Button("2D Mode")) {
       is3DMode = false;
@@ -46,6 +63,7 @@ void GUI::RenderCommonImGui() {
       switchedShaderRecently = true;
    }
 }
+
 
 void GUI::ShaderDropdown() {
    static unsigned currentItem = 0; // Index of the currently selected item
@@ -147,7 +165,7 @@ NOTE: Cursor must be in the rendering area
  * @author SD
  */
 void GUI::SaveToFile3D(Mesh& mesh) {
-   ImGui::Text("\n\nSave Current Object to .obj\n");
+   ImGui::Text("\nSave Current Object to .obj\n");
    static char _user_save_path[256] = "";
    ImGui::InputText("Filename", _user_save_path, sizeof(_user_save_path));
    if (ImGui::Button("Save")) {
@@ -284,28 +302,29 @@ void GUI::JSON_IO(Terrain& terrain) {
  * @author SD, PK (extracted method)
  */
 void GUI::UserShaderParameters() {
-   ImGui::Text("User Shader Parameters\n");
-   const Shader shader = shaderManager.getCurrentShader();
-   for (unsigned i = 0; i < shader.userFloatValues.size(); i++) {
-      ImGui::PushID(uselessIDcounter++);
-      ImGui::SetNextItemWidth(90.f);
-      ImGui::SliderFloat("", &(shaderManager.getCurrentShader().userFloatValues[i]), -1.0f, 1.0f);
-      ImGui::PopID();
-      ImGui::SameLine();
-      ImGui::PushID(uselessIDcounter++);
-      if (ImGui::Button("-")) {
-         std::cout << "hi" << std::endl;
-         shaderManager.getCurrentShader().userFloatValues[i] -= 0.002f;
+   if (ImGui::CollapsingHeader("User Shader Parameters")) {
+      const Shader shader = shaderManager.getCurrentShader();
+      for (unsigned i = 0; i < shader.userFloatValues.size(); i++) {
+         ImGui::PushID(uselessIDcounter++);
+         ImGui::SetNextItemWidth(90.f);
+         ImGui::SliderFloat("", &(shaderManager.getCurrentShader().userFloatValues[i]), -1.0f, 1.0f);
+         ImGui::PopID();
+         ImGui::SameLine();
+         ImGui::PushID(uselessIDcounter++);
+         if (ImGui::Button("-")) {
+            std::cout << "hi" << std::endl;
+            shaderManager.getCurrentShader().userFloatValues[i] -= 0.002f;
+         }
+         ImGui::SameLine();
+         ImGui::PopID();
+         ImGui::PushID(uselessIDcounter++);
+         if (ImGui::Button("+")) {
+            shaderManager.getCurrentShader().userFloatValues[i] += 0.002f;
+         }
+         ImGui::PopID();
+         ImGui::SameLine();
+         ImGui::Text(shaderManager.getCurrentShader().userFloatUniforms[i].c_str());
       }
-      ImGui::SameLine();
-      ImGui::PopID();
-      ImGui::PushID(uselessIDcounter++);
-      if (ImGui::Button("+")) {
-         shaderManager.getCurrentShader().userFloatValues[i] += 0.002f;
-      }
-      ImGui::PopID();
-      ImGui::SameLine();
-      ImGui::Text(shaderManager.getCurrentShader().userFloatUniforms[i].c_str());
    }
 }
 
@@ -314,7 +333,7 @@ void GUI::UserShaderParameters() {
  * @author SD, PK (extracted method)
  */
 void GUI::MeshSettings() {
-   ImGui::Text("Mesh Settings");
+   ImGui::Text("\nMesh Settings");
    ImGui::SetNextItemWidth(90.f);
    ImGui::InputInt("Seed", &seed);
 
@@ -338,44 +357,55 @@ bool GUI::InputUnsigned(const char* label, unsigned int* v, unsigned int step, u
 }
 
 void GUI::NoiseLayersGui(Terrain& terrain, Fuse& fuse) {
-   ImGui::Text("\nNoise parameters");
-   unsigned index = 0;
-   ImGui::Text("Chunk Size       Weight");
-   for (auto& layerParam : terrain.getNoiseParams()) {
-      ImGui::PushID(uselessIDcounter++);
-      ImGui::SetNextItemWidth(110.f);
-      if (InputUnsigned("##xx", &layerParam.first, 10, 100)) {
-         fuse.planLayerUpdate(index, NOISE_LAYER, CHUNK_SIZE);
+   if (ImGui::CollapsingHeader("Noise Parameters")) {
+      unsigned index = 0;
+      ImGui::Text("Chunk Size       Weight");
+      for (auto& layerParam : terrain.getNoiseParams()) {
+         ImGui::PushID(uselessIDcounter++);
+         ImGui::SetNextItemWidth(110.f);
+         if (InputUnsigned("##xx", &layerParam.first, 10, 100)) {
+            fuse.planLayerUpdate(index, NOISE_LAYER, CHUNK_SIZE);
+         }
+         ImGui::PopID();
+         ImGui::SameLine();
+         ImGui::PushID(uselessIDcounter++);
+         ImGui::SetNextItemWidth(110.f);
+         if (ImGui::InputDouble("##xx", &layerParam.second, 1.0, 10.0, "%.1f")) {
+            fuse.planLayerUpdate(index, NOISE_LAYER, WEIGHT);
+         }
+         ImGui::PopID();
+         index++;
       }
-      ImGui::PopID();
-      ImGui::SameLine();
-      ImGui::PushID(uselessIDcounter++);
-      ImGui::SetNextItemWidth(110.f);
-      if (ImGui::InputDouble("##xx", &layerParam.second, 1.0, 10.0, "%.1f")) {
-         fuse.planLayerUpdate(index, NOISE_LAYER, WEIGHT);
+      index = 0;
+      ImGui::Text("Baseline Noise Parameters");
+      for (auto& layerParam : terrain.getBaselineParams()) {
+         ImGui::PushID(uselessIDcounter++);
+         ImGui::SetNextItemWidth(110.f);
+         if (InputUnsigned("##xx", &layerParam.first, 10, 100)) {
+            fuse.planLayerUpdate(index, BASELINE_LAYER, CHUNK_SIZE);
+         }
+         ImGui::PopID();
+         ImGui::SameLine();
+         ImGui::PushID(uselessIDcounter++);
+         ImGui::SetNextItemWidth(110.f);
+         if (ImGui::InputDouble("##xx", &layerParam.second, 1.0, 10.0, "%.1f")) {
+            fuse.planLayerUpdate(index, BASELINE_LAYER, WEIGHT);
+         }
+         ImGui::PopID();
+         index++;
       }
-      ImGui::PopID();
-      index++;
-   }
-   index = 0;
-   ImGui::Text("Baseline noise parameters");
-   for (auto& layerParam : terrain.getBaselineParams()) {
-      ImGui::PushID(uselessIDcounter++);
-      ImGui::SetNextItemWidth(110.f);
-      if (InputUnsigned("##xx", &layerParam.first, 10, 100)) {
-         fuse.planLayerUpdate(index, BASELINE_LAYER, CHUNK_SIZE);
-      }
-      ImGui::PopID();
-      ImGui::SameLine();
-      ImGui::PushID(uselessIDcounter++);
-      ImGui::SetNextItemWidth(110.f);
-      if (ImGui::InputDouble("##xx", &layerParam.second, 1.0, 10.0, "%.1f")) {
-         fuse.planLayerUpdate(index, BASELINE_LAYER, WEIGHT);
-      }
-      ImGui::PopID();
-      index++;
    }
 }
+
+void GUI::FPSDisplay() {
+   if (fpsPrintTimer > 99) {
+      fpsPrintTimer = 0;
+      printFps = fpsAvg / 100;
+      fpsAvg = 0.0;
+   }
+   ImGui::Text("FPS: %1.f", printFps);
+}
+
 
 /**
  * Renders the full ImGui window for the 3D mode.
@@ -384,27 +414,14 @@ void GUI::NoiseLayersGui(Terrain& terrain, Fuse& fuse) {
  * @author SD, PK (extracted method)
  */
 void GUI::Render3DImGui(Terrain& terrain, float fps) {
-   uselessIDcounter = 0; // DON'T REMOVE EXTREMELY IMPORTANT ;)
-   fpsPrintTimer++;
-   fpsAvg += fps;
-   ImGui::Begin(GUI_IDENTIFIER, nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove);
-   setGUIHovered(ImGui::IsWindowHovered());
-   RenderCommonImGui();
-   _3DInputControls();
-
-   UserShaderParameters();
-   MeshSettings();
-   ShaderDropdown();
-   NoiseLayersGui(terrain, fuse);
-   JSON_IO(terrain);
+   RenderCommonImGui(terrain, fps);
    SaveToFile3D(terrain.getMesh());
 
-   if (fpsPrintTimer > 99) {
-      fpsPrintTimer = 0;
-      printFps = fpsAvg / 100;
-      fpsAvg = 0.0;
-   }
-   ImGui::Text("FPS: %1.f", printFps);
+   ImGui::Text("\n");
+   _3DInputControls();
+   ImGui::SameLine();
+   FPSDisplay();
+
    ImGui::End();
 }
 
@@ -415,27 +432,14 @@ void GUI::Render3DImGui(Terrain& terrain, float fps) {
  * @author PK, SD
  */
 void GUI::Render2DImGui(Terrain& terrain, float fps) {
-   uselessIDcounter = 0; // DON'T REMOVE EXTREMELY IMPORTANT ;)
-   fpsPrintTimer++;
-   fpsAvg += fps;
-   ImGui::Begin(GUI_IDENTIFIER, nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove);
-   setGUIHovered(ImGui::IsWindowHovered());
-   RenderCommonImGui();
-   _2DInputControls();
-
-   UserShaderParameters();
-   MeshSettings();
-   ShaderDropdown();
-   NoiseLayersGui(terrain, fuse);
-   JSON_IO(terrain);
+   RenderCommonImGui(terrain, fps);
    SaveToFile2D(terrain.getMesh());
 
-   if (fpsPrintTimer > 99) {
-      fpsPrintTimer = 0;
-      printFps = fpsAvg / 100;
-      fpsAvg = 0.0;
-   }
-   ImGui::Text("FPS: %1.f", printFps);
+   ImGui::Text("\n");
+   _2DInputControls();
+   ImGui::SameLine();
+   FPSDisplay();
+
    ImGui::End();
 }
 
