@@ -102,6 +102,22 @@ void GUI::SwitchShader(ShaderManager& shaderManager) {
    shaderManager.getCurrentShader().setUniforms();
 }
 
+void GUI::YesNoPopup(const std::string title, const std::string message, const std::function<void()> &yesCallback) {
+   if (ImGui::BeginPopupModal(title.c_str())) {
+      ImGui::Text("ARE YOU SURE?\n\n%s", message.c_str());
+      if (ImGui::Button("Yes")) {
+         yesCallback();
+         ImGui::CloseCurrentPopup();
+      }
+      ImGui::SameLine();
+      if (ImGui::Button("No")) {
+         ImGui::CloseCurrentPopup();
+      }
+      ImGui::EndPopup();
+   }
+}
+
+
 void GUI::_3DInputControls() {
    static bool isClicked3 = false;
    if (ImGui::Button("Input Controls")) {
@@ -167,29 +183,45 @@ void GUI::SaveToFile3D(Mesh& mesh) {
    ImGui::Text("\nSave Current Object to .obj\n");
    static char _user_save_path[256] = "";
    ImGui::InputText("Filename", _user_save_path, sizeof(_user_save_path));
+   auto filename = std::string(OUTPUT_FOLDER_PATH) + "/" + _user_save_path + ".obj";
    if (ImGui::Button("Save to .obj")) {
-      ExportToObj(mesh, std::string(OUTPUT_FOLDER_PATH) + "/" + _user_save_path + ".obj");
+      if (std::filesystem::exists(filename)) {
+         // Create pop up to ask if they want to overwrite the file
+         ImGui::OpenPopup("ConfirmOBJOverwrite");
+      } else ExportToObj(mesh, filename);
    }
+
+    YesNoPopup("ConfirmOBJOverwrite", "You already have a file named this, do you want to overwrite it?", [&]() {ExportToObj(mesh, filename);});
 }
 
 /**
  * Renders the save to file options for 2D mode in the ImGui window. (png and ppm)
- * @param map Map to be saved to a file
+ * @param mesh Mesh to be saved to a file
  * @author PK
  */
 void GUI::SaveToFile2D(Mesh& mesh) {
    ImGui::Text("\nSave Current Image");
    static char _user_save_path[256] = "";
    ImGui::InputText("Filename", _user_save_path, sizeof(_user_save_path));
+   std::string filename;
    if (ImGui::Button("Save to .png")) {
-      auto filename = std::string(OUTPUT_FOLDER_PATH) + "/" + _user_save_path + ".png";
-      mesh.exportToPNG(filename);
+      filename = std::string(OUTPUT_FOLDER_PATH) + "/" + _user_save_path + ".png";
+      if (std::filesystem::exists(filename)) {
+         // Create pop up to ask if they want to overwrite the file
+         ImGui::OpenPopup("ConfirmPNGOverwrite");
+      } else mesh.exportToPNG(filename);
    }
    ImGui::SameLine();
    if (ImGui::Button("Save to .ppm")) {
-      auto filename = std::string(OUTPUT_FOLDER_PATH) + "/" + _user_save_path + ".ppm";
-      mesh.exportToPPM(filename);
+      filename = std::string(OUTPUT_FOLDER_PATH) + "/" + _user_save_path + ".ppm";
+      if (std::filesystem::exists(filename)) {
+         // Create pop up to ask if they want to overwrite the file
+         ImGui::OpenPopup("ConfirmPNGOverwrite");
+      } else mesh.exportToPPM(filename);
    }
+
+   YesNoPopup("ConfirmPNGOverwrite", "You already have a file named this, do you want to overwrite it?", [&]() {mesh.exportToPNG(filename);});
+   YesNoPopup("ConfirmPPMOverwrite", "You already have a file named this, do you want to overwrite it?", [&]() {mesh.exportToPPM(filename);});
 }
 
 /**
@@ -270,9 +302,13 @@ void GUI::JSON_IO(Terrain& terrain) {
    ImGui::Text("\nSave Current Settings");
    static char _user_save_path[256] = "";
    ImGui::InputText("JSON Filename", _user_save_path, sizeof(_user_save_path));
-   if (ImGui::Button("Save to json")) {
-      auto filename = std::string(OUTPUT_FOLDER_PATH) + "/" + _user_save_path + ".json";
-      SaveJSON(terrain, filename);
+   auto filename = std::string(OUTPUT_FOLDER_PATH) + "/" + _user_save_path + ".json";
+   if (ImGui::Button("Save to .json")) {
+      // Check file exists
+      if (std::filesystem::exists(filename)) {
+         // Create pop up to ask if they want to overwrite the file
+         ImGui::OpenPopup("ConfirmJSONOverwrite");
+      } else SaveJSON(terrain, filename);
    }
    ImGui::SameLine();
    if (ImGui::Button("Load")) {
@@ -280,24 +316,12 @@ void GUI::JSON_IO(Terrain& terrain) {
       ImGui::OpenPopup("ConfirmJSONLoad");
    }
 
-   if (ImGui::BeginPopupModal("ConfirmJSONLoad")) {
-      ImGui::Text("ARE YOU SURE?\n\nThis will irreversibly overwrite your current settings!");
-      if (ImGui::Button("Yes")) {
-         auto filename = std::string(OUTPUT_FOLDER_PATH) + "/" + _user_save_path + ".json";
-         LoadJSON(terrain, filename);
-         ImGui::CloseCurrentPopup();
-      }
-      ImGui::SameLine();
-      if (ImGui::Button("No")) {
-         ImGui::CloseCurrentPopup();
-      }
-      ImGui::EndPopup();
-   }
+   YesNoPopup("ConfirmJSONLoad", "This will irreversibly overwrite your current settings!", [&]() {LoadJSON(terrain, filename);});
+   YesNoPopup("ConfirmJSONOverwrite", "You already have a file named this, do you want to overwrite it?", [&]() {SaveJSON(terrain, filename);});
 }
 
 /**
  * Renders the user shader parameters in the ImGui window.
- * @param manager ShaderManger object
  * @author SD, PK (extracted method)
  */
 void GUI::UserShaderParameters() {
@@ -405,10 +429,10 @@ void GUI::FPSDisplay() {
 }
 
 /**
- * Renders the full ImGui window for the 3D mode.
- * @param manager ShaderManager object, passed for userShaderParameters()
- * @param mesh Mesh object to be rendered, passed for saveToFile3D()
- * @author SD, PK (extracted method)
+ * Renders the full ImGui window for the 2D mode.
+ * @param terrain Required for getting terrain data to modify/save
+ * @param fps Calculated fps to display
+ * @author SD, PK (extracted method, modifications)
  */
 void GUI::Render3DImGui(Terrain& terrain, float fps) {
    RenderCommonImGui(terrain, fps);
@@ -424,6 +448,8 @@ void GUI::Render3DImGui(Terrain& terrain, float fps) {
 
 /**
  * Renders the full ImGui window for the 2D mode.
+ * @param terrain Required for getting terrain data to modify/save
+ * @param fps Calculated fps to display
  * @author PK, SD
  */
 void GUI::Render2DImGui(Terrain& terrain, float fps) {
