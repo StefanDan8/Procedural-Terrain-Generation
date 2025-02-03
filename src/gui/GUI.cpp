@@ -33,7 +33,7 @@ void GUI::Shutdown() {
 }
 
 //ImGui Elements
-void GUI::RenderCommonImGui(Terrain &terrain, float fps) {
+void GUI::RenderCommonImGui(Terrain& terrain, float fps) {
    uselessIDcounter = 0; // DON'T REMOVE EXTREMELY IMPORTANT ;)
    fpsPrintTimer++;
    fpsAvg += fps;
@@ -63,7 +63,6 @@ void GUI::DisplayMode() {
       switchedShaderRecently = true;
    }
 }
-
 
 void GUI::ShaderDropdown() {
    static unsigned currentItem = 0; // Index of the currently selected item
@@ -168,7 +167,7 @@ void GUI::SaveToFile3D(Mesh& mesh) {
    ImGui::Text("\nSave Current Object to .obj\n");
    static char _user_save_path[256] = "";
    ImGui::InputText("Filename", _user_save_path, sizeof(_user_save_path));
-   if (ImGui::Button("Save")) {
+   if (ImGui::Button("Save to .obj")) {
       ExportToObj(mesh, std::string(OUTPUT_FOLDER_PATH) + "/" + _user_save_path + ".obj");
    }
 }
@@ -198,7 +197,7 @@ void GUI::SaveToFile2D(Mesh& mesh) {
  * @param terrain Required to pull noise and baseline params
  * @param filename Absolute path to the JSON file
  */
-void GUI::SaveJSON(Terrain &terrain, std::string filename) {
+void GUI::SaveJSON(Terrain& terrain, std::string filename) {
    nlohmann::json j;
    j["seed"] = seed;
    j["flattenFactor"] = flattenFactor;
@@ -228,7 +227,7 @@ void GUI::SaveJSON(Terrain &terrain, std::string filename) {
  * @param terrain Required to update noise and baseline params
  * @param filename Absolute path to the JSON file
  */
-void GUI::LoadJSON(Terrain &terrain, std::string filename) {
+void GUI::LoadJSON(Terrain& terrain, std::string filename) {
    std::ifstream file(filename);
    if (!file.is_open()) {
       std::cerr << "Failed to open file: " << filename << std::endl;
@@ -271,7 +270,7 @@ void GUI::JSON_IO(Terrain& terrain) {
    ImGui::Text("\nSave Current Settings");
    static char _user_save_path[256] = "";
    ImGui::InputText("JSON Filename", _user_save_path, sizeof(_user_save_path));
-   if (ImGui::Button("Save")) {
+   if (ImGui::Button("Save to json")) {
       auto filename = std::string(OUTPUT_FOLDER_PATH) + "/" + _user_save_path + ".json";
       SaveJSON(terrain, filename);
    }
@@ -312,7 +311,6 @@ void GUI::UserShaderParameters() {
          ImGui::SameLine();
          ImGui::PushID(uselessIDcounter++);
          if (ImGui::Button("-")) {
-            std::cout << "hi" << std::endl;
             shaderManager.getCurrentShader().userFloatValues[i] -= 0.002f;
          }
          ImGui::SameLine();
@@ -406,7 +404,6 @@ void GUI::FPSDisplay() {
    ImGui::Text("FPS: %1.f", printFps);
 }
 
-
 /**
  * Renders the full ImGui window for the 3D mode.
  * @param manager ShaderManager object, passed for userShaderParameters()
@@ -427,8 +424,6 @@ void GUI::Render3DImGui(Terrain& terrain, float fps) {
 
 /**
  * Renders the full ImGui window for the 2D mode.
- * @param manager ShaderManager object, passed for userShaderParameters()
- * @param map Map object to be rendered, passed for saveToFile2D()
  * @author PK, SD
  */
 void GUI::Render2DImGui(Terrain& terrain, float fps) {
