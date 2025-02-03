@@ -82,7 +82,7 @@ void GUI::SwitchShader(ShaderManager& shaderManager) {
       shaderManager.SwitchShader(currentVertexShader);
    }
 
-   shaderManager.getShader().setUniforms();
+   shaderManager.getCurrentShader().setUniforms();
 }
 
 void GUI::_3DInputControls() {
@@ -187,8 +187,9 @@ void GUI::SaveJSON(Terrain &terrain, std::string filename) {
    j["is3DMode"] = is3DMode;
    j["shader"] = currentVertexShader;
    j["shaderParams"] = nlohmann::json::object();
-   for (auto [name, param] : *shaderManager.getUserShaderParams()) {
-      j["shaderParams"][name] = param;
+
+   for (unsigned i = 0; i < shaderManager.getCurrentShader().userFloatValues.size(); i++) {
+      j["shaderParams"][shaderManager.getCurrentShader().userFloatUniforms[i]] = shaderManager.getCurrentShader().userFloatValues[i];
    }
 
    j["noiseParams"] = nlohmann::json::array();
@@ -222,6 +223,7 @@ void GUI::LoadJSON(Terrain &terrain, std::string filename) {
    seed = j["seed"];
    previousVertexShader = currentVertexShader;
    currentVertexShader = j["shader"];
+   shaderManager.SwitchShader(j["shader"]);
    flattenFactor = j["flattenFactor"];
    is3DMode = j["is3DMode"];
 
@@ -237,10 +239,9 @@ void GUI::LoadJSON(Terrain &terrain, std::string filename) {
       terrain.getBaselineParams()[i].second = baselineParams[i]["weight"];
    }
 
-   // Iterate through the shader parameters
-   for (auto& [key, value] : j["shaderParams"].items()) {
-      auto params = *shaderManager.getUserShaderParams();
-      params[key] = value;
+   Shader* shader = shaderManager.getShader(j["shader"]);
+   for (unsigned i = 0; i < shader->userFloatValues.size(); i++) {
+      shader->userFloatValues[i] = j["shaderParams"][shader->userFloatUniforms[i]];
    }
 }
 
@@ -284,27 +285,27 @@ void GUI::JSON_IO(Terrain& terrain) {
  */
 void GUI::UserShaderParameters() {
    ImGui::Text("User Shader Parameters\n");
-   const auto userParams = *shaderManager.getUserShaderParams();
-   for (auto [param, val] : userParams) {
+   const Shader shader = shaderManager.getCurrentShader();
+   for (unsigned i = 0; i < shader.userFloatValues.size(); i++) {
       ImGui::PushID(uselessIDcounter++);
       ImGui::SetNextItemWidth(90.f);
-      ImGui::SliderFloat("", &val, -1.0f, 1.0f);
+      ImGui::SliderFloat("", &(shaderManager.getCurrentShader().userFloatValues[i]), -1.0f, 1.0f);
       ImGui::PopID();
       ImGui::SameLine();
       ImGui::PushID(uselessIDcounter++);
       if (ImGui::Button("-")) {
          std::cout << "hi" << std::endl;
-         val -= 0.002f;
+         shaderManager.getCurrentShader().userFloatValues[i] -= 0.002f;
       }
       ImGui::SameLine();
       ImGui::PopID();
       ImGui::PushID(uselessIDcounter++);
       if (ImGui::Button("+")) {
-         val += 0.002f;
+         shaderManager.getCurrentShader().userFloatValues[i] += 0.002f;
       }
       ImGui::PopID();
       ImGui::SameLine();
-      ImGui::Text(param.c_str());
+      ImGui::Text(shaderManager.getCurrentShader().userFloatUniforms[i].c_str());
    }
 }
 
@@ -457,7 +458,7 @@ void GUI::DisplayGUI(Terrain& terrain, float elapsedSinceLastFrame) {
       shaderManager.SwitchShader(currentVertexShader);
    }
 
-   shaderManager.getShader().setUniforms();
+   shaderManager.getCurrentShader().setUniforms();
    glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -486,7 +487,7 @@ void GUI::DisplayGUI(Terrain& terrain, float elapsedSinceLastFrame) {
 }
 
 void GUI::DrawTerrain(Terrain& terrain, Camera& camera) {
-   terrain.Draw(shaderManager.getShader(), camera);
+   terrain.Draw(shaderManager.getCurrentShader(), camera);
 }
 
 void GUI::DeleteShaderManager() {

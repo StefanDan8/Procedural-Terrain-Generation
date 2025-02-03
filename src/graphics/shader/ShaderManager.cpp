@@ -6,12 +6,7 @@ ShaderManager::ShaderManager(const std::vector<std::vector<std::string>> &shader
    : shader(nullptr) {
    for (auto &shader: shaders) {
       for (const auto& shaderName: shader) {
-         std::cout << "Initialising shader: " << shaderName << "/" << defaultFrag << std::endl;
          initialisedShaders[shaderName] = Shader(shaderName, defaultFrag);
-         userShaderParams[shaderName] = std::unordered_map<std::string, float>();
-         for (unsigned i = 0; i < initialisedShaders[shaderName].userFloatUniforms.size(); ++i) {
-            userShaderParams[shaderName][initialisedShaders[shaderName].userFloatUniforms[i]] = initialisedShaders[shaderName].userFloatValues[i];
-         }
       }
    }
    shader = &initialisedShaders[shaders[0][0]]; // Default to the first shader
@@ -28,10 +23,10 @@ void ShaderManager::Delete() {
    shader->Delete();
 }
 
-Shader& ShaderManager::getShader() {
+Shader& ShaderManager::getCurrentShader() {
    return *shader;
 }
 
-std::unordered_map<std::string, float>* ShaderManager::getUserShaderParams() {
-   return &userShaderParams[shader->name];
+Shader* ShaderManager::getShader(const std::string& vertexFile) {
+   return &initialisedShaders[vertexFile];
 }
