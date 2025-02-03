@@ -27,15 +27,16 @@ class GUI {
 
    private:
    //ImGui Elements
-   void RenderCommonImGui(Terrain &terrain, float fps);
-   void ShaderDropdown();
+   void RenderCommonImGui(Terrain& terrain, float fps);
+   void ShaderDropdown2D();
+   void ShaderDropdown3D();
    void _3DInputControls();
    void _2DInputControls();
    void SaveToFile3D(Mesh& mesh);
    void SaveToFile2D(Mesh& mesh);
 
-   void SaveJSON(Terrain &terrain, std::string filename);
-   void LoadJSON(Terrain &terrain, std::string filename);
+   void SaveJSON(Terrain& terrain, std::string filename);
+   void LoadJSON(Terrain& terrain, std::string filename);
    void JSON_IO(Terrain& terrain);
 
    void DisplayMode();
@@ -50,7 +51,7 @@ class GUI {
 
    void SwitchShader(ShaderManager& shaderManager);
 
-   void YesNoPopup(const std::string title, const std::string message, const std::function<void()> &yesCallback);
+   void YesNoPopup(const std::string title, const std::string message, const std::function<void()>& yesCallback);
 
    bool guiHovered = false;
    bool is3DMode = false;
@@ -71,6 +72,8 @@ class GUI {
    float printFps = 0.0f;
    float fpsAvg = 0.0f;
    unsigned uselessIDcounter = 0;
+   unsigned currentItem2D = 0;
+   unsigned currentItem3D = 0;
    Window& window;
    ShaderManager shaderManager;
    Fuse fuse;

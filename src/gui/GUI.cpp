@@ -42,7 +42,12 @@ void GUI::RenderCommonImGui(Terrain& terrain, float fps) {
 
    DisplayMode();
    MeshSettings();
-   ShaderDropdown();
+   if (is3DMode) {
+      ShaderDropdown3D();
+   } else {
+      ShaderDropdown2D();
+   }
+
    ImGui::Text("\n");
    UserShaderParameters();
    NoiseLayersGui(terrain, fuse);
@@ -63,19 +68,36 @@ void GUI::DisplayMode() {
       switchedShaderRecently = true;
    }
 }
-
-void GUI::ShaderDropdown() {
-   static unsigned currentItem = 0; // Index of the currently selected item
-
+void GUI::ShaderDropdown2D() {
    ImGui::Text("\nSelect a Shader");
    ImGui::SetNextItemWidth(160.0f);
    // is3DMode is a boolean, which really just means 0 for 2D, 1 for 3D
-   if (ImGui::BeginCombo("##xa", shaders[is3DMode][currentItem].c_str())) {
-      for (unsigned i = 0; i < shaders[is3DMode].size(); i++) {
-         bool isSelected = (currentItem == i);
-         if (ImGui::Selectable(shaders[is3DMode][i].c_str(), isSelected)) {
-            currentItem = i; // Update selected item index
-            currentVertexShader = shaders[is3DMode][i];
+   if (ImGui::BeginCombo("##xa", shaders[0][currentItem2D].c_str())) {
+      for (unsigned i = 0; i < shaders[0].size(); i++) {
+         bool isSelected = (currentItem2D == i);
+         if (ImGui::Selectable(shaders[0][i].c_str(), isSelected)) {
+            currentItem2D = i; // Update selected item index
+            currentVertexShader = shaders[0][i];
+         }
+         // Set the initial focus when opening the combo (scrolling to current item)
+         if (isSelected) {
+            ImGui::SetItemDefaultFocus();
+         }
+      }
+      ImGui::EndCombo();
+   }
+}
+
+void GUI::ShaderDropdown3D() {
+   ImGui::Text("\nSelect a Shader");
+   ImGui::SetNextItemWidth(160.0f);
+   // is3DMode is a boolean, which really just means 0 for 2D, 1 for 3D
+   if (ImGui::BeginCombo("##xa", shaders[1][currentItem3D].c_str())) {
+      for (unsigned i = 0; i < shaders[1].size(); i++) {
+         bool isSelected = (currentItem3D == i);
+         if (ImGui::Selectable(shaders[1][i].c_str(), isSelected)) {
+            currentItem3D = i; // Update selected item index
+            currentVertexShader = shaders[1][i];
          }
          // Set the initial focus when opening the combo (scrolling to current item)
          if (isSelected) {
@@ -89,7 +111,7 @@ void GUI::ShaderDropdown() {
 void GUI::SwitchShader(ShaderManager& shaderManager) {
    if (switchedShaderRecently) {
       switchedShaderRecently = false;
-      currentVertexShader = previousVertexShader = shaders[is3DMode][0];
+      currentVertexShader = previousVertexShader = shaders[is3DMode][is3DMode ? currentItem3D : currentItem2D];
       shaderManager.SwitchShader(currentVertexShader);
    }
 
@@ -102,7 +124,7 @@ void GUI::SwitchShader(ShaderManager& shaderManager) {
    shaderManager.getCurrentShader().setUniforms();
 }
 
-void GUI::YesNoPopup(const std::string title, const std::string message, const std::function<void()> &yesCallback) {
+void GUI::YesNoPopup(const std::string title, const std::string message, const std::function<void()>& yesCallback) {
    if (ImGui::BeginPopupModal(title.c_str())) {
       ImGui::Text("ARE YOU SURE?\n\n%s", message.c_str());
       if (ImGui::Button("Yes")) {
@@ -116,7 +138,6 @@ void GUI::YesNoPopup(const std::string title, const std::string message, const s
       ImGui::EndPopup();
    }
 }
-
 
 void GUI::_3DInputControls() {
    static bool isClicked3 = false;
@@ -188,10 +209,11 @@ void GUI::SaveToFile3D(Mesh& mesh) {
       if (std::filesystem::exists(filename)) {
          // Create pop up to ask if they want to overwrite the file
          ImGui::OpenPopup("ConfirmOBJOverwrite");
-      } else ExportToObj(mesh, filename);
+      } else
+         ExportToObj(mesh, filename);
    }
 
-    YesNoPopup("ConfirmOBJOverwrite", "You already have a file named this, do you want to overwrite it?", [&]() {ExportToObj(mesh, filename);});
+   YesNoPopup("ConfirmOBJOverwrite", "You already have a file named this, do you want to overwrite it?", [&]() { ExportToObj(mesh, filename); });
 }
 
 /**
@@ -209,7 +231,8 @@ void GUI::SaveToFile2D(Mesh& mesh) {
       if (std::filesystem::exists(filename)) {
          // Create pop up to ask if they want to overwrite the file
          ImGui::OpenPopup("ConfirmPNGOverwrite");
-      } else mesh.exportToPNG(filename);
+      } else
+         mesh.exportToPNG(filename);
    }
    ImGui::SameLine();
    if (ImGui::Button("Save to .ppm")) {
@@ -217,11 +240,12 @@ void GUI::SaveToFile2D(Mesh& mesh) {
       if (std::filesystem::exists(filename)) {
          // Create pop up to ask if they want to overwrite the file
          ImGui::OpenPopup("ConfirmPNGOverwrite");
-      } else mesh.exportToPPM(filename);
+      } else
+         mesh.exportToPPM(filename);
    }
 
-   YesNoPopup("ConfirmPNGOverwrite", "You already have a file named this, do you want to overwrite it?", [&]() {mesh.exportToPNG(filename);});
-   YesNoPopup("ConfirmPPMOverwrite", "You already have a file named this, do you want to overwrite it?", [&]() {mesh.exportToPPM(filename);});
+   YesNoPopup("ConfirmPNGOverwrite", "You already have a file named this, do you want to overwrite it?", [&]() { mesh.exportToPNG(filename); });
+   YesNoPopup("ConfirmPPMOverwrite", "You already have a file named this, do you want to overwrite it?", [&]() { mesh.exportToPPM(filename); });
 }
 
 /**
@@ -308,7 +332,8 @@ void GUI::JSON_IO(Terrain& terrain) {
       if (std::filesystem::exists(filename)) {
          // Create pop up to ask if they want to overwrite the file
          ImGui::OpenPopup("ConfirmJSONOverwrite");
-      } else SaveJSON(terrain, filename);
+      } else
+         SaveJSON(terrain, filename);
    }
    ImGui::SameLine();
    if (ImGui::Button("Load")) {
@@ -316,8 +341,8 @@ void GUI::JSON_IO(Terrain& terrain) {
       ImGui::OpenPopup("ConfirmJSONLoad");
    }
 
-   YesNoPopup("ConfirmJSONLoad", "This will irreversibly overwrite your current settings!", [&]() {LoadJSON(terrain, filename);});
-   YesNoPopup("ConfirmJSONOverwrite", "You already have a file named this, do you want to overwrite it?", [&]() {SaveJSON(terrain, filename);});
+   YesNoPopup("ConfirmJSONLoad", "This will irreversibly overwrite your current settings!", [&]() { LoadJSON(terrain, filename); });
+   YesNoPopup("ConfirmJSONOverwrite", "You already have a file named this, do you want to overwrite it?", [&]() { SaveJSON(terrain, filename); });
 }
 
 /**
@@ -473,7 +498,7 @@ void GUI::DisplayGUI(Terrain& terrain, float elapsedSinceLastFrame) {
 
    if (switchedShaderRecently) {
       switchedShaderRecently = false;
-      currentVertexShader = previousVertexShader = shaders[is3DMode][0];
+      currentVertexShader = previousVertexShader = shaders[is3DMode][is3DMode ? currentItem3D : currentItem2D];
       shaderManager.SwitchShader(currentVertexShader);
    }
 
