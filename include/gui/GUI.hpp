@@ -58,7 +58,7 @@ class GUI {
    bool switchedShaderRecently = false;
    const std::vector<std::vector<std::string>> shaders = {
       {"Beach2DShader.vert", "Mono2DShader.vert"}, //2D shaders
-      {"beachShader.vert", "default.vert", "Fjord.vert"} // 3D shaders
+      {"GreenJungle.vert", "default.vert", "Fjord.vert", "Mustafar.vert", "ShadowMovement.vert", "Skye.vert"} // 3D shaders
    };
    std::string previousVertexShader = shaders[is3DMode][0];
    std::string currentVertexShader = previousVertexShader;

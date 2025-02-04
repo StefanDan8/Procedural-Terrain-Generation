@@ -183,7 +183,6 @@ void Terrain::computeMesh(const double flattenFactor) {
       normalizingFactor += layer.getWeight();
    }
    normalizingFactor *= flattenFactor;
-   std::cout << "Normalizing factor: " << normalizingFactor << std::endl;
    auto& noiseMatrix = *noise;
    auto& baselineMatrix = *baseline;
    unsigned numX = noiseMatrix.size() - 1;
@@ -198,7 +197,7 @@ void Terrain::computeMesh(const double flattenFactor) {
    for (unsigned j = 0; j <= numY; ++j) {
       for (unsigned i = 0; i <= numX; ++i) {
          const double yValue = std::max(baselineMatrix[i][j], noiseMatrix[i][j]) / normalizingFactor;
-         //std::cout << yValue << std::endl;
+
          glm::vec3 coordinates = glm::vec3(i * invNumX - 0.5f, yValue, j * invNumY - 0.5f);
          glm::vec3 normal = glm::vec3(0.0f);
          glm::vec2 texCoordinates = glm::vec2(i * invNumX, j * invNumY);

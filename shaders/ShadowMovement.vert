@@ -10,11 +10,13 @@ out vec3 color;
 out vec2 texCoord;
 
 uniform mat4 camMatrix;
+//--Uniforms for user
+uniform float edgeThreshold; // 0.1
+uniform float intensity; // 0.4 
 
 void main() {
-    vec3 meshColor = vec3(0.4, 0.4, 0.4); 
+    vec3 meshColor = vec3(intensity); 
     vec3 edgeColor = vec3(0.0, 0.0, 0.0); 
-    float edgeThreshold = 0.1; 
 
     Normal = aNormal;
     texCoord = aTexture;

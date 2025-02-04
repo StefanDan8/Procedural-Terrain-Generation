@@ -53,7 +53,6 @@ void PerlinLayer::fillChunk(const std::vector<vec2d>& gradients, const unsigned 
 }
 
 void PerlinLayer::fill(const std::vector<vec2d>& gradients) {
-   std::cout << "Fill called on a layer with dimensions " << sizeX << " x " << sizeY << " and chunk size " << chunkSize;
    const unsigned numChunksX = std::ceil(((double) sizeX) / chunkSize);
    const unsigned numChunksY = std::ceil(((double) sizeY) / chunkSize);
 
@@ -70,7 +69,6 @@ void PerlinLayer::fill(const std::vector<vec2d>& gradients) {
    // Measuring time
    auto end = std::chrono::high_resolution_clock::now();
    std::chrono::duration<double> elapsed = end - start;
-   std::cout << ", duration: " << elapsed.count() << " seconds" << std::endl;
 }
 
 void PerlinLayer::changeWeight(const double newWeight) {
@@ -83,8 +81,6 @@ void PerlinLayer::changeChunkSize(const std::vector<vec2d>& gradients, const uns
 }
 
 void PerlinLayer::accumulate(matrix& accumulator, const double weightFactor) {
-   std::cout << "Accumulate called with weight " << weightFactor;
-
    // Ensure accumulator and result have the same dimensions
    if (accumulator.empty() || accumulator.size() != result.size() || accumulator[0].size() != result[0].size()) {
       throw std::runtime_error("Dimension mismatch between accumulator and result.");
@@ -110,7 +106,6 @@ void PerlinLayer::accumulate(matrix& accumulator, const double weightFactor) {
    // measuring the time
    auto end = std::chrono::high_resolution_clock::now();
    std::chrono::duration<double> elapsed = end - start;
-   std::cout << ", duration: " << elapsed.count() << " seconds" << std::endl;
 }
 
 } // namespace perlin
