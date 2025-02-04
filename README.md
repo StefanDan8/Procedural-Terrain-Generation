@@ -8,29 +8,28 @@ Team members:
 
 The project being 'Procedural Terrain Generation with Perlin Noise' described in https://gitlab.lrz.de/tum-i05/public/advprog-project-ideas/-/blob/master/procedural-terrain-generation/perlin-noise-procedural-terrain-generation.md?ref_type=heads
 
-## Note for reviewers of Sprint 2
+## Note on external packages
 
-In this sprint we have added a graphical user interface (GUI) and rendering with OpenGL. Therefore, the project uses a handful of external libraries, which we have taken from the internet, without modifying any of them. These libraries are located in the `graphicsExternal` folder. They are
+In **Sprint 2** we added a graphical user interface (GUI) and rendering with OpenGL. Therefore, the project uses a handful of external libraries, which we have taken from the internet, without modifying any of them. These libraries are located in the `graphicsExternal` folder. They are
 
 - `glad` https://glad.dav1d.de/
 - `glfw-3.4` https://www.glfw.org/
 - `glm` https://www.opengl.org/sdk/libs/GLM/
 - `imgui` https://github.com/ocornut/imgui
 
-To these libraries, we add `lodepng`, https://lodev.org/lodepng/, located in `include/lodepng`, which we have been using since Sprint 1.
-Additionally, we use `nlohmann::json`, found at https://github.com/nlohmann/json, and located in `include/json`. This has only been used in Sprint 3 for the saving and loading of settings using JSON files.
+To these libraries, we add `lodepng`, https://lodev.org/lodepng/, located in `include/lodepng`, which we have been using since **Sprint 1**.
+Additionally, we use `nlohmann::json`, found at https://github.com/nlohmann/json, and located in `include/json`. This has only been used in **Sprint 3** for the saving and loading of settings using JSON files.
 
 We express our gratitude to the authors of these libraries for creating, maintaining and making them available to the public. 
 
 All other files in this project are our own, with the mention that the architecture of the rendering engine follows the great OpenGL tutorial of Victor Gordan https://github.com/VictorGordan/opengl-tutorials (classes `EBO`, `VAO`, `VBO` are very close to the original, while classes `Camera` and `ShaderClass` have been substantially adjusted to fit our needs).
 
-## Clone Sprint 2
+## Clone Sprint 3
 
 ```
 git clone https://gitlab.lrz.de/advprog2024/group-44.git
 cd group-44
-git checkout sprint2
-
+git checkout sprint3
 ```
 
 ## Build
@@ -46,12 +45,12 @@ cd build/release
 cmake -DCMAKE_BUILD_TYPE=Release ../..
 make
 ```
-This creates the binary `playground`, which corresponds to second sprint.
+This creates the binary `playground`, which is the output executable for the third sprint.
 Run with 
 ```
 ./playground
 ```
-from inside the release directory.
+from inside the release directory (which is *build/release*).
 
 If you're using Windows as OS try instead (assuming you use MinGW for C++):
 
@@ -67,7 +66,28 @@ To run the program execute
 start playground.exe
 ```
 
-We are sorry, but we do not support MacOS.
+Alternatively you can also compile the program with the following commands, starting in the project directory (works both on Linux and Windows):
+
+```
+cmake -S . -B build\release -D CMAKE_BUILD_TYPE=Release
+cmake --build build\release 
+```
+
+To run the executable type
+
+```
+./build/release/playground
+```
+
+on Linux or
+
+```
+.\build\release\playground.exe
+```
+
+on Windows.
+
+We are sorry, but we do not directly support MacOS.
 
 The C++ code is indeed platform independent, but the `CMakeLists.txt` may need to be adjusted, as well as the build steps.
 
