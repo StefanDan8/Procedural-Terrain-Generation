@@ -18,6 +18,8 @@ In this sprint we have added a graphical user interface (GUI) and rendering with
 - `imgui` https://github.com/ocornut/imgui
 
 To these libraries, we add `lodepng`, https://lodev.org/lodepng/, located in `include/lodepng`, which we have been using since Sprint 1.
+Additionally, we use `nlohmann::json`, found at https://github.com/nlohmann/json, and located in `include/json`. This has only been used in Sprint 3 for the saving and loading of settings using JSON files.
+
 We express our gratitude to the authors of these libraries for creating, maintaining and making them available to the public. 
 
 All other files in this project are our own, with the mention that the architecture of the rendering engine follows the great OpenGL tutorial of Victor Gordan https://github.com/VictorGordan/opengl-tutorials (classes `EBO`, `VAO`, `VBO` are very close to the original, while classes `Camera` and `ShaderClass` have been substantially adjusted to fit our needs).
