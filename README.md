@@ -47,10 +47,10 @@ cd build/release
 cmake -DCMAKE_BUILD_TYPE=Release ../..
 make
 ```
-This creates the binary `playground`, which is the output executable for the third sprint.
+This creates the binary `terrainGenerator`, which is the output executable for the third sprint.
 Run with 
 ```
-./playground
+./terrainGenerator
 ```
 from inside the release directory (which is *build/release*).
 
@@ -65,7 +65,7 @@ mingw32-make
 
 To run the program execute
 ```
-start playground.exe
+start terrainGenerator.exe
 ```
 
 Alternatively you can also compile the program with the following commands, starting in the project directory (works both on Linux and Windows):
@@ -78,13 +78,13 @@ cmake --build build\release
 To run the executable type on Linux:
 
 ```
-./build/release/playground
+./build/release/terrainGenerator
 ```
 
 or on Windows:
 
 ```
-.\build\release\playground.exe
+.\build\release\terrainGenerator.exe
 ```
 
 We are sorry, but we do not directly support MacOS.
