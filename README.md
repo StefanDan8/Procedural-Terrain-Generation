@@ -1,4 +1,6 @@
-# Group 44
+# Group 44 - Procedural Noise Generation
+
+![Preview](readmeImages/Preview.png){ width=800px }
 
 Team members:
 
@@ -73,19 +75,17 @@ cmake -S . -B build\release -D CMAKE_BUILD_TYPE=Release
 cmake --build build\release 
 ```
 
-To run the executable type
+To run the executable type on Linux:
 
 ```
 ./build/release/playground
 ```
 
-on Linux or
+or on Windows:
 
 ```
 .\build\release\playground.exe
 ```
-
-on Windows.
 
 We are sorry, but we do not directly support MacOS.
 
@@ -95,18 +95,16 @@ The C++ code is indeed platform independent, but the `CMakeLists.txt` may need t
 
 The application has two operating modes: 2D and 3D.
 The application starts in 2D mode and the user can switch at anytime between the two modes by clicking the corresponding button at the top of the GUI.
-Depending on the resolution of the screen of the user, the GUI might be partially cropped at launch. This is a known issue which we will address in Sprint 3.
-Using the program in full screen mode should fix any such issues.
+Depending on the resolution of the screen, the GUI might be too small to comfortably visualise both the GUI and the render, in which case, please enlarge the program window.
 
-![Example 2D](readmeImages/_2DWindow.png){ width=300px }
-![Example 3D](readmeImages/_3DWindow.png){ width=300px }
+![Example 2D](readmeImages/_2DWindow.png){ width=450px }
+![Example 3D](readmeImages/_3DWindow.png){ width=450px }
 
-The left 1/3 of the window is reserved for the GUI, while the right 2/3 is reserved for rendering. 
+The top left of the window is reserved for the GUI, while the rest of the window is reserved for viewing and moving around the render. 
 
 ### Description of the GUI
 
 - Two buttons at the top, `2D` and `3D` for switching between modes.
-- A list of sliders for adjusting uniforms (see https://www.khronos.org/opengl/wiki/Uniform_(GLSL)) of the used shader (if any). The names are the exact variable names in the shader source file. These are parsed from the source file and any uniform which is designed to be configurable by the user has to be defined in a certain pattern.
 - Seed: this changes the seed from which the Perlin Noise was generated. There is a 30 frame delay after modifying before recomputing the noise.
 - Flatten factor: The values of the noise are divided by this factor. Default is 2.0, which empirically generates more realistic terrain. Here is an example for values 1.0, 2.0 and 3.0 respectively
 
@@ -114,7 +112,11 @@ The left 1/3 of the window is reserved for the GUI, while the right 2/3 is reser
 ![Example flatten 2](readmeImages/flatten2.png){ width=250px }
 ![Example flatten 3](readmeImages/flatten3.png){ width=250px }
 
-- Shader dropdown: user can select with which (vertex) shader to render. These are located in the `shaders` folder and are written in GLSL (OpenGL's shader language), which is very similar to C++. 
+- Shader dropdown: user can select with which (vertex) shader to render. These are located in the `shaders` folder and are written in GLSL (OpenGL's shader language), which is very similar to C++.
+- There is also a lot of customisation possible with the shaders and rendering, by default these are collapsed to save space:
+  - A list of sliders for adjusting uniforms (see https://www.khronos.org/opengl/wiki/Uniform_(GLSL)) of the used shader (if any). The names are the exact variable names in the shader source file. These are parsed from the source file and any uniform which is designed to be configurable by the user has to be defined in a certain pattern. 
+  - A list of sliders for adjusting chunk size and weight, which modifies the size of the various chunks. Feel free to experiment with these sliders.
+- Save Settings: the user can save their current settings to a JSON file, which can then be reloaded on subsequent usage, just write the name of the file to which the settings will be saved. The destination is the `output` folder. Note that only the settings are saved, not the perlin noise itself.
 - Save text field and buttons: the user has to write the name of the file to which the perlin noise will be saved. The destination is the `output` folder. Note that only raw object is saved i.e. without any shader effects, in particular colors. 
 - A list of keyboard and mouse events to control the rendering panel.
 
@@ -126,7 +128,8 @@ For the 2D mode:
 
 - The user can move the image --- (W,A,S,D) keys or mouse click and drag
 - The user can zoom in and out through mouse scroll wheel or mousepad. Example -- zoomed patch of the first image:
-![Example zoom](readmeImages/adjustCamera2D.png){ width=300px }
+
+![Example zoom](readmeImages/adjustCamera2D.png){ width=500px }
 
 For the 3D mode:
 
@@ -135,4 +138,5 @@ The object is in the middle of the scene.
 - The user can move the camera (!) --- (W,A,S,D) keys or mouse click and drag
 - The user can zoom in and out through mouse scroll wheel or mousepad. 
 - The user can rotate the object along the X (pitch) and Y (yaw) axes. Example after zoom and rotate, for observing details of the object in the second image:
-![Example zoom 3D](readmeImages/adjustCamera3D.png){ width=300px}
+
+![Example zoom 3D](readmeImages/adjustCamera3D.png){ width=500px}
