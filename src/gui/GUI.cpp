@@ -139,6 +139,18 @@ void GUI::YesNoPopup(const std::string title, const std::string message, const s
    }
 }
 
+void GUI::OkPopup(const std::string title, const std::string message, const std::function<void()> &okCallback) {
+   if (ImGui::BeginPopupModal(title.c_str())) {
+      ImGui::Text(message.c_str());
+      if (ImGui::Button("Ok")) {
+         okCallback();
+         ImGui::CloseCurrentPopup();
+      }
+      ImGui::EndPopup();
+   }
+}
+
+
 void GUI::_3DInputControls() {
    static bool isClicked3 = false;
    if (ImGui::Button("Input Controls")) {
@@ -209,11 +221,16 @@ void GUI::SaveToFile3D(Mesh& mesh) {
       if (std::filesystem::exists(filename)) {
          // Create pop up to ask if they want to overwrite the file
          ImGui::OpenPopup("ConfirmOBJOverwrite");
-      } else
+      } else {
          ExportToObj(mesh, filename);
+         operationCompleted = true;
+      }
    }
 
-   YesNoPopup("ConfirmOBJOverwrite", "You already have a file named this, do you want to overwrite it?", [&]() { ExportToObj(mesh, filename); });
+   YesNoPopup("ConfirmOBJOverwrite", "You already have a file named this, do you want to overwrite it?", [&]() {
+      ExportToObj(mesh, filename);
+      operationCompleted = true;
+   });
 }
 
 /**
@@ -231,21 +248,32 @@ void GUI::SaveToFile2D(Mesh& mesh) {
       if (std::filesystem::exists(filename)) {
          // Create pop up to ask if they want to overwrite the file
          ImGui::OpenPopup("ConfirmPNGOverwrite");
-      } else
+      } else {
          mesh.exportToPNG(filename);
+         operationCompleted = true;
+      }
    }
    ImGui::SameLine();
    if (ImGui::Button("Save to .ppm")) {
       filename = std::string(OUTPUT_FOLDER_PATH) + "/" + _user_save_path + ".ppm";
       if (std::filesystem::exists(filename)) {
          // Create pop up to ask if they want to overwrite the file
-         ImGui::OpenPopup("ConfirmPNGOverwrite");
-      } else
+         ImGui::OpenPopup("ConfirmPPMOverwrite");
+      } else {
          mesh.exportToPPM(filename);
+         operationCompleted = true;
+      }
    }
 
-   YesNoPopup("ConfirmPNGOverwrite", "You already have a file named this, do you want to overwrite it?", [&]() { mesh.exportToPNG(filename); });
-   YesNoPopup("ConfirmPPMOverwrite", "You already have a file named this, do you want to overwrite it?", [&]() { mesh.exportToPPM(filename); });
+   YesNoPopup("ConfirmPNGOverwrite", "You already have a file named this, do you want to overwrite it?", [&]() {
+      mesh.exportToPNG(filename);
+      operationCompleted = true;
+   });
+
+   YesNoPopup("ConfirmPPMOverwrite", "You already have a file named this, do you want to overwrite it?", [&]() {
+      mesh.exportToPPM(filename);
+      operationCompleted = true;
+   });
 }
 
 /**
@@ -332,8 +360,10 @@ void GUI::JSON_IO(Terrain& terrain) {
       if (std::filesystem::exists(filename)) {
          // Create pop up to ask if they want to overwrite the file
          ImGui::OpenPopup("ConfirmJSONOverwrite");
-      } else
+      } else {
          SaveJSON(terrain, filename);
+         operationCompleted = true;
+      }
    }
    ImGui::SameLine();
    if (ImGui::Button("Load")) {
@@ -341,8 +371,14 @@ void GUI::JSON_IO(Terrain& terrain) {
       ImGui::OpenPopup("ConfirmJSONLoad");
    }
 
-   YesNoPopup("ConfirmJSONLoad", "This will irreversibly overwrite your current settings!", [&]() { LoadJSON(terrain, filename); });
-   YesNoPopup("ConfirmJSONOverwrite", "You already have a file named this, do you want to overwrite it?", [&]() { SaveJSON(terrain, filename); });
+   YesNoPopup("ConfirmJSONLoad", "This will irreversibly overwrite your current settings!", [&]() {
+      LoadJSON(terrain, filename);
+      operationCompleted = true;
+   });
+   YesNoPopup("ConfirmJSONOverwrite", "You already have a file named this, do you want to overwrite it?", [&]() {
+      SaveJSON(terrain, filename);
+      operationCompleted = true;
+   });
 }
 
 /**
@@ -495,6 +531,12 @@ void GUI::DisplayGUI(Terrain& terrain, float elapsedSinceLastFrame) {
    } else {
       Render2DImGui(terrain, 1.0f / elapsedSinceLastFrame);
    }
+
+   if (operationCompleted) {
+      ImGui::OpenPopup("SuccessfulOperation");
+      operationCompleted = false;
+   }
+   OkPopup("SuccessfulOperation", "The operation was completed successfully!", []() {});
 
    if (switchedShaderRecently) {
       switchedShaderRecently = false;

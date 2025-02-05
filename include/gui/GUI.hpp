@@ -52,7 +52,9 @@ class GUI {
    void SwitchShader(ShaderManager& shaderManager);
 
    void YesNoPopup(const std::string title, const std::string message, const std::function<void()>& yesCallback);
+   void OkPopup(const std::string title, const std::string message, const std::function<void()>& okCallback);
 
+   bool operationCompleted = false; // For "completed successfully" popups.
    bool guiHovered = false;
    bool is3DMode = false;
    bool switchedShaderRecently = false;
