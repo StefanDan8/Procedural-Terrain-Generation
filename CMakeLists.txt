@@ -119,9 +119,9 @@ target_link_libraries(gui terrain)
 
 # ----- Playground -----
 # the main executable
-add_executable(playground src/playground.cpp )
-target_include_directories(playground PRIVATE graphicsExternal.glfw-3.4/include graphicsExternal/glad/include graphicsExternal/imgui/include graphicsExternal/imgui/include/backends)
-target_link_libraries(playground perlin gui)
+add_executable(terrainGenerator src/main.cpp)
+target_include_directories(terrainGenerator PRIVATE graphicsExternal.glfw-3.4/include graphicsExternal/glad/include graphicsExternal/imgui/include graphicsExternal/imgui/include/backends)
+target_link_libraries(terrainGenerator perlin gui)
 
 
 
