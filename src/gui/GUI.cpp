@@ -242,36 +242,34 @@ void GUI::SaveToFile2D(Mesh& mesh) {
    ImGui::Text("\nSave Current Image");
    static char _user_save_path[256] = "";
    ImGui::InputText("Filename", _user_save_path, sizeof(_user_save_path));
-   std::string filename;
+   std::string filename = std::string(OUTPUT_FOLDER_PATH) + "/" + _user_save_path;
    if (ImGui::Button("Save to .png")) {
-      filename = std::string(OUTPUT_FOLDER_PATH) + "/" + _user_save_path + ".png";
-      if (std::filesystem::exists(filename)) {
+      if (std::filesystem::exists(filename + ".png")) {
          // Create pop up to ask if they want to overwrite the file
          ImGui::OpenPopup("ConfirmPNGOverwrite");
       } else {
-         mesh.exportToPNG(filename);
+         mesh.exportToPNG(filename + ".png");
          operationCompleted = true;
       }
    }
    ImGui::SameLine();
    if (ImGui::Button("Save to .ppm")) {
-      filename = std::string(OUTPUT_FOLDER_PATH) + "/" + _user_save_path + ".ppm";
-      if (std::filesystem::exists(filename)) {
+      if (std::filesystem::exists(filename + ".ppm")) {
          // Create pop up to ask if they want to overwrite the file
          ImGui::OpenPopup("ConfirmPPMOverwrite");
       } else {
-         mesh.exportToPPM(filename);
+         mesh.exportToPPM(filename + ".ppm");
          operationCompleted = true;
       }
    }
 
    YesNoPopup("ConfirmPNGOverwrite", "You already have a file named this, do you want to overwrite it?", [&]() {
-      mesh.exportToPNG(filename);
+      mesh.exportToPNG(filename + ".png");
       operationCompleted = true;
    });
 
    YesNoPopup("ConfirmPPMOverwrite", "You already have a file named this, do you want to overwrite it?", [&]() {
-      mesh.exportToPPM(filename);
+      mesh.exportToPPM(filename + ".ppm");
       operationCompleted = true;
    });
 }
@@ -302,7 +300,7 @@ void GUI::SaveJSON(Terrain& terrain, std::string filename) {
       j["baselineParams"].push_back({{"chunkSize", layerParam.first}, {"weight", layerParam.second}});
    }
 
-   std::ofstream file(filename);
+   std::ofstream file(filename, std::ios::trunc);
    file << j.dump();
 }
 

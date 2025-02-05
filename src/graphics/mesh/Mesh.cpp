@@ -203,7 +203,7 @@ void Mesh::exportToPNG(const std::string& filename) const {
 
 void Mesh::exportToPPM(const std::string& filename) const {
    // Open stream to file
-   std::ofstream file(filename);
+   std::ofstream file(filename, std::ios::trunc);
    if (!file.is_open()) {
       throw std::runtime_error("Could not open file");
    }
