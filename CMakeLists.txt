@@ -1,15 +1,17 @@
+# --- Reqirements ---
 cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-#project(group44 C CXX)
 project(group44 C CXX)
 
+# --- Options ---
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build." FORCE)
 endif()
 
+# --- Compiler flags ---
 if(WIN32)
     if(MSVC)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4 /permissive- /Zc:__cplusplus")
@@ -22,13 +24,14 @@ else()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -Wall -Wextra -fno-omit-frame-pointer -march=native -Wno-unknown-pragmas")
     set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 endif()
-#include(lib/gtest.cmake)
 
+# --- Dependencies ---
 add_compile_definitions(SHADER_ROOT="${CMAKE_SOURCE_DIR}/shaders")
 add_compile_definitions(OUTPUT_FOLDER_PATH="${CMAKE_SOURCE_DIR}/output")
+add_compile_definitions(GUI_IDENTIFIER="Controls")
 
 
-### Graphics External
+# --- Graphics External
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/graphicsExternal)
 
 add_subdirectory(graphicsExternal/glfw-3.4)
@@ -42,61 +45,83 @@ add_library(imgui graphicsExternal/imgui/src/imgui.cpp
                 graphicsExternal/imgui/src/backends/imgui_impl_glfw.cpp 
                 graphicsExternal/imgui/src/backends/imgui_impl_opengl3.cpp
                 )
+
 target_include_directories(imgui PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/graphicsExternal/imgui/include/
                                         ${CMAKE_CURRENT_SOURCE_DIR}/graphicsExternal/imgui/include/backends)
 
-
 target_link_libraries(imgui glad glfw)
 
-add_library(perlin src/PerlinOOP.cpp src/AppConfig.cpp)
+# --- Perlin Library
+add_library(perlin src/PerlinUtils.cpp src/AppConfig.cpp)
 target_include_directories(perlin PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
         PRIVATE src)
 
-add_library(render src/Renderer.cpp)
-target_include_directories(render PUBLIC
-$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-$<INSTALL_INTERFACE:include>
-PRIVATE src)
+# --- Shader Library
+add_library(shader src/graphics/shader/ShaderClass.cpp 
+                   src/graphics/shader/ShaderManager.cpp
+            )
+target_include_directories(shader PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/graphics/shader)
+target_link_libraries(shader glad)
 
-add_library(gui src/UserInterface.cpp)
-target_include_directories(gui PUBLIC
-$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-$<INSTALL_INTERFACE:include>
-PRIVATE src)
+# --- Window Library
+add_library(window src/gui/Window.cpp)
+target_include_directories(window PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/gui)
+target_link_libraries(window imgui)
 
+# --- Camera Library
+add_library(camera src/graphics/camera/Camera.cpp 
+                   src/graphics/camera/Camera2D.cpp 
+                   src/graphics/camera/Camera3D.cpp
+            )
+target_include_directories(camera PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/graphics/camera)
+target_link_libraries(camera shader window)
+
+# --- Lodepng Library
 add_library(lodepng include/lodepng/lodepng.cpp)
 target_include_directories(lodepng PUBLIC
 $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 $<INSTALL_INTERFACE:include>
-PRIVATE include/lodepng)
+PUBLIC include/lodepng)
 
-add_library(shaders src/graphics/ShaderClass.cpp
-                    src/graphics/EBO.cpp 
-                    src/graphics/VAO.cpp 
-                    src/graphics/VBO.cpp 
-                    src/graphics/Camera.cpp
-                    src/graphics/Mesh.cpp
-                    src/graphics/Map.cpp
-                    src/graphics/ShaderManager.cpp
-                    src/graphics/Camera2D.cpp
-                    src/graphics/Camera3D.cpp)
-target_include_directories(shaders PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/graphics)
-target_link_libraries(shaders glad)
+# --- Json Library
+add_library(json INTERFACE)
+target_include_directories(json INTERFACE
+$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+$<INSTALL_INTERFACE:include>
+${CMAKE_CURRENT_SOURCE_DIR}/include/json)
 
-# ### Tests
-# add_executable(test_all test/testSprint1.cpp)
-# target_link_libraries(test_all perlin gtest gtest_main pthread)
+# --- Mesh Library
+add_library(mesh src/graphics/mesh/VAO.cpp
+                 src/graphics/mesh/EBO.cpp    
+                 src/graphics/mesh/VBO.cpp 
+                 src/graphics/mesh/Mesh.cpp
+                )
+target_include_directories(mesh PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/graphics/mesh)
+target_link_libraries(mesh camera lodepng json)
 
-# ### Main
-# add_executable(main src/main.cpp)
-# target_link_libraries(main perlin render gui lodepng)
+# --- Terrain Library
+add_library(terrain src/Terrain3D.cpp 
+                    src/Terrain.cpp 
+                    src/PerlinUtils.cpp
+                    src/PerlinLayer.cpp 
+                    src/PerlinNoise.cpp 
+                    src/Fuse.cpp)
+target_include_directories(terrain PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_link_libraries(terrain mesh)
 
-### Playground
-add_executable(playground src/playground.cpp)
-target_include_directories(playground PRIVATE graphicsExternal.glfw-3.4/include graphicsExternal/glad/include graphicsExternal/imgui/include graphicsExternal/imgui/include/backends)
-target_link_libraries(playground perlin render lodepng glfw glad imgui shaders)
+# --- GUI Library
+add_library(gui src/gui/GUI.cpp)
+target_include_directories(gui PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/gui)
+target_link_libraries(gui terrain)
+
+
+# ----- Playground -----
+# the main executable
+add_executable(terrainGenerator src/main.cpp)
+target_include_directories(terrainGenerator PRIVATE graphicsExternal.glfw-3.4/include graphicsExternal/glad/include graphicsExternal/imgui/include graphicsExternal/imgui/include/backends)
+target_link_libraries(terrainGenerator perlin gui)
 
 
 

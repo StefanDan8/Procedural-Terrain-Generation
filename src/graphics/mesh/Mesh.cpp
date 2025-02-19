@@ -1,8 +1,47 @@
 #include "Mesh.hpp"
 
+#include <filesystem>
+
 Mesh::Mesh(std::vector<Vertex>& vertices, std::vector<GLuint>& indices) {
    Mesh::vertices = vertices;
    Mesh::indices = indices;
+
+   // Calculate size of the mesh by counting the vertices on the x axis, assuming the mesh is a rectangle and the vertices are ordered in a grid.
+   sizeX = 0;
+   float loopBackValue = vertices[0].position.z;
+
+   for (Vertex vtx : vertices) {
+      if (vtx.position.z == loopBackValue)
+         sizeX++;
+      else
+         break;
+   }
+
+   sizeY = vertices.size() / sizeX;
+
+   // Compute normals per face
+   for (size_t i = 0; i < indices.size(); i += 3) {
+      GLuint i0 = indices[i];
+      GLuint i1 = indices[i + 1];
+      GLuint i2 = indices[i + 2];
+
+      glm::vec3 v0 = vertices[i0].position;
+      glm::vec3 v1 = vertices[i1].position;
+      glm::vec3 v2 = vertices[i2].position;
+
+      // Compute the face normal
+      glm::vec3 normal = glm::normalize(glm::cross(v1 - v0, v2 - v0));
+
+      // Add the face normal to each vertex normal
+      vertices[i0].normal += normal;
+      vertices[i1].normal += normal;
+      vertices[i2].normal += normal;
+   }
+
+   // Normalize the vertex normals
+   for (auto& vertex : vertices) {
+      vertex.normal = glm::normalize(-vertex.normal);
+   }
 
    myVAO.Bind();
    VBO VBO(vertices);
@@ -18,13 +57,15 @@ Mesh::Mesh(std::vector<Vertex>& vertices, std::vector<GLuint>& indices) {
    EBO.Unbind();
 }
 
-Mesh::Mesh(std::vector<std::vector<double>>& matrix) {
+Mesh::Mesh(const std::vector<std::vector<double>>& matrix) {
+   // Saving the size of the matrix is easy here.
+   sizeX = matrix.size();
+   sizeY = matrix[0].size();
+
    unsigned numX = matrix.size() - 1;
    unsigned numY = matrix[0].size() - 1;
    unsigned numVertices = (numX + 1) * (numY + 1);
    unsigned numFaces = numX * numY;
-   // Mesh::vertices.resize(numVertices);
-   // Mesh::indices.resize(numFaces * 4);
    std::vector<Vertex> _vertices(numVertices);
    std::vector<GLuint> _indices(numFaces * 6);
    float invNumX = 1.0f / numX;
@@ -132,4 +173,52 @@ void ExportToObj(const Mesh& mesh, const std::string& filename) {
 
    file.close();
    std::cout << "Mesh exported to " << filename << " successfully." << std::endl;
+}
+
+void Mesh::exportToPNG(const std::string& filename) const {
+   std::vector<unsigned char> image; // Create image vector to store "pixels"
+   image.resize(sizeX * sizeY * 4);
+
+   for (unsigned x = 0; x < sizeX; x++) {
+      for (unsigned y = 0; y < sizeY; y++) {
+         unsigned index = 4 * sizeX * y + 4 * x;
+         int value = (255 * vertices[y * sizeX + x].position.y);
+         value = (value < 0) ? 0 : value;
+         image[index] = (unsigned char) value;
+         image[index + 1] = (unsigned char) value;
+         image[index + 2] = (unsigned char) value;
+         image[index + 3] = 255;
+      }
+   }
+
+   std::vector<unsigned char> png;
+
+   // Write image to file
+   unsigned error = lodepng::encode(png, image, sizeX, sizeY);
+   if (!error) lodepng::save_file(png, filename);
+
+   //if there's an error, display it
+   if (error) std::cout << "encoder error " << error << ": " << lodepng_error_text(error) << std::endl;
+}
+
+void Mesh::exportToPPM(const std::string& filename) const {
+   // Open stream to file
+   std::ofstream file(filename, std::ios::trunc);
+   if (!file.is_open()) {
+      throw std::runtime_error("Could not open file");
+   }
+
+   // Write file header
+   file << "P3 " << sizeX << " " << sizeY << " 255\n";
+
+   // Write file content
+   for (unsigned x = 0; x < sizeX; x++) {
+      for (unsigned y = 0; y < sizeY; y++) {
+         int value = (255 * vertices[y * sizeX + x].position.y);
+         value = (value < 0) ? 0 : value;
+         file << value << " " << value << " " << value << " ";
+      }
+   }
+
+   file.close();
 }

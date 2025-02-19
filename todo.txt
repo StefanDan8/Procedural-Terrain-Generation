@@ -70,3 +70,33 @@ Note: for terrain generation, the 2D noise is needed. the noise value acts as he
 Note: we need to seed everything that can be random. Both for reproductibility, but also for allowing the user
 to generate different values.
 
+
+************************************************************
+* 						sprint 3						   *
+************************************************************
+-- Stefan
+
+I want to be able to modify layers at runtime and to recompute the mesh. 
+Also, playground.cpp is pretty crowded with both UI and computational stuff.
+For handling the computational stuff I want to have a unified object, which I call Terrain.
+I will move most of the UI components to another file as well and maybe put all parameters which 
+need to be shared between UI elements inside a new class/struct or inside AppConfig.
+
+I made slight changes to some functions in PerlinOOP, just to accept const reference.
+
+When one changes a layer, one should only subtract the previous value from the result matrix
+and then add the new layer to the result matrix (this should spare some operations), but I need to see how
+this should work given the filters. 
+
+So a bit of framework work is needed for having all this functionality for Terrain and to make everything flexible
+and efficient. 
+I will probably try different stuff in the weekend.
+
+-- Dominik
+I would like to rewrite some functions, especially from PerlinLayer and PerlinOOP so that they use some more STL functionalities, like the for_each or accumulate functions. Can also try to incorporate std::execution::par parallel execution for them.
+
+Write unit tests to test whether the functions work the same and how much they improve performance.
+
+Rewrite some Perlin scripts so that they are arranged better
+
+Improve documentation.

@@ -1,9 +1,10 @@
 #ifndef _APP_CONFIG
 #define _APP_CONFIG
 
-#include <memory>
-#include <random>
 #include <stdexcept>
+#include <random>
+#include <memory>
+
 namespace perlin {
 
 /// @author SD

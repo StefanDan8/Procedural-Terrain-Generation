@@ -10,16 +10,26 @@ out vec3 color;
 out vec2 texCoord;
 
 uniform mat4 camMatrix;
+//--Uniforms for user
+uniform float edgeThreshold; // 0.1
+uniform float intensity; // 0.4 
 
 void main() {
-    vec3 meshColor = vec3(0.4, 0.4, 0.4); 
+    vec3 meshColor = vec3(intensity); 
     vec3 edgeColor = vec3(0.0, 0.0, 0.0); 
-    float edgeThreshold = 0.1; 
-    float slopeFactor = clamp(1.0 - abs(aNormal.y), 0.0, 1.0);
+
     Normal = aNormal;
     texCoord = aTexture;
 
-   color = mix(meshColor, edgeColor, slopeFactor);
+    vec3 viewDir = normalize(- vec3(camMatrix * vec4(aPos, 1.0)));
+
+    float diffuse = max(dot(Normal, viewDir), 0.0);
+
+    if (diffuse < edgeThreshold) {
+        color = edgeColor; 
+    } else {
+        color = meshColor;
+    }
 
     gl_Position = camMatrix * vec4(aPos, 1.0);
 }

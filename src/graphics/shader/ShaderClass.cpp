@@ -62,7 +62,12 @@ std::string get_file_contents(std::string filename) {
    throw std::system_error(errno, std::generic_category(), "Error reading shader files " + filename);
 }
 
-Shader::Shader(std::string vertexFile, std::string fragmentFile) {
+Shader::Shader() {
+   ID = -1;
+   name = "";
+}
+
+Shader::Shader(const std::string& vertexFile, const std::string& fragmentFile) {
    std::string vertexCode = get_file_contents(std::string(SHADER_ROOT) + "/" + vertexFile);
    std::string fragmentCode = get_file_contents(std::string(SHADER_ROOT) + "/" + fragmentFile);
 
@@ -82,6 +87,7 @@ Shader::Shader(std::string vertexFile, std::string fragmentFile) {
    glCompileShader(fragmentShader);
 
    ID = glCreateProgram();
+   name = vertexFile;
    glAttachShader(ID, vertexShader);
    glAttachShader(ID, fragmentShader);
 

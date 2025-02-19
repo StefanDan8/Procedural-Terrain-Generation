@@ -1,58 +1,65 @@
-#include "PerlinOOP.hpp"
-#include "Renderer.hpp"
-#include "UserInterface.hpp"
+#define GLFW_INCLUDE_NONE
 
-#include <atomic>
-#include <iostream>
+#include "GUI.hpp"
+
+#include "Camera2D.hpp"
+#include "Camera3D.hpp"
+
+const unsigned WINDOW_WIDTH = 1200;
+const unsigned WINDOW_HEIGHT = 800;
 
 int main() {
-   const bool useCustomValues = gui::use_custom();
-   const gui::parameters params = useCustomValues ? gui::get_custom_parameters() : gui::get_default_parameters();
+   auto lastFrameTime = std::chrono::steady_clock::now();
+   perlin::AppConfig::initialize(42);
 
-   auto& [seed, chunkSize, nChunksX, nChunksY] = params; // Structured binding, gets the values from the struct.
+   Window window(WINDOW_WIDTH, WINDOW_HEIGHT);
+   GUI gui(window);
 
-   // I would rather have put this in the progress function, but I couldn't get it to work.
-   // This small section is responsible for initializing the progress "bar".
-   std::atomic<bool> done(false);
-   std::thread progressThread = gui::progress(done);
+   BasicConfigParams configParams{42, 1440, 1440, 2.0};
+   std::vector<std::pair<unsigned, double>> paramsNoise{std::make_pair(720, 30), std::make_pair(360, 250), std::make_pair(180, 50),
+                                                        std::make_pair(90, 50), std::make_pair(45, 20), std::make_pair(12, 5), std::make_pair(8, 2), std::make_pair(3, 1)};
+   std::vector<std::pair<unsigned, double>> filterParams{std::make_pair(180, 2), std::make_pair(120, 2), std::make_pair(60, 2), std::make_pair(30, 1)};
 
-   perlin::UniformUnitGenerator randomG(seed);
-   // Perlin noise generation
-   perlin::matrix result(nChunksX * chunkSize, std::vector<double>(nChunksY * chunkSize, 0.0));
+   Terrain terrain(configParams, paramsNoise, filterParams);
 
-   // perlin::initialize2DGradients(chunkSize, randomG);
+   glEnable(GL_DEPTH_TEST);
 
-   // const std::vector<unsigned> permutationTable = perlin::generatePermutationTable(seed, chunkSize);
-   // for (unsigned i = 0; i < nChunksX; i++) {
-   //    for (unsigned j = 0; j < nChunksY; j++) {
-   //       perlin::fill2DChunk(result, chunkSize, i, j, permutationTable);
-   //    }
-   // }
+   // Create both here else it'll recreate the camera every frame
+   Camera3D camera_3d(window, glm::vec3(-0.15f, 0.0f, 1.6f));
+   Camera2D camera_2d(window, glm::vec3(-0.3f, 0.0f, 2.5f)); // handpicked to fit nicely
+   window.context.window = &window;
+   window.context.camera2D = &camera_2d;
+   while (window.isActive()) {
+      auto currentTime = std::chrono::steady_clock::now();
+      std::chrono::duration<float> deltaTime = currentTime - lastFrameTime;
+      lastFrameTime = currentTime;
 
-   // Stop progress bar
-   done = true;
-   progressThread.join();
+      float elapsedSinceLastFrame = deltaTime.count(); // in seconds
+      window.setViewport();
+      gui.NewFrame();
 
-   // Handling outputting the result
-   const gui::output_type outputMethod = gui::get_output_method();
-   const std::string outputFileName = gui::get_file_path();
+      gui.DisplayGUI(terrain, elapsedSinceLastFrame);
+      Camera* camera = nullptr;
+      if (gui.is3DModeActive()) {
+         window.context.camera2D = nullptr;
+         camera = static_cast<Camera*>(&camera_3d);
+      } else {
+         window.context.camera2D = &camera_2d;
+         camera = static_cast<Camera*>(&camera_2d);
+      }
+      if (!gui.isGUIHovered()) {
+         camera->Inputs(elapsedSinceLastFrame);
+      }
+      camera->updateMatrix(45.0f, 0.1f, 100.0f);
 
-   switch (outputMethod) {
-      case gui::output_type::FILE:
-         render::writeMatrixToFile(render::normalizeMatrix(result), outputFileName);
-         break;
-      case gui::output_type::PPM:
-         render::create_ppm(render::normalizeMatrix(result), outputFileName);
-         break;
-      case gui::output_type::PNG:
-         render::create_png(render::normalizeMatrix(result), outputFileName);
-         break;
-      case gui::output_type::OBJ:
-         render::createPolyMesh(result, 10, 10, outputFileName);
-         break;
+      gui.DrawTerrain(terrain, *camera);
+
+      gui.RenderDrawData();
    }
 
-   std::cout << "Saved! Goodbye!" << std::endl;
-
+   gui.DeleteShaderManager();
+   window.Delete();
+   gui.Shutdown();
+   glfwTerminate();
    return 0;
 }

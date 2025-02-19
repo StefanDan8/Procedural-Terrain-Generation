@@ -3,6 +3,7 @@
 
 #define GLM_ENABLE_EXPERIMENTAL
 
+#include "Window.hpp"
 #include "ShaderClass.hpp"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -20,9 +21,10 @@
  */
 class Camera {
    public:
-   // Pointers of the width and height of the window, updates with the window size
-   float* width;
-   float* height;
+   // // Pointers of the width and height of the window, updates with the window size
+   // float* width;
+   // float* height;
+   Window& window;
 
    /// @brief position of the camera
    glm::vec3 Position;
@@ -38,14 +40,14 @@ class Camera {
    glm::mat4 cameraMatrix = glm::mat4(1.0f);
 
    /// @brief scaling factor for keyboard input
-   float speed = 0.01f;
+   float speed = 0.7f;
 
    /// @brief scaling factor for mouse input
-   float sensitivity = 0.1f;
+   float sensitivity = 50.0f;
 
    bool firstClick = true;
 
-   Camera(float* width, float* height, glm::vec3 position) : width(width), height(height), Position(position) {}
+   Camera(Window& window, glm::vec3 position) : window(window), Position(position) {}
 
    /// @brief passes `cameraMatrix` as uniform to a vertex shader
    /// @param shader vertex shader
@@ -58,9 +60,12 @@ class Camera {
    /// @param farPlane maximum distance at which the camera can see
    virtual void updateMatrix(float FOVdeg, float nearPlane, float farPlane);
 
+   virtual void Inputs(float elapsedTimeSinceLastFrame) = 0;
+
+   private:
    /// @brief handles keyboard and mouse events
    /// @param window
-   virtual void Inputs(GLFWwindow* window) = 0;
+   virtual void _Inputs(GLFWwindow* window, float elapsedTimeSinceLastFrame) = 0;
 };
 
 #endif
