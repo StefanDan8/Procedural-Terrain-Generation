@@ -1,6 +1,7 @@
 # Group 44 - Procedural Noise Generation
 
-![Preview](readmeImages/Preview.png){ width=800px }
+<!-- ![Preview](readmeImages/Preview.png){ width=800px } -->
+<img src="readmeImages/Preview.png" width="800" alt="Preview"/>
 
 Team members:
 
@@ -8,7 +9,7 @@ Team members:
 - Dominik Bereżański [ge63nem@mytum.de](mailto:ge63nem@mytum.de)
 - Pawel Kedzia [pawel.kedzia@tum.de](mailto:pawel.kedzia@tum.de)
 
-The project being 'Procedural Terrain Generation with Perlin Noise' described in https://gitlab.lrz.de/tum-i05/public/advprog-project-ideas/-/blob/master/procedural-terrain-generation/perlin-noise-procedural-terrain-generation.md?ref_type=heads
+The project is 'Procedural Terrain Generation with Perlin Noise' described in https://gitlab.lrz.de/tum-i05/public/advprog-project-ideas/-/blob/master/procedural-terrain-generation/perlin-noise-procedural-terrain-generation.md?ref_type=heads
 
 ## Note on external packages
 
@@ -29,7 +30,7 @@ All other files in this project are our own, with the mention that the architect
 ## Clone Sprint 3
 
 ```
-git clone https://gitlab.lrz.de/advprog2024/group-44.git
+git clone https://github.com/StefanDan8/Procedural-Terrain-Generation.git
 cd group-44
 git checkout sprint3
 ```
@@ -97,8 +98,10 @@ The application has two operating modes: 2D and 3D.
 The application starts in 2D mode and the user can switch at anytime between the two modes by clicking the corresponding button at the top of the GUI.
 Depending on the resolution of the screen, the GUI might be too small to comfortably visualise both the GUI and the render, in which case, please enlarge the program window.
 
-![Example 2D](readmeImages/_2DWindow.png){ width=450px }
-![Example 3D](readmeImages/_3DWindow.png){ width=450px }
+<!-- ![Example 2D](readmeImages/_2DWindow.png){ width=450px } -->
+<img src="readmeImages/_2DWindow.png" width="450" alt="Example 2D" />
+<!-- ![Example 3D](readmeImages/_3DWindow.png){ width=450px } -->
+<img src="readmeImages/_3DWindow.png" width="450" alt="Example 3D" />
 
 The top left of the window is reserved for the GUI, while the rest of the window is reserved for viewing and moving around the render. 
 
@@ -108,9 +111,14 @@ The top left of the window is reserved for the GUI, while the rest of the window
 - Seed: this changes the seed from which the Perlin Noise was generated. There is a 30 frame delay after modifying before recomputing the noise.
 - Flatten factor: The values of the noise are divided by this factor. Default is 2.0, which empirically generates more realistic terrain. Here is an example for values 1.0, 2.0 and 3.0 respectively
 
+<!--
 ![Example flatten 1](readmeImages/flatten1.png){ width=250px }
 ![Example flatten 2](readmeImages/flatten2.png){ width=250px }
 ![Example flatten 3](readmeImages/flatten3.png){ width=250px }
+-->
+<img src="readmeImages/flatten1.png" width="250" />
+<img src="readmeImages/flatten2.png" width="250" />
+<img src="readmeImages/flatten3.png" width="250" />
 
 - Shader dropdown: user can select with which (vertex) shader to render. These are located in the `shaders` folder and are written in GLSL (OpenGL's shader language), which is very similar to C++.
 - There is also a lot of customisation possible with the shaders and rendering, by default these are collapsed to save space:
@@ -129,8 +137,8 @@ For the 2D mode:
 - The user can move the image --- (W,A,S,D) keys or mouse click and drag
 - The user can zoom in and out through mouse scroll wheel or mousepad. Example -- zoomed patch of the first image:
 
-![Example zoom](readmeImages/adjustCamera2D.png){ width=500px }
-
+<!-- ![Example zoom](readmeImages/adjustCamera2D.png){ width=500px } -->
+<img src="readmeImages/adjustCamera2D.png" width="500" alt="Example zoom" />
 For the 3D mode:
 
 The object is in the middle of the scene.
@@ -139,4 +147,5 @@ The object is in the middle of the scene.
 - The user can zoom in and out through mouse scroll wheel or mousepad. 
 - The user can rotate the object along the X (pitch) and Y (yaw) axes. Example after zoom and rotate, for observing details of the object in the second image:
 
-![Example zoom 3D](readmeImages/adjustCamera3D.png){ width=500px}
+<!-- ![Example zoom 3D](readmeImages/adjustCamera3D.png){ width=500px} -->
+<img src="readmeImages/adjustCamera3D.png" width="500" alt="Example zoom 3D" />
