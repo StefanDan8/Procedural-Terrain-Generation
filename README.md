@@ -27,12 +27,11 @@ We express our gratitude to the authors of these libraries for creating, maintai
 
 All other files in this project are our own, with the mention that the architecture of the rendering engine follows the great OpenGL tutorial of Victor Gordan https://github.com/VictorGordan/opengl-tutorials (classes `EBO`, `VAO`, `VBO` are very close to the original, while classes `Camera` and `ShaderClass` have been substantially adjusted to fit our needs).
 
-## Clone Sprint 3
+## Clone 
 
 ```
 git clone https://github.com/StefanDan8/Procedural-Terrain-Generation.git
-cd group-44
-git checkout sprint3
+cd Procedural-Terrain-Generation
 ```
 
 ## Build
