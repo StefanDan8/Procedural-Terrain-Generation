@@ -99,10 +99,11 @@ The application starts in 2D mode and the user can switch at anytime between the
 Depending on the resolution of the screen, the GUI might be too small to comfortably visualise both the GUI and the render, in which case, please enlarge the program window.
 
 <!-- ![Example 2D](readmeImages/_2DWindow.png){ width=450px } -->
+<p>
 <img src="readmeImages/_2DWindow.png" width="450" alt="Example 2D" />
 <!-- ![Example 3D](readmeImages/_3DWindow.png){ width=450px } -->
 <img src="readmeImages/_3DWindow.png" width="450" alt="Example 3D" />
-
+</p>
 The top left of the window is reserved for the GUI, while the rest of the window is reserved for viewing and moving around the render. 
 
 ### Description of the GUI
@@ -116,10 +117,11 @@ The top left of the window is reserved for the GUI, while the rest of the window
 ![Example flatten 2](readmeImages/flatten2.png){ width=250px }
 ![Example flatten 3](readmeImages/flatten3.png){ width=250px }
 -->
+<p>
 <img src="readmeImages/flatten1.png" width="250" />
 <img src="readmeImages/flatten2.png" width="250" />
 <img src="readmeImages/flatten3.png" width="250" />
-
+</p>
 - Shader dropdown: user can select with which (vertex) shader to render. These are located in the `shaders` folder and are written in GLSL (OpenGL's shader language), which is very similar to C++.
 - There is also a lot of customisation possible with the shaders and rendering, by default these are collapsed to save space:
   - A list of sliders for adjusting uniforms (see https://www.khronos.org/opengl/wiki/Uniform_(GLSL)) of the used shader (if any). The names are the exact variable names in the shader source file. These are parsed from the source file and any uniform which is designed to be configurable by the user has to be defined in a certain pattern. 
@@ -138,7 +140,7 @@ For the 2D mode:
 - The user can zoom in and out through mouse scroll wheel or mousepad. Example -- zoomed patch of the first image:
 
 <!-- ![Example zoom](readmeImages/adjustCamera2D.png){ width=500px } -->
-<img src="readmeImages/adjustCamera2D.png" width="500" alt="Example zoom" />
+<img src="readmeImages/adjustCamera2D.png" width="800" alt="Example zoom" />
 For the 3D mode:
 
 The object is in the middle of the scene.
@@ -148,4 +150,4 @@ The object is in the middle of the scene.
 - The user can rotate the object along the X (pitch) and Y (yaw) axes. Example after zoom and rotate, for observing details of the object in the second image:
 
 <!-- ![Example zoom 3D](readmeImages/adjustCamera3D.png){ width=500px} -->
-<img src="readmeImages/adjustCamera3D.png" width="500" alt="Example zoom 3D" />
+<img src="readmeImages/adjustCamera3D.png" width="800" alt="Example zoom 3D" />
